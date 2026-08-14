@@ -481,4 +481,40 @@ describe("stream termination confirmation", () => {
     expect(card.renderRoot.querySelector(".modern-progress-row")).not.toBeNull();
     expect(card.renderRoot.querySelector(".modern-progress-remaining")?.textContent).toContain("remaining");
   });
+
+  it("renders a foreground poster and a dimmed backdrop when both are selected", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: "modern",
+      artwork: "both",
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = {
+      ...ENVELOPE,
+      items: [{
+        ...STREAM,
+        images: {
+          poster_url: "/api/tautulli/image/poster",
+          backdrop_url: "/api/tautulli/image/backdrop",
+        },
+      }],
+    };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    const item = card.renderRoot.querySelector<HTMLElement>("article.item");
+    expect(item?.classList).toContain("background-art");
+    expect(item?.classList).toContain("art-left");
+    expect(item?.querySelector<HTMLImageElement>("img.art")?.src).toContain("/api/tautulli/image/poster");
+    expect(item?.getAttribute("style")).toContain("/api/tautulli/image/backdrop");
+  });
 });

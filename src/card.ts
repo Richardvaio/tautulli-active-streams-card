@@ -385,13 +385,14 @@ export class TautulliMediaCard extends LitElement {
     const media: MediaItem = this._config.mode === "recently_added" ? item as MediaItem : item.media ?? {};
     const subtitle = item._group_subtitle ?? this._mediaSubtitle(media);
     const image = this._image(media.images);
+    const background = this._backgroundImage(media.images);
     const displayDuration = this._config.mode === "history"
       ? Number(item.play_duration_seconds) || 0
       : Number(media.duration_seconds) || 0;
     return html`
-      <article data-item-id=${this._itemId(item)} class="item media-item ${media.type ?? "unknown"} ${this._artClass(image)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(image)}>
+      <article data-item-id=${this._itemId(item)} class="item media-item ${media.type ?? "unknown"} ${this._artClass(image, background)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(background)}>
         ${this._openDetailsButton(item, media.full_title || media.title || "media")}
-        ${image && this._config.artwork_placement !== "background" ? html`<img class="art" src=${image} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
+        ${image ? html`<img class="art" src=${image} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
         <div class="body">
           <div class="eyebrow"><span>${this._itemEyebrow(item, media)}</span></div>
           <h3 class="name">${media.title || media.full_title || "Untitled"}</h3>
@@ -452,6 +453,7 @@ export class TautulliMediaCard extends LitElement {
     }
     const media = item.media ?? {};
     const image = this._image(item.images);
+    const background = this._backgroundImage(item.images);
     const progress = Math.max(0, Math.min(100, Number(item.playback?.progress_percent) || 0));
     const stateColor = item.state === "paused" ? "var(--tas-paused-color)" : item.state === "buffering" ? "var(--tas-buffering-color)" : media.type === "track" ? "#1db954" : "var(--tas-playing-color)";
     const canTerminate = this._canTerminate(item) && (
@@ -459,9 +461,9 @@ export class TautulliMediaCard extends LitElement {
       || ["card", "both"].includes(this._config.termination_location ?? "popup")
     );
     return html`
-      <article data-item-id=${this._itemId(item)} class="item ${this._artClass(image)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(image, stateColor)}>
+      <article data-item-id=${this._itemId(item)} class="item ${this._artClass(image, background)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(background, stateColor)}>
         ${this._openDetailsButton(item, media.full_title || media.title || "stream")}
-        ${image && this._config.artwork_placement !== "background" ? html`<img class="art" src=${image} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
+        ${image ? html`<img class="art" src=${image} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
         <div class="body">
           <div class="eyebrow">
             <span class="state ${item.state}">${item.state}${item.state === "paused" && this._config.show_pause_duration ? ` · ${this._elapsedDuration(this._pausedSeconds(item))}` : ""}</span>
@@ -488,6 +490,7 @@ export class TautulliMediaCard extends LitElement {
     const media = item.media ?? {};
     const music = ["track", "album", "artist"].includes(media.type ?? "");
     const image = this._image(item.images);
+    const background = this._backgroundImage(item.images);
     const progress = Math.max(0, Math.min(100, Number(item.playback?.progress_percent) || 0));
     const stateColor = item.state === "paused" ? "var(--tas-paused-color)" : item.state === "buffering" ? "var(--tas-buffering-color)" : music ? "#1db954" : "var(--tas-playing-color)";
     const hierarchy = media.hierarchy ?? {};
@@ -512,9 +515,9 @@ export class TautulliMediaCard extends LitElement {
       || ["card", "both"].includes(this._config.termination_location ?? "popup")
     );
     return html`
-      <article data-item-id=${this._itemId(item)} class="classic-item ${music ? "music" : "video"} ${item.state} ${this._artClass(image)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(image, stateColor)}>
+      <article data-item-id=${this._itemId(item)} class="classic-item ${music ? "music" : "video"} ${item.state} ${this._artClass(image, background)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(background, stateColor)}>
         ${this._openDetailsButton(item, media.full_title || media.title || "stream")}
-        ${image && this._config.artwork_placement !== "background" ? html`<img class="classic-art" src=${image} alt="" loading="lazy" referrerpolicy="no-referrer">` : !image ? html`<div class="classic-art placeholder"><ha-icon icon="${music ? "mdi:music" : "mdi:movie-open"}"></ha-icon></div>` : nothing}
+        ${image ? html`<img class="classic-art" src=${image} alt="" loading="lazy" referrerpolicy="no-referrer">` : !background ? html`<div class="classic-art placeholder"><ha-icon icon="${music ? "mdi:music" : "mdi:movie-open"}"></ha-icon></div>` : nothing}
         <div class="classic-body">
           <div class="classic-top">
             ${this._config.show_device && client ? html`<span>${client}</span>` : html`<span></span>`}
@@ -562,9 +565,9 @@ export class TautulliMediaCard extends LitElement {
     return parts.join(" · ");
   }
 
-  private _artClass(image?: string): string {
+  private _artClass(image?: string, background?: string): string {
+    if (background) return `${image ? "art-left " : ""}background-art`;
     if (!image) return "no-art";
-    if (this._config.artwork_placement === "background") return "background-art";
     if (this._config.artwork_placement === "right") return "art-right";
     return "art-left";
   }
@@ -572,7 +575,7 @@ export class TautulliMediaCard extends LitElement {
   private _backgroundStyle(image?: string, stateColor?: string): string {
     const declarations: string[] = [];
     if (stateColor) declarations.push(`--state-color:${stateColor}`);
-    if (image && this._config.artwork_placement === "background") {
+    if (image) {
       declarations.push(`--tas-background-image:url("${image.replaceAll('"', "")}")`);
       declarations.push(`--tas-backdrop-opacity:${(this._config.backdrop_opacity ?? 35) / 100}`);
     }
@@ -793,7 +796,20 @@ export class TautulliMediaCard extends LitElement {
 
   private _image(images?: { poster_url?: string | null; backdrop_url?: string | null }): string | undefined {
     if (this._config.artwork === "none") return undefined;
-    return (this._config.artwork === "backdrop" ? images?.backdrop_url : images?.poster_url) ?? undefined;
+    if (this._config.artwork === "backdrop") return undefined;
+    if (this._config.artwork === "poster" && this._config.artwork_placement === "background") return undefined;
+    return images?.poster_url ?? undefined;
+  }
+
+  private _backgroundImage(images?: { poster_url?: string | null; backdrop_url?: string | null }): string | undefined {
+    if (this._config.artwork === "none") return undefined;
+    if (["backdrop", "both"].includes(this._config.artwork ?? "poster")) {
+      return images?.backdrop_url ?? images?.poster_url ?? undefined;
+    }
+    if (this._config.artwork_placement === "background") {
+      return images?.poster_url ?? images?.backdrop_url ?? undefined;
+    }
+    return undefined;
   }
 
   private _mediaSubtitle(media: MediaItem): string {

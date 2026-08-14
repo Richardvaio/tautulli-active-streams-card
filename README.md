@@ -2,9 +2,13 @@
 
 A native, responsive Home Assistant dashboard card for the [Tautulli Active Streams integration](https://github.com/Richardvaio/Tautulli_Active_Streams). It replaces the original multi-card YAML layout with one dependency-free card and a guided visual editor.
 
-![Classic active-stream presentation](images/classic-active-streams.png)
+![Tautulli Media Card visual editor with a live active-stream preview](images/visual-editor.png)
 
-This is the initial public beta. It requires **Tautulli Active Streams 2.7.0 or newer** and card API schema `1`.
+The guided editor keeps card and popup settings separate while showing changes in a live preview.
+
+![Detailed active-stream popup with poster, backdrop, progress and stream statistics](images/details-popup.png)
+
+This is the initial public beta. It requires **Tautulli Active Streams 2.7.0 or newer**.
 
 ## Features
 
@@ -15,7 +19,7 @@ This is the initial public beta. It requires **Tautulli Active Streams 2.7.0 or 
 - Administrator-only, paginated watch history when enabled in the integration.
 - Classic, modern, minimal and cinematic presentation options.
 - Responsive grid, list and carousel layouts.
-- Poster, square and backdrop artwork treatments.
+- Poster/cover, backdrop, combined poster-with-backdrop and artwork-free treatments.
 - Configurable headers, counts, fields, colours, spacing, progress bars and artwork sizing.
 - Detailed popup with configurable summary and reorderable stream-detail fields.
 - Optional administrator-only stream termination with a separate confirmation dialog.
@@ -94,12 +98,12 @@ Displays a bounded, paginated history view. It requires a Home Assistant adminis
 The editor separates dashboard-card settings from popup settings and keeps sections collapsed until needed.
 
 - **Content and source** selects the Tautulli server and view.
-- **Card layout** controls presets, layout, columns, density, artwork and responsive behaviour.
+- **Card layout and appearance** combines presets, layout, columns, density, artwork, background and optional fine-tuning in one relevant section.
 - **Visible information** controls the fields displayed on dashboard items.
 - **Card actions** controls item clicks and the details popup.
 - **Popup settings** controls popup width, artwork, summaries, progress and ordered detail fields.
 - **Terminate stream** appears only for compatible active-stream actions.
-- **Fine-tune colours and sizing** exposes current values, unit-aware sizing controls and reset-to-default behaviour.
+- **Fine-tune colours and sizing** exposes current values, unit-aware sizing controls and restore-to-style-default behaviour.
 
 Classic artwork defaults to 85px wide. Artwork retains its source aspect ratio and uses the selected crop or contain treatment without stretching.
 

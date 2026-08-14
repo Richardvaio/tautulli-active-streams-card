@@ -28,10 +28,11 @@ export const cardStyles = css`
   .item.art-right { grid-template-columns:minmax(0,1fr) var(--art-width, 92px); }
   .item.art-right .art { order:2; }
   .item.art-right .body { order:1; padding:10px 0 10px 10px; }
-  .item.background-art,.classic-item.background-art { grid-template-columns:1fr; isolation:isolate; }
+  .item.background-art,.classic-item.background-art { isolation:isolate; }
+  .item.background-art:not(.art-left),.classic-item.background-art:not(.art-left) { grid-template-columns:1fr; }
   .background-art::before { content:""; position:absolute; z-index:0; inset:0 0 0 28%; background-image:linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 35%) 32%, rgb(0 0 0 / 10%) 100%), var(--tas-background-image); background-size:cover; background-position:var(--tas-art-position, center); opacity:var(--tas-backdrop-opacity, .35); -webkit-mask-image:linear-gradient(90deg, transparent, #000 35%); mask-image:linear-gradient(90deg, transparent, #000 35%); }
   .background-art > * { position:relative; z-index:1; }
-  .item.background-art .body,.classic-item.background-art .classic-body { padding:12px; }
+  .item.background-art:not(.art-left) .body,.classic-item.background-art:not(.art-left) .classic-body { padding:12px; }
   .interactive { cursor:pointer; }
   .interactive:hover { border-color:color-mix(in srgb, var(--primary-color) 55%, var(--tas-border-color)); }
   .interactive:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }

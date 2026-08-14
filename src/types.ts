@@ -1,6 +1,6 @@
 export type CardMode = "active" | "recently_added" | "popular" | "users" | "history";
 export type Density = "compact" | "comfortable" | "detailed";
-export type ArtworkMode = "poster" | "backdrop" | "none";
+export type ArtworkMode = "poster" | "backdrop" | "both" | "none";
 export type LayoutMode = "grid" | "list" | "carousel";
 export type ArtworkFit = "cover" | "contain";
 export type ArtworkAspect = "auto" | "poster" | "square" | "backdrop";

@@ -168,6 +168,34 @@ describe("visual editor", () => {
     expect(editor.renderRoot.querySelector<HTMLSelectElement>('select[data-key="layout"]')?.value).toBe("carousel");
   });
 
+  it("shows only artwork controls relevant to the selected display", async () => {
+    const editor = document.createElement("tautulli-media-card-editor") as HTMLElement & {
+      hass: HomeAssistant;
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    editor.hass = {
+      callWS: vi.fn().mockResolvedValue({ entries: [], items: [] }),
+      connection: { subscribeMessage: vi.fn() },
+    } as unknown as HomeAssistant;
+    document.body.append(editor);
+
+    editor.setConfig({ type: "custom:tautulli-media-card", mode: "active", artwork: "both" });
+    await editor.updateComplete;
+    expect(editor.renderRoot.querySelector('select[data-key="artwork_aspect"]')).not.toBeNull();
+    expect(editor.renderRoot.querySelector('select[data-key="artwork_fit"]')).not.toBeNull();
+    expect(editor.renderRoot.querySelector('input[data-key="backdrop_opacity"]')).not.toBeNull();
+    expect(editor.renderRoot.querySelector('select[data-key="artwork_placement"]')).toBeNull();
+
+    editor.setConfig({ type: "custom:tautulli-media-card", mode: "active", artwork: "backdrop" });
+    await editor.updateComplete;
+    expect(editor.renderRoot.querySelector('select[data-key="artwork_aspect"]')).toBeNull();
+    expect(editor.renderRoot.querySelector('select[data-key="artwork_fit"]')).toBeNull();
+    expect(editor.renderRoot.querySelector('input[data-key="artwork_width"]')).toBeNull();
+    expect(editor.renderRoot.querySelector('input[data-key="backdrop_opacity"]')).not.toBeNull();
+  });
+
   it("renders draggable stream fields and saves their reordered position", async () => {
     const callWS = vi.fn().mockImplementation(async (request: Record<string, unknown>) => request.type === "tautulli_active_streams/get_entries"
       ? { entries: [{ entry_id: "entry-1", name: "Plex", capabilities: { active_streams: true } }] }

@@ -29,11 +29,11 @@ var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nat
 	let t = "";
 	for (let n of e.cssRules) t += n.cssText;
 	return a(t);
-})(e) : e, { is: l, defineProperty: u, getOwnPropertyDescriptor: d, getOwnPropertyNames: f, getOwnPropertySymbols: p, getPrototypeOf: ee } = Object, m = globalThis, h = m.trustedTypes, te = h ? h.emptyScript : "", ne = m.reactiveElementPolyfillSupport, g = (e, t) => e, _ = {
+})(e) : e, { is: l, defineProperty: u, getOwnPropertyDescriptor: d, getOwnPropertyNames: f, getOwnPropertySymbols: p, getPrototypeOf: m } = Object, h = globalThis, g = h.trustedTypes, ee = g ? g.emptyScript : "", te = h.reactiveElementPolyfillSupport, _ = (e, t) => e, v = {
 	toAttribute(e, t) {
 		switch (t) {
 			case Boolean:
-				e = e ? te : null;
+				e = e ? ee : null;
 				break;
 			case Object:
 			case Array: e = e == null ? e : JSON.stringify(e);
@@ -58,23 +58,23 @@ var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nat
 		}
 		return n;
 	}
-}, v = (e, t) => !l(e, t), y = {
+}, y = (e, t) => !l(e, t), b = {
 	attribute: !0,
 	type: String,
-	converter: _,
+	converter: v,
 	reflect: !1,
 	useDefault: !1,
-	hasChanged: v
+	hasChanged: y
 };
-Symbol.metadata ??= Symbol("metadata"), m.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-var b = class extends HTMLElement {
+Symbol.metadata ??= Symbol("metadata"), h.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+var x = class extends HTMLElement {
 	static addInitializer(e) {
 		this._$Ei(), (this.l ??= []).push(e);
 	}
 	static get observedAttributes() {
 		return this.finalize(), this._$Eh && [...this._$Eh.keys()];
 	}
-	static createProperty(e, t = y) {
+	static createProperty(e, t = b) {
 		if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
 			let n = Symbol(), r = this.getPropertyDescriptor(e, n, t);
 			r !== void 0 && u(this.prototype, e, r);
@@ -100,16 +100,16 @@ var b = class extends HTMLElement {
 		};
 	}
 	static getPropertyOptions(e) {
-		return this.elementProperties.get(e) ?? y;
+		return this.elementProperties.get(e) ?? b;
 	}
 	static _$Ei() {
-		if (this.hasOwnProperty(g("elementProperties"))) return;
-		let e = ee(this);
+		if (this.hasOwnProperty(_("elementProperties"))) return;
+		let e = m(this);
 		e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
 	}
 	static finalize() {
-		if (this.hasOwnProperty(g("finalized"))) return;
-		if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(g("properties"))) {
+		if (this.hasOwnProperty(_("finalized"))) return;
+		if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(_("properties"))) {
 			let e = this.properties, t = [...f(e), ...p(e)];
 			for (let n of t) this.createProperty(n, e[n]);
 		}
@@ -171,14 +171,14 @@ var b = class extends HTMLElement {
 	_$ET(e, t) {
 		let n = this.constructor.elementProperties.get(e), r = this.constructor._$Eu(e, n);
 		if (r !== void 0 && !0 === n.reflect) {
-			let i = (n.converter?.toAttribute === void 0 ? _ : n.converter).toAttribute(t, n.type);
+			let i = (n.converter?.toAttribute === void 0 ? v : n.converter).toAttribute(t, n.type);
 			this._$Em = e, i == null ? this.removeAttribute(r) : this.setAttribute(r, i), this._$Em = null;
 		}
 	}
 	_$AK(e, t) {
 		let n = this.constructor, r = n._$Eh.get(e);
 		if (r !== void 0 && this._$Em !== r) {
-			let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? _ : e.converter;
+			let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? v : e.converter;
 			this._$Em = r;
 			let a = i.fromAttribute(t, e.type);
 			this[r] = a ?? this._$Ej?.get(r) ?? a, this._$Em = null;
@@ -187,7 +187,7 @@ var b = class extends HTMLElement {
 	requestUpdate(e, t, n, r = !1, i) {
 		if (e !== void 0) {
 			let a = this.constructor;
-			if (!1 === r && (i = this[e]), n ??= a.getPropertyOptions(e), !((n.hasChanged ?? v)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, n)))) return;
+			if (!1 === r && (i = this[e]), n ??= a.getPropertyOptions(e), !((n.hasChanged ?? y)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, n)))) return;
 			this.C(e, t, n);
 		}
 		!1 === this.isUpdatePending && (this._$ES = this._$EP());
@@ -251,24 +251,24 @@ var b = class extends HTMLElement {
 	updated(e) {}
 	firstUpdated(e) {}
 };
-b.elementStyles = [], b.shadowRootOptions = { mode: "open" }, b[g("elementProperties")] = /* @__PURE__ */ new Map(), b[g("finalized")] = /* @__PURE__ */ new Map(), ne?.({ ReactiveElement: b }), (m.reactiveElementVersions ??= []).push("2.1.2");
+x.elementStyles = [], x.shadowRootOptions = { mode: "open" }, x[_("elementProperties")] = /* @__PURE__ */ new Map(), x[_("finalized")] = /* @__PURE__ */ new Map(), te?.({ ReactiveElement: x }), (h.reactiveElementVersions ??= []).push("2.1.2");
 //#endregion
 //#region node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/lit-html.js
-var x = globalThis, S = (e) => e, C = x.trustedTypes, w = C ? C.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, T = "$lit$", E = `lit$${Math.random().toFixed(9).slice(2)}$`, D = "?" + E, re = `<${D}>`, O = document, k = () => O.createComment(""), A = (e) => e === null || typeof e != "object" && typeof e != "function", j = Array.isArray, ie = (e) => j(e) || typeof e?.[Symbol.iterator] == "function", M = "[ 	\n\f\r]", N = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ae = /-->/g, oe = />/g, P = RegExp(`>|${M}(?:([^\\s"'>=/]+)(${M}*=${M}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), F = /'/g, I = /"/g, L = /^(?:script|style|textarea|title)$/i, R = ((e) => (t, ...n) => ({
+var S = globalThis, C = (e) => e, w = S.trustedTypes, ne = w ? w.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, T = "$lit$", E = `lit$${Math.random().toFixed(9).slice(2)}$`, D = "?" + E, re = `<${D}>`, O = document, k = () => O.createComment(""), A = (e) => e === null || typeof e != "object" && typeof e != "function", j = Array.isArray, ie = (e) => j(e) || typeof e?.[Symbol.iterator] == "function", M = "[ 	\n\f\r]", N = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, P = /-->/g, ae = />/g, F = RegExp(`>|${M}(?:([^\\s"'>=/]+)(${M}*=${M}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), oe = /'/g, I = /"/g, L = /^(?:script|style|textarea|title)$/i, R = ((e) => (t, ...n) => ({
 	_$litType$: e,
 	strings: t,
 	values: n
 }))(1), z = Symbol.for("lit-noChange"), B = Symbol.for("lit-nothing"), V = /* @__PURE__ */ new WeakMap(), H = O.createTreeWalker(O, 129);
 function U(e, t) {
 	if (!j(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
-	return w === void 0 ? t : w.createHTML(t);
+	return ne === void 0 ? t : ne.createHTML(t);
 }
 var se = (e, t) => {
 	let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = N;
 	for (let t = 0; t < n; t++) {
 		let n = e[t], s, c, l = -1, u = 0;
-		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === N ? c[1] === "!--" ? o = ae : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = P) : (L.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = P) : o = oe : o === P ? c[0] === ">" ? (o = i ?? N, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? P : c[3] === "\"" ? I : F) : o === I || o === F ? o = P : o === ae || o === oe ? o = N : (o = P, i = void 0);
-		let d = o === P && e[t + 1].startsWith("/>") ? " " : "";
+		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === N ? c[1] === "!--" ? o = P : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = F) : (L.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = F) : o = ae : o === F ? c[0] === ">" ? (o = i ?? N, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? F : c[3] === "\"" ? I : oe) : o === I || o === oe ? o = F : o === P || o === ae ? o = N : (o = F, i = void 0);
+		let d = o === F && e[t + 1].startsWith("/>") ? " " : "";
 		a += o === N ? n + re : l >= 0 ? (r.push(s), n.slice(0, l) + T + n.slice(l) + E + d) : n + E + (l === -2 ? t : d);
 	}
 	return [U(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
@@ -299,7 +299,7 @@ var se = (e, t) => {
 				if (L.test(i.tagName)) {
 					let e = i.textContent.split(E), t = e.length - 1;
 					if (t > 0) {
-						i.textContent = C ? C.emptyScript : "";
+						i.textContent = w ? w.emptyScript : "";
 						for (let n = 0; n < t; n++) i.append(e[n], k()), H.nextNode(), c.push({
 							type: 2,
 							index: ++a
@@ -409,8 +409,8 @@ var ce = class {
 	}
 	_$AR(e = this._$AA.nextSibling, t) {
 		for (this._$AP?.(!1, !0, t); e !== this._$AB;) {
-			let t = S(e).nextSibling;
-			S(e).remove(), e = t;
+			let t = C(e).nextSibling;
+			C(e).remove(), e = t;
 		}
 	}
 	setConnected(e) {
@@ -474,8 +474,8 @@ var ce = class {
 	_$AI(e) {
 		G(this, e);
 	}
-}, pe = x.litHtmlPolyfillSupport;
-pe?.(W, K), (x.litHtmlVersions ??= []).push("3.3.3");
+}, pe = S.litHtmlPolyfillSupport;
+pe?.(W, K), (S.litHtmlVersions ??= []).push("3.3.3");
 var me = (e, t, n) => {
 	let r = n?.renderBefore ?? t, i = r._$litPart$;
 	if (i === void 0) {
@@ -483,7 +483,7 @@ var me = (e, t, n) => {
 		r._$litPart$ = i = new K(t.insertBefore(k(), e), e, void 0, n ?? {});
 	}
 	return i._$AI(e), i;
-}, J = globalThis, Y = class extends b {
+}, J = globalThis, Y = class extends x {
 	constructor() {
 		super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
 	}
@@ -878,10 +878,11 @@ var Ee = o`
   .item.art-right { grid-template-columns:minmax(0,1fr) var(--art-width, 92px); }
   .item.art-right .art { order:2; }
   .item.art-right .body { order:1; padding:10px 0 10px 10px; }
-  .item.background-art,.classic-item.background-art { grid-template-columns:1fr; isolation:isolate; }
+  .item.background-art,.classic-item.background-art { isolation:isolate; }
+  .item.background-art:not(.art-left),.classic-item.background-art:not(.art-left) { grid-template-columns:1fr; }
   .background-art::before { content:""; position:absolute; z-index:0; inset:0 0 0 28%; background-image:linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 35%) 32%, rgb(0 0 0 / 10%) 100%), var(--tas-background-image); background-size:cover; background-position:var(--tas-art-position, center); opacity:var(--tas-backdrop-opacity, .35); -webkit-mask-image:linear-gradient(90deg, transparent, #000 35%); mask-image:linear-gradient(90deg, transparent, #000 35%); }
   .background-art > * { position:relative; z-index:1; }
-  .item.background-art .body,.classic-item.background-art .classic-body { padding:12px; }
+  .item.background-art:not(.art-left) .body,.classic-item.background-art:not(.art-left) .classic-body { padding:12px; }
   .interactive { cursor:pointer; }
   .interactive:hover { border-color:color-mix(in srgb, var(--primary-color) 55%, var(--tas-border-color)); }
   .interactive:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }
@@ -1424,18 +1425,18 @@ var Ee = o`
 	_renderItem(e) {
 		if (this._config.mode === "active") return this._renderActive(e);
 		if (this._config.mode === "users") return this._renderUser(e);
-		let t = this._config.mode === "recently_added" ? e : e.media ?? {}, n = e._group_subtitle ?? this._mediaSubtitle(t), r = this._image(t.images), i = this._config.mode === "history" ? Number(e.play_duration_seconds) || 0 : Number(t.duration_seconds) || 0;
+		let t = this._config.mode === "recently_added" ? e : e.media ?? {}, n = e._group_subtitle ?? this._mediaSubtitle(t), r = this._image(t.images), i = this._backgroundImage(t.images), a = this._config.mode === "history" ? Number(e.play_duration_seconds) || 0 : Number(t.duration_seconds) || 0;
 		return R`
-      <article data-item-id=${this._itemId(e)} class="item media-item ${t.type ?? "unknown"} ${this._artClass(r)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(r)}>
+      <article data-item-id=${this._itemId(e)} class="item media-item ${t.type ?? "unknown"} ${this._artClass(r, i)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(i)}>
         ${this._openDetailsButton(e, t.full_title || t.title || "media")}
-        ${r && this._config.artwork_placement !== "background" ? R`<img class="art" src=${r} alt="" loading="lazy" referrerpolicy="no-referrer">` : B}
+        ${r ? R`<img class="art" src=${r} alt="" loading="lazy" referrerpolicy="no-referrer">` : B}
         <div class="body">
           <div class="eyebrow"><span>${this._itemEyebrow(e, t)}</span></div>
           <h3 class="name">${t.title || t.full_title || "Untitled"}</h3>
           ${n ? R`<div class="subtitle">${n}</div>` : B}
           <div class="meta">
             ${t.year ? R`<span>${t.year}</span>` : B}
-            ${i ? R`<span>${this._duration(i)}${this._config.mode === "history" ? " watched" : ""}</span>` : B}
+            ${a ? R`<span>${this._duration(a)}${this._config.mode === "history" ? " watched" : ""}</span>` : B}
             ${t.library?.name ? R`<span>${t.library.name}</span>` : B}
           </div>
           ${this._config.show_summary && t.summary ? R`<div class="summary">${t.summary}</div>` : B}
@@ -1480,11 +1481,11 @@ var Ee = o`
 	}
 	_renderActive(e) {
 		if (this._config.style_preset === "classic") return this._renderClassicActive(e);
-		let t = e.media ?? {}, n = this._image(e.images), r = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), i = e.state === "paused" ? "var(--tas-paused-color)" : e.state === "buffering" ? "var(--tas-buffering-color)" : t.type === "track" ? "#1db954" : "var(--tas-playing-color)", a = this._canTerminate(e) && (this._config.click_action !== "details" || ["card", "both"].includes(this._config.termination_location ?? "popup"));
+		let t = e.media ?? {}, n = this._image(e.images), r = this._backgroundImage(e.images), i = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), a = e.state === "paused" ? "var(--tas-paused-color)" : e.state === "buffering" ? "var(--tas-buffering-color)" : t.type === "track" ? "#1db954" : "var(--tas-playing-color)", o = this._canTerminate(e) && (this._config.click_action !== "details" || ["card", "both"].includes(this._config.termination_location ?? "popup"));
 		return R`
-      <article data-item-id=${this._itemId(e)} class="item ${this._artClass(n)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(n, i)}>
+      <article data-item-id=${this._itemId(e)} class="item ${this._artClass(n, r)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(r, a)}>
         ${this._openDetailsButton(e, t.full_title || t.title || "stream")}
-        ${n && this._config.artwork_placement !== "background" ? R`<img class="art" src=${n} alt="" loading="lazy" referrerpolicy="no-referrer">` : B}
+        ${n ? R`<img class="art" src=${n} alt="" loading="lazy" referrerpolicy="no-referrer">` : B}
         <div class="body">
           <div class="eyebrow">
             <span class="state ${e.state}">${e.state}${e.state === "paused" && this._config.show_pause_duration ? ` · ${this._elapsedDuration(this._pausedSeconds(e))}` : ""}</span>
@@ -1499,11 +1500,11 @@ var Ee = o`
             ${e.quality?.bandwidth_kbps ? R`<span>${this._bandwidth(e.quality.bandwidth_kbps)}</span>` : B}
           </div>` : B}
           ${this._config.show_progress ? R`<div class="modern-progress-row">
-            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(r)} style=${`--progress:${r}%`}></div>
+            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(i)} style=${`--progress:${i}%`}></div>
             ${this._config.show_remaining && e.playback?.remaining_ms ? R`<span class="modern-progress-remaining">${this._duration(Math.ceil(e.playback.remaining_ms / 1e3))} remaining</span>` : B}
           </div>` : B}
         </div>
-        ${a ? R`<button class="terminate" @click=${(t) => this._openTerminationDialog(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>` : B}
+        ${o ? R`<button class="terminate" @click=${(t) => this._openTerminationDialog(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>` : B}
       </article>`;
 	}
 	_renderClassicActive(e) {
@@ -1511,43 +1512,43 @@ var Ee = o`
 			"track",
 			"album",
 			"artist"
-		].includes(t.type ?? ""), r = this._image(e.images), i = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), a = e.state === "paused" ? "var(--tas-paused-color)" : e.state === "buffering" ? "var(--tas-buffering-color)" : n ? "#1db954" : "var(--tas-playing-color)", o = t.hierarchy ?? {}, s = n ? [o.artist, o.album].filter(Boolean).join(" — ") : t.full_title || t.title || "Untitled", c = n ? t.title || t.full_title : "", l = n ? "" : t.type === "episode" ? `S${o.season_number ?? "–"} · E${o.episode_number ?? o.episode ?? "–"}` : t.year ? `(${t.year})` : "", u = [e.client?.product, e.client?.player].filter(Boolean).join(" — ") || e.client?.device, d = [e.quality?.decision, e.quality?.video_resolution].filter(Boolean).join(" — "), f = [
+		].includes(t.type ?? ""), r = this._image(e.images), i = this._backgroundImage(e.images), a = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), o = e.state === "paused" ? "var(--tas-paused-color)" : e.state === "buffering" ? "var(--tas-buffering-color)" : n ? "#1db954" : "var(--tas-playing-color)", s = t.hierarchy ?? {}, c = n ? [s.artist, s.album].filter(Boolean).join(" — ") : t.full_title || t.title || "Untitled", l = n ? t.title || t.full_title : "", u = n ? "" : t.type === "episode" ? `S${s.season_number ?? "–"} · E${s.episode_number ?? s.episode ?? "–"}` : t.year ? `(${t.year})` : "", d = [e.client?.product, e.client?.player].filter(Boolean).join(" — ") || e.client?.device, f = [e.quality?.decision, e.quality?.video_resolution].filter(Boolean).join(" — "), p = [
 			e.quality?.audio_codec,
 			e.quality?.audio_channel_layout,
 			e.quality?.audio_bitrate_kbps ? `${e.quality.audio_bitrate_kbps} Kbps` : void 0
-		].filter(Boolean).join(" · "), p = this._canTerminate(e) && (this._config.click_action !== "details" || ["card", "both"].includes(this._config.termination_location ?? "popup"));
+		].filter(Boolean).join(" · "), m = this._canTerminate(e) && (this._config.click_action !== "details" || ["card", "both"].includes(this._config.termination_location ?? "popup"));
 		return R`
-      <article data-item-id=${this._itemId(e)} class="classic-item ${n ? "music" : "video"} ${e.state} ${this._artClass(r)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(r, a)}>
+      <article data-item-id=${this._itemId(e)} class="classic-item ${n ? "music" : "video"} ${e.state} ${this._artClass(r, i)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(i, o)}>
         ${this._openDetailsButton(e, t.full_title || t.title || "stream")}
-        ${r && this._config.artwork_placement !== "background" ? R`<img class="classic-art" src=${r} alt="" loading="lazy" referrerpolicy="no-referrer">` : r ? B : R`<div class="classic-art placeholder"><ha-icon icon="${n ? "mdi:music" : "mdi:movie-open"}"></ha-icon></div>`}
+        ${r ? R`<img class="classic-art" src=${r} alt="" loading="lazy" referrerpolicy="no-referrer">` : i ? B : R`<div class="classic-art placeholder"><ha-icon icon="${n ? "mdi:music" : "mdi:movie-open"}"></ha-icon></div>`}
         <div class="classic-body">
           <div class="classic-top">
-            ${this._config.show_device && u ? R`<span>${u}</span>` : R`<span></span>`}
+            ${this._config.show_device && d ? R`<span>${d}</span>` : R`<span></span>`}
             ${this._config.show_user && e.user?.display_name ? R`<strong>${e.user.display_name}</strong>` : B}
           </div>
           <h3 class="classic-title">
             <ha-icon icon=${this._stateIcon(e.state, n)}></ha-icon>
-            <span>${s}</span>
+            <span>${c}</span>
           </h3>
-          ${n && c ? R`<div class="classic-track"><ha-icon icon="mdi:music-note"></ha-icon><span>${c}</span></div>` : B}
+          ${n && l ? R`<div class="classic-track"><ha-icon icon="mdi:music-note"></ha-icon><span>${l}</span></div>` : B}
           <div class="classic-info">
-            ${this._config.show_media_details && l ? R`<span class="media-detail"><ha-icon icon=${t.type === "episode" ? "mdi:television-classic" : "mdi:filmstrip"}></ha-icon>${l}</span>` : R`<span></span>`}
+            ${this._config.show_media_details && u ? R`<span class="media-detail"><ha-icon icon=${t.type === "episode" ? "mdi:television-classic" : "mdi:filmstrip"}></ha-icon>${u}</span>` : R`<span></span>`}
             ${this._config.show_eta && this._eta(e) ? R`<span>ETA: ${this._eta(e)}</span>` : B}
           </div>
           ${this._config.show_progress ? R`
-            <div class="classic-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(i)} style=${`--progress:${i}%`}>
+            <div class="classic-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(a)} style=${`--progress:${a}%`}>
               ${this._config.show_state ? R`<span class="progress-state">${this._stateText(e, n)}</span>` : B}
-              ${this._config.show_progress_percent ? R`<span class="progress-percent">${Math.round(i)}%</span>` : B}
+              ${this._config.show_progress_percent ? R`<span class="progress-percent">${Math.round(a)}%</span>` : B}
               ${this._config.show_remaining && e.playback?.remaining_ms ? R`<span class="progress-remaining"><span class="remaining-label">Remaining - </span>${this._duration(Math.ceil(e.playback.remaining_ms / 1e3))}</span>` : B}
             </div>` : B}
           <div class="classic-bottom">
-            ${n && this._config.show_audio_quality && f ? R`<span>${f}</span>` : !n && this._config.show_quality && d ? R`<span>${d}</span>` : R`<span></span>`}
+            ${n && this._config.show_audio_quality && p ? R`<span>${p}</span>` : !n && this._config.show_quality && f ? R`<span>${f}</span>` : R`<span></span>`}
             <span>
               ${this._config.show_bandwidth && e.quality?.bandwidth_kbps ? R`Bandwidth: ${this._bandwidth(e.quality.bandwidth_kbps)}` : B}
             </span>
           </div>
         </div>
-        ${p ? R`<button class="terminate" @click=${(t) => this._openTerminationDialog(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>` : B}
+        ${m ? R`<button class="terminate" @click=${(t) => this._openTerminationDialog(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>` : B}
       </article>`;
 	}
 	_stateIcon(e, t) {
@@ -1559,12 +1560,12 @@ var Ee = o`
 		let r = e.media.hierarchy?.track_number ?? e.media.hierarchy?.track;
 		return t && this._config.show_track_number && r && n.push(`track ${r}`), n.join(" · ");
 	}
-	_artClass(e) {
-		return e ? this._config.artwork_placement === "background" ? "background-art" : this._config.artwork_placement === "right" ? "art-right" : "art-left" : "no-art";
+	_artClass(e, t) {
+		return t ? `${e ? "art-left " : ""}background-art` : e ? this._config.artwork_placement === "right" ? "art-right" : "art-left" : "no-art";
 	}
 	_backgroundStyle(e, t) {
 		let n = [];
-		return t && n.push(`--state-color:${t}`), e && this._config.artwork_placement === "background" && (n.push(`--tas-background-image:url("${e.replaceAll("\"", "")}")`), n.push(`--tas-backdrop-opacity:${(this._config.backdrop_opacity ?? 35) / 100}`)), n.join(";");
+		return t && n.push(`--state-color:${t}`), e && (n.push(`--tas-background-image:url("${e.replaceAll("\"", "")}")`), n.push(`--tas-backdrop-opacity:${(this._config.backdrop_opacity ?? 35) / 100}`)), n.join(";");
 	}
 	_openDetails(e) {
 		this._config.click_action === "details" && (this._selectedItem = e, this.requestUpdate());
@@ -1710,7 +1711,13 @@ var Ee = o`
 		this._openTerminationDialog(e, t);
 	}
 	_image(e) {
-		if (this._config.artwork !== "none") return (this._config.artwork === "backdrop" ? e?.backdrop_url : e?.poster_url) ?? void 0;
+		if (this._config.artwork !== "none" && this._config.artwork !== "backdrop" && (this._config.artwork !== "poster" || this._config.artwork_placement !== "background")) return e?.poster_url ?? void 0;
+	}
+	_backgroundImage(e) {
+		if (this._config.artwork !== "none") {
+			if (["backdrop", "both"].includes(this._config.artwork ?? "poster")) return e?.backdrop_url ?? e?.poster_url ?? void 0;
+			if (this._config.artwork_placement === "background") return e?.poster_url ?? e?.backdrop_url ?? void 0;
+		}
 	}
 	_mediaSubtitle(e) {
 		let t = e.hierarchy ?? {};
@@ -1996,6 +2003,15 @@ var Ee = o`
 				this._config = $(e), this._emitConfig();
 				return;
 			}
+			if (n === "artwork") {
+				let e = r;
+				this._config = $({
+					...this._config,
+					artwork: e,
+					artwork_placement: e === "backdrop" ? "background" : "left"
+				}), this._emitConfig();
+				return;
+			}
 			this._update(n, r), n === "entry_id" && this._loadReferences();
 		}, this._config = $({}), this._entries = [], this._libraries = [], this._users = [];
 	}
@@ -2206,8 +2222,28 @@ var Ee = o`
 
       <h3 class="editor-group-title">Card settings</h3>
       <details class="section">
-        <summary>Card layout and artwork</summary>
-        <p class="section-description">The responsive default adapts automatically; fixed layouts remain available when you need precise control.</p>
+        <summary>Card layout and appearance</summary>
+        <p class="section-description">Choose a ready-made look, then adjust only the layout and artwork settings that apply.</p>
+        <div class="recipe-grid" aria-label="Quick layouts">
+          ${this._recipe("classic", "Classic compact", "Original stream-panel look")}
+          ${this._recipe("balanced", "Balanced", "Clean and adaptable")}
+          ${this._recipe("cinematic", "Cinematic", "Backdrop and rich detail")}
+          ${this._recipe("shelf", "Media shelf", "Horizontal poster carousel")}
+        </div>
+        ${this._select("style_preset", "Visual style", [
+			{
+				value: "classic",
+				label: "Classic Tautulli"
+			},
+			{
+				value: "modern",
+				label: "Modern Home Assistant"
+			},
+			{
+				value: "minimal",
+				label: "Minimal"
+			}
+		], this._config.style_preset ?? "classic")}
         ${this._select("layout", "Layout style", [
 			{
 				value: "grid",
@@ -2287,7 +2323,7 @@ var Ee = o`
 			value: "descending",
 			label: "Descending"
 		}], this._config.sort_direction ?? "ascending") : B}
-        ${this._select("artwork", "Artwork", [
+        ${this._select("artwork", "Artwork display", [
 			{
 				value: "poster",
 				label: "Poster / cover"
@@ -2297,14 +2333,18 @@ var Ee = o`
 				label: "Backdrop"
 			},
 			{
+				value: "both",
+				label: "Poster / cover with backdrop"
+			},
+			{
 				value: "none",
 				label: "None"
 			}
 		], this._config.artwork ?? "poster")}
         ${this._config.artwork === "none" ? B : R`<details class="inline-advanced">
-          <summary>Advanced artwork controls</summary>
-          <p class="section-description">The selected layout already supplies recommended values. Open this only to override its image treatment.</p>
-          ${this._select("artwork_aspect", "Artwork shape", [
+          <summary>Artwork adjustments</summary>
+          <p class="section-description">Recommended values come from the selected look. These controls only affect the artwork currently in use.</p>
+          ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_aspect", "Poster / cover shape", [
 			{
 				value: "auto",
 				label: "Automatic for media"
@@ -2321,15 +2361,15 @@ var Ee = o`
 				value: "backdrop",
 				label: "Widescreen (16:9)"
 			}
-		], this._config.artwork_aspect ?? "auto")}
-          ${this._select("artwork_fit", "Artwork fit", [{
+		], this._config.artwork_aspect ?? "auto") : B}
+          ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_fit", "Poster / cover fit", [{
 			value: "cover",
 			label: "Crop to fill"
 		}, {
 			value: "contain",
 			label: "Show whole image"
-		}], this._config.artwork_fit ?? "cover")}
-          ${this._select("artwork_position", "Artwork focus", [
+		}], this._config.artwork_fit ?? "cover") : B}
+          ${this._select("artwork_position", "Image focus", [
 			{
 				value: "center",
 				label: "Centre"
@@ -2351,52 +2391,12 @@ var Ee = o`
 				label: "Right"
 			}
 		], this._config.artwork_position ?? "center")}
-          ${this._select("artwork_placement", "Artwork placement", [
-			{
-				value: "left",
-				label: "Left side"
-			},
-			{
-				value: "right",
-				label: "Right side"
-			},
-			{
-				value: "background",
-				label: "Dimmed background on right"
-			}
-		], this._config.artwork_placement ?? "left")}
-          ${this._config.artwork_placement === "background" ? this._number("backdrop_opacity", "Background strength", 0, 100, "%") : B}
+          ${["backdrop", "both"].includes(this._config.artwork ?? "poster") ? this._number("backdrop_opacity", "Backdrop strength", 0, 100, "%") : B}
         </details>`}
-        <label>${e === "active" ? "Maximum active streams" : "Maximum items"}<input type="number" min="1" max="50" data-key="max_items" .value=${String(this._config.max_items ?? (e === "active" ? 50 : 12))} @change=${this._input}></label>
-      </details>
-
-      <details class="section">
-        <summary>Card appearance</summary>
-        <p class="section-description">Start from a complete preset, then change only the details you care about.</p>
-        <div class="recipe-grid" aria-label="Quick layouts">
-          ${this._recipe("classic", "Classic compact", "Original stream-panel look")}
-          ${this._recipe("balanced", "Balanced", "Clean and adaptable")}
-          ${this._recipe("cinematic", "Cinematic", "Dimmed backdrop and rich detail")}
-          ${this._recipe("shelf", "Media shelf", "Horizontal poster carousel")}
-        </div>
-        ${this._select("style_preset", "Visual preset", [
-			{
-				value: "classic",
-				label: "Classic Tautulli"
-			},
-			{
-				value: "modern",
-				label: "Modern Home Assistant"
-			},
-			{
-				value: "minimal",
-				label: "Minimal"
-			}
-		], this._config.style_preset ?? "classic")}
         ${this._select("container_style", "Outer card background", [
 			{
 				value: "auto",
-				label: "Automatic for preset"
+				label: "Automatic for style"
 			},
 			{
 				value: "surface",
@@ -2404,13 +2404,13 @@ var Ee = o`
 			},
 			{
 				value: "transparent",
-				label: "Transparent (panels only)"
+				label: "Transparent (items only)"
 			}
 		], this._config.container_style ?? "auto")}
-        <p class="hint">Classic recreates the compact movie, TV, and music layout from the original dashboard cards. Every preset remains editable.</p>
+        <label>${e === "active" ? "Maximum active streams" : "Maximum items"}<input type="number" min="1" max="50" data-key="max_items" .value=${String(this._config.max_items ?? (e === "active" ? 50 : 12))} @change=${this._input}></label>
         <details>
           <summary>Fine-tune colours and sizing</summary>
-          <div class="fine-tune-header"><span>Preset values are shown until you override them.</span><button type="button" @click=${this._resetAppearance}>Restore preset defaults</button></div>
+          <div class="fine-tune-header"><span>The selected style's values are shown until you override them.</span><button type="button" @click=${this._resetAppearance}>Restore style defaults</button></div>
           <div class="advanced">
             ${this._appearanceText("card_background", "Card background", "Theme variable, colour, or rgba()", !0)}
             ${this._appearanceText("item_background", "Stream background", "Theme variable, colour, or rgba()", !0)}
@@ -2418,8 +2418,8 @@ var Ee = o`
             ${this._appearanceText("item_shadow", "Panel shadow", "CSS box-shadow value")}
             ${this._appearanceNumber("border_radius", "Corner radius", 0, 32, "px")}
             ${this._appearanceNumber("item_gap", "Item spacing", 0, 32, "px")}
-            ${this._appearanceNumber("artwork_width", "Artwork width", 48, 240, "px", this._config.style_preset === "classic" ? 85 : this._config.density === "comfortable" ? 112 : this._config.density === "detailed" ? 140 : 92)}
-            ${this._appearanceNumber("artwork_inset", "Artwork inset", 0, 24, "px")}
+            ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._appearanceNumber("artwork_width", "Poster / cover width", 48, 240, "px", this._config.style_preset === "classic" ? 85 : this._config.density === "comfortable" ? 112 : this._config.density === "detailed" ? 140 : 92) : B}
+            ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._appearanceNumber("artwork_inset", "Poster / cover inset", 0, 24, "px") : B}
             ${this._appearanceNumber("title_size", "Base title size", 11, 32, "px")}
             ${this._appearanceNumber("progress_height", "Progress height", 2, 24, "px")}
             ${this._appearanceText("playing_color", "Playing colour", "Theme variable or colour", !0)}

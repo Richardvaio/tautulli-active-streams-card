@@ -182,8 +182,19 @@ export class TautulliMediaCardEditor extends LitElement {
 
       <h3 class="editor-group-title">Card settings</h3>
       <details class="section">
-        <summary>Card layout and artwork</summary>
-        <p class="section-description">The responsive default adapts automatically; fixed layouts remain available when you need precise control.</p>
+        <summary>Card layout and appearance</summary>
+        <p class="section-description">Choose a ready-made look, then adjust only the layout and artwork settings that apply.</p>
+        <div class="recipe-grid" aria-label="Quick layouts">
+          ${this._recipe("classic", "Classic compact", "Original stream-panel look")}
+          ${this._recipe("balanced", "Balanced", "Clean and adaptable")}
+          ${this._recipe("cinematic", "Cinematic", "Backdrop and rich detail")}
+          ${this._recipe("shelf", "Media shelf", "Horizontal poster carousel")}
+        </div>
+        ${this._select("style_preset", "Visual style", [
+          {value:"classic",label:"Classic Tautulli"},
+          {value:"modern",label:"Modern Home Assistant"},
+          {value:"minimal",label:"Minimal"},
+        ], this._config.style_preset ?? "classic")}
         ${this._select("layout", "Layout style", [
           {value:"grid",label:"Responsive grid"},{value:"list",label:"Single-column list"},{value:"carousel",label:"Poster shelf / carousel"},
         ], this._config.layout ?? "grid")}
@@ -193,46 +204,31 @@ export class TautulliMediaCardEditor extends LitElement {
           {value:"server",label:"Tautulli order"},{value:"user",label:"Plex user"},{value:"title",label:"Media title"},{value:"state",label:"Playback state"},{value:"progress",label:"Progress"},
         ], this._config.sort_by ?? "server") : nothing}
         ${mode === "active" && this._config.sort_by !== "server" ? this._select("sort_direction", "Sort direction", [{value:"ascending",label:"Ascending"},{value:"descending",label:"Descending"}], this._config.sort_direction ?? "ascending") : nothing}
-        ${this._select("artwork", "Artwork", [{value:"poster",label:"Poster / cover"},{value:"backdrop",label:"Backdrop"},{value:"none",label:"None"}], this._config.artwork ?? "poster")}
+        ${this._select("artwork", "Artwork display", [
+          {value:"poster",label:"Poster / cover"},
+          {value:"backdrop",label:"Backdrop"},
+          {value:"both",label:"Poster / cover with backdrop"},
+          {value:"none",label:"None"},
+        ], this._config.artwork ?? "poster")}
         ${this._config.artwork !== "none" ? html`<details class="inline-advanced">
-          <summary>Advanced artwork controls</summary>
-          <p class="section-description">The selected layout already supplies recommended values. Open this only to override its image treatment.</p>
-          ${this._select("artwork_aspect", "Artwork shape", [
+          <summary>Artwork adjustments</summary>
+          <p class="section-description">Recommended values come from the selected look. These controls only affect the artwork currently in use.</p>
+          ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_aspect", "Poster / cover shape", [
             {value:"auto",label:"Automatic for media"},{value:"poster",label:"Poster (2:3)"},{value:"square",label:"Square (1:1)"},{value:"backdrop",label:"Widescreen (16:9)"},
-          ], this._config.artwork_aspect ?? "auto")}
-          ${this._select("artwork_fit", "Artwork fit", [{value:"cover",label:"Crop to fill"},{value:"contain",label:"Show whole image"}], this._config.artwork_fit ?? "cover")}
-          ${this._select("artwork_position", "Artwork focus", [
+          ], this._config.artwork_aspect ?? "auto") : nothing}
+          ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_fit", "Poster / cover fit", [{value:"cover",label:"Crop to fill"},{value:"contain",label:"Show whole image"}], this._config.artwork_fit ?? "cover") : nothing}
+          ${this._select("artwork_position", "Image focus", [
             {value:"center",label:"Centre"},{value:"top",label:"Top"},{value:"bottom",label:"Bottom"},{value:"left",label:"Left"},{value:"right",label:"Right"},
           ], this._config.artwork_position ?? "center")}
-          ${this._select("artwork_placement", "Artwork placement", [
-            {value:"left",label:"Left side"},{value:"right",label:"Right side"},{value:"background",label:"Dimmed background on right"},
-          ], this._config.artwork_placement ?? "left")}
-          ${this._config.artwork_placement === "background" ? this._number("backdrop_opacity", "Background strength", 0, 100, "%") : nothing}
+          ${["backdrop", "both"].includes(this._config.artwork ?? "poster") ? this._number("backdrop_opacity", "Backdrop strength", 0, 100, "%") : nothing}
         </details>` : nothing}
-        <label>${mode === "active" ? "Maximum active streams" : "Maximum items"}<input type="number" min="1" max="50" data-key="max_items" .value=${String(this._config.max_items ?? (mode === "active" ? 50 : 12))} @change=${this._input}></label>
-      </details>
-
-      <details class="section">
-        <summary>Card appearance</summary>
-        <p class="section-description">Start from a complete preset, then change only the details you care about.</p>
-        <div class="recipe-grid" aria-label="Quick layouts">
-          ${this._recipe("classic", "Classic compact", "Original stream-panel look")}
-          ${this._recipe("balanced", "Balanced", "Clean and adaptable")}
-          ${this._recipe("cinematic", "Cinematic", "Dimmed backdrop and rich detail")}
-          ${this._recipe("shelf", "Media shelf", "Horizontal poster carousel")}
-        </div>
-        ${this._select("style_preset", "Visual preset", [
-          {value:"classic",label:"Classic Tautulli"},
-          {value:"modern",label:"Modern Home Assistant"},
-          {value:"minimal",label:"Minimal"},
-        ], this._config.style_preset ?? "classic")}
         ${this._select("container_style", "Outer card background", [
-          {value:"auto",label:"Automatic for preset"},{value:"surface",label:"Home Assistant surface"},{value:"transparent",label:"Transparent (panels only)"},
+          {value:"auto",label:"Automatic for style"},{value:"surface",label:"Home Assistant surface"},{value:"transparent",label:"Transparent (items only)"},
         ], this._config.container_style ?? "auto")}
-        <p class="hint">Classic recreates the compact movie, TV, and music layout from the original dashboard cards. Every preset remains editable.</p>
+        <label>${mode === "active" ? "Maximum active streams" : "Maximum items"}<input type="number" min="1" max="50" data-key="max_items" .value=${String(this._config.max_items ?? (mode === "active" ? 50 : 12))} @change=${this._input}></label>
         <details>
           <summary>Fine-tune colours and sizing</summary>
-          <div class="fine-tune-header"><span>Preset values are shown until you override them.</span><button type="button" @click=${this._resetAppearance}>Restore preset defaults</button></div>
+          <div class="fine-tune-header"><span>The selected style's values are shown until you override them.</span><button type="button" @click=${this._resetAppearance}>Restore style defaults</button></div>
           <div class="advanced">
             ${this._appearanceText("card_background", "Card background", "Theme variable, colour, or rgba()", true)}
             ${this._appearanceText("item_background", "Stream background", "Theme variable, colour, or rgba()", true)}
@@ -240,8 +236,8 @@ export class TautulliMediaCardEditor extends LitElement {
             ${this._appearanceText("item_shadow", "Panel shadow", "CSS box-shadow value")}
             ${this._appearanceNumber("border_radius", "Corner radius", 0, 32, "px")}
             ${this._appearanceNumber("item_gap", "Item spacing", 0, 32, "px")}
-            ${this._appearanceNumber("artwork_width", "Artwork width", 48, 240, "px", this._config.style_preset === "classic" ? 85 : this._config.density === "comfortable" ? 112 : this._config.density === "detailed" ? 140 : 92)}
-            ${this._appearanceNumber("artwork_inset", "Artwork inset", 0, 24, "px")}
+            ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._appearanceNumber("artwork_width", "Poster / cover width", 48, 240, "px", this._config.style_preset === "classic" ? 85 : this._config.density === "comfortable" ? 112 : this._config.density === "detailed" ? 140 : 92) : nothing}
+            ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._appearanceNumber("artwork_inset", "Poster / cover inset", 0, 24, "px") : nothing}
             ${this._appearanceNumber("title_size", "Base title size", 11, 32, "px")}
             ${this._appearanceNumber("progress_height", "Progress height", 2, 24, "px")}
             ${this._appearanceText("playing_color", "Playing colour", "Theme variable or colour", true)}
@@ -599,6 +595,16 @@ export class TautulliMediaCardEditor extends LitElement {
         delete config[appearanceKey];
       }
       this._config = normalizeConfig(config);
+      this._emitConfig();
+      return;
+    }
+    if (key === "artwork") {
+      const artwork = value as CardConfig["artwork"];
+      this._config = normalizeConfig({
+        ...this._config,
+        artwork,
+        artwork_placement: artwork === "backdrop" ? "background" : "left",
+      });
       this._emitConfig();
       return;
     }
