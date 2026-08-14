@@ -2,6 +2,8 @@
 
 A native, responsive Home Assistant dashboard card for the [Tautulli Active Streams integration](https://github.com/Richardvaio/Tautulli_Active_Streams). It replaces the original multi-card YAML layout with one dependency-free card and a guided visual editor.
 
+![Classic active-stream presentation](images/classic-active-streams.png)
+
 This is the initial public beta. It requires **Tautulli Active Streams 2.7.0 or newer** and card API schema `1`.
 
 ## Features
