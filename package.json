@@ -1,0 +1,28 @@
+{
+  "name": "tautulli-active-streams-card",
+  "version": "0.1.0-beta.1",
+  "description": "A responsive Home Assistant dashboard card for Tautulli Active Streams",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "check": "tsc --noEmit && eslint src --max-warnings=0",
+    "test": "vitest run",
+    "watch": "vite build --watch"
+  },
+  "dependencies": {
+    "lit": "3.3.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.33.0",
+    "@types/node": "24.2.1",
+    "eslint": "9.33.0",
+    "happy-dom": "^20.11.2",
+    "typescript": "5.9.2",
+    "typescript-eslint": "8.39.1",
+    "vite": "8.2.0",
+    "vitest": "3.2.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
