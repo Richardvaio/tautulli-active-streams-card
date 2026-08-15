@@ -310,27 +310,30 @@ export class TautulliMediaCardEditor extends LitElement {
       `}
 
       <details class="section">
-        <summary>Card actions</summary>
-        <p class="section-description">Choose what happens on the dashboard card itself.</p>
-        ${this._select("click_action", "Clicking an item", [{value:"none",label:"Do nothing"},{value:"details",label:"Open detailed popup"}], this._config.click_action ?? "none")}
+        <summary>Tap behaviour</summary>
+        <p class="section-description">Choose what happens when an item is tapped on the dashboard card.</p>
+        ${this._select("click_action", "Tap action", [{value:"none",label:"Do nothing"},{value:"details",label:"Open details popup"}], this._config.click_action ?? "none")}
+        ${this._config.click_action === "details" ? html`<p class="hint">The popup has its own settings below under “Popup settings”.</p>` : nothing}
       </details>
 
       ${mode === "active" ? html`
         <details class="section">
           <summary>Terminate stream</summary>
-          <p class="section-description">Configure the administrator-only stream action and where it appears.</p>
+          <p class="section-description">${this._config.click_action === "details"
+            ? "Configure the administrator-only terminate button and where it appears."
+            : "The terminate button will appear directly on stream cards in the main card."}</p>
           ${capabilities?.stream_termination
             ? this._toggle("allow_termination", "Enable terminate-stream action")
             : html`<p class="hint">Stream termination is disabled in the integration's Dashboard card access settings.</p>`}
           ${capabilities?.stream_termination && this._config.allow_termination ? html`
             ${this._config.click_action === "details"
-              ? this._select("termination_location", "Show action in", [
-                {value:"popup",label:"Details popup only"},{value:"card",label:"Main card only"},{value:"both",label:"Main card and popup"},
+              ? this._select("termination_location", "Show button in", [
+                {value:"popup",label:"Details popup only"},{value:"card",label:"Main card only"},{value:"both",label:"Both popup and main card"},
               ], this._config.termination_location ?? "popup")
-              : html`<p class="hint">The action will appear on the main card because the detailed popup is disabled.</p>`}
+              : nothing}
             ${this._config.click_action === "details" && ["popup", "both"].includes(this._config.termination_location ?? "popup") ? html`
-              ${this._select("termination_popup_placement", "Popup position", [{value:"footer",label:"Bottom right"},{value:"top",label:"Top right beside artwork"}], this._config.termination_popup_placement ?? "footer")}
-              ${this._select("termination_button_style", "Popup control style", [{value:"label",label:"Icon and text"},{value:"icon",label:"Compact stop icon"}], this._config.termination_button_style ?? "label")}
+              ${this._select("termination_popup_placement", "Button position in popup", [{value:"footer",label:"Bottom right"},{value:"top",label:"Top right beside artwork"}], this._config.termination_popup_placement ?? "footer")}
+              ${this._select("termination_button_style", "Button style in popup", [{value:"label",label:"Icon and text"},{value:"icon",label:"Compact stop icon"}], this._config.termination_button_style ?? "label")}
             ` : nothing}
           ` : nothing}
           <p class="hint">Requires “Allow administrators to terminate streams from cards” in the integration's Dashboard card access settings. A separate confirmation is always required.</p>

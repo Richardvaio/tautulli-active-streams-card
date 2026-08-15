@@ -33,7 +33,7 @@ describe("visual editor", () => {
 
     const summaries = [...editor.renderRoot.querySelectorAll("summary")].map((element) => element.textContent?.trim());
     expect(summaries).toContain("Content and source");
-    expect(summaries).toContain("Card actions");
+    expect(summaries).toContain("Tap behaviour");
     expect(summaries).toContain("Terminate stream");
     expect(summaries).toContain("Popup layout and appearance");
     expect(summaries).toContain("Popup summary");
@@ -88,7 +88,7 @@ describe("visual editor", () => {
     await editor.updateComplete;
 
     await vi.waitFor(() => {
-      expect(editor.renderRoot.textContent).toContain("action will appear on the main card");
+      expect(editor.renderRoot.textContent).toContain("terminate button will appear directly on stream cards");
     });
 
     expect(editor.renderRoot.textContent).not.toContain("Popup settings");
