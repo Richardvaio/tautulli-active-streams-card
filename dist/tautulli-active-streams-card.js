@@ -958,14 +958,16 @@ var Ee = o`
   .progress-remaining { grid-column:3; padding-right:8px; color:rgb(255 255 255 / 42%); text-align:right; white-space:nowrap; }
   :host([animations]) .classic-item.paused .classic-progress::before { animation:pulse 1.5s ease-in-out infinite; }
   :host([animations]) .classic-item.buffering .classic-progress::before { animation:pulse .8s ease-in-out infinite; }
-  .dialog-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; background:rgb(0 0 0 / 58%); }
+  .dialog-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; background:rgb(0 0 0 / 58%); animation:backdrop-fade var(--dialog-animation-duration, 220ms) ease-out; }
   .details-dialog.anim-fade { animation:dialog-fade var(--dialog-animation-duration, 220ms) ease-out; }
   .details-dialog.anim-scale { animation:dialog-scale var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
   .details-dialog.anim-rise { animation:dialog-rise var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
   :host(:not([animations])) .details-dialog { animation:none !important; }
   @keyframes dialog-fade { from { opacity:0; } }
+  @keyframes backdrop-fade { from { opacity:0; } }
   @keyframes dialog-scale { from { opacity:0; transform:scale(.96) translateY(6px); } }
-  @keyframes dialog-rise { from { opacity:0; transform:translateY(22px); } }
+  @keyframes dialog-rise { from { opacity:0; transform:translateY(100vh); } }
+  :host(:not([animations])) .dialog-backdrop { animation:none !important; }
   .confirm-dialog { width:min(420px, 100%); overflow:hidden; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:var(--card-background-color); box-shadow:0 18px 54px rgb(0 0 0 / 42%); }
   .dialog-content { display:grid; gap:14px; padding:24px; }
   .dialog-icon { width:48px; height:48px; display:grid; place-items:center; border-radius:50%; color:var(--error-color); background:color-mix(in srgb, var(--error-color) 14%, transparent); }
@@ -1197,7 +1199,7 @@ var Ee = o`
 		this.styles = Ee;
 	}
 	constructor() {
-		super(), this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._visibilityChanged = () => {
+		super(), this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._scrollLockCount = 0, this._visibilityChanged = () => {
 			document.visibilityState === "visible" && this._config.mode !== "active" && this._loadData();
 		}, this._delegatedItemClick = (e) => {
 			if (this._config.click_action !== "details") return;
@@ -1208,7 +1210,7 @@ var Ee = o`
 			let r = this._filteredItems().find((e) => this._itemId(e) === n.dataset.itemId);
 			r && this._openDetails(r);
 		}, this._closeDetails = () => {
-			this._selectedItem = void 0;
+			this._selectedItem = void 0, this._unlockBodyScroll();
 		}, this._config = $({}), this._loading = !0, this._terminating = !1, this._pauseClock = Date.now();
 	}
 	static getStubConfig() {
@@ -1251,7 +1253,7 @@ var Ee = o`
 		super.connectedCallback(), document.addEventListener("visibilitychange", this._visibilityChanged), this.addEventListener("click", this._delegatedItemClick, { capture: !0 }), this.hass && this._connect();
 	}
 	disconnectedCallback() {
-		this._disconnect(), document.removeEventListener("visibilitychange", this._visibilityChanged), this.removeEventListener("click", this._delegatedItemClick, { capture: !0 }), super.disconnectedCallback();
+		this._scrollLockCount > 0 && (document.body.style.overflow = "", document.body.style.paddingRight = "", this._scrollLockCount = 0), this._disconnect(), document.removeEventListener("visibilitychange", this._visibilityChanged), this.removeEventListener("click", this._delegatedItemClick, { capture: !0 }), super.disconnectedCallback();
 	}
 	willUpdate(e) {
 		e.has("_data") && this._syncPauseClock();
@@ -1600,13 +1602,23 @@ var Ee = o`
 		return t && n.push(`--state-color:${t}`), e && (n.push(`--tas-background-image:url("${e.replaceAll("\"", "")}")`), n.push(`--tas-backdrop-opacity:${(this._config.backdrop_opacity ?? 35) / 100}`)), n.join(";");
 	}
 	_openDetails(e) {
-		this._config.click_action === "details" && (this._selectedItem = e, this.requestUpdate());
+		this._config.click_action === "details" && (this._selectedItem = e, this._lockBodyScroll(), this.requestUpdate());
 	}
 	_openDetailsButton(e, t) {
 		return this._config.click_action === "details" ? R`<button class="open-details" type="button" data-detail-id=${this._itemId(e)} aria-label="Open details for ${String(t)}"></button>` : B;
 	}
 	_itemId(e) {
 		return String(e.id ?? e.session_id ?? e.media?.id ?? `${e.rank ?? ""}:${e.display_name ?? e.media?.title ?? e.title ?? "item"}`);
+	}
+	_lockBodyScroll() {
+		if (this._scrollLockCount === 0 && document.body.scrollHeight > window.innerHeight) {
+			let e = window.innerWidth - document.documentElement.clientWidth;
+			document.body.style.overflow = "hidden", e > 0 && (document.body.style.paddingRight = `${e}px`);
+		}
+		this._scrollLockCount += 1;
+	}
+	_unlockBodyScroll() {
+		this._scrollLockCount = Math.max(0, this._scrollLockCount - 1), this._scrollLockCount === 0 && (document.body.style.overflow = "", document.body.style.paddingRight = "");
 	}
 	_detailsKeydown(e) {
 		if (e.key === "Escape") {

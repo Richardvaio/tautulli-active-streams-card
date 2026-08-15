@@ -58,6 +58,7 @@ export class TautulliMediaCard extends LitElement {
   private _loadVersion = 0;
   private _pauseTimer?: number;
   private _pauseAnchors = new Map<string, { baseSeconds: number; receivedAt: number }>();
+  private _scrollLockCount = 0;
 
   constructor() {
     super();
@@ -116,6 +117,11 @@ export class TautulliMediaCard extends LitElement {
   }
 
   override disconnectedCallback(): void {
+    if (this._scrollLockCount > 0) {
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+      this._scrollLockCount = 0;
+    }
     this._disconnect();
     document.removeEventListener("visibilitychange", this._visibilityChanged);
     this.removeEventListener("click", this._delegatedItemClick, { capture: true });
@@ -585,6 +591,7 @@ export class TautulliMediaCard extends LitElement {
   private _openDetails(item: UnknownItem): void {
     if (this._config.click_action === "details") {
       this._selectedItem = item;
+      this._lockBodyScroll();
       this.requestUpdate();
     }
   }
@@ -610,7 +617,25 @@ export class TautulliMediaCard extends LitElement {
 
   private _closeDetails = (): void => {
     this._selectedItem = undefined;
+    this._unlockBodyScroll();
   };
+
+  private _lockBodyScroll(): void {
+    if (this._scrollLockCount === 0 && document.body.scrollHeight > window.innerHeight) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = "hidden";
+      if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    this._scrollLockCount += 1;
+  }
+
+  private _unlockBodyScroll(): void {
+    this._scrollLockCount = Math.max(0, this._scrollLockCount - 1);
+    if (this._scrollLockCount === 0) {
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    }
+  }
 
   private _detailsKeydown(event: KeyboardEvent): void {
     if (event.key === "Escape") {
