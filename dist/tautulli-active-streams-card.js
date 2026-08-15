@@ -1102,6 +1102,10 @@ var Ee = o`
   .option-group + .option-group { padding-top:12px; border-top:1px solid var(--divider-color); }
   .option-group h4 { margin:0; font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--secondary-text-color); }
   .toggle { min-height:42px; display:flex; flex-direction:row-reverse; align-items:center; justify-content:space-between; gap:9px; padding:0 10px; border:1px solid color-mix(in srgb, var(--divider-color) 75%, transparent); border-radius:9px; background:color-mix(in srgb, var(--primary-text-color) 3%, transparent); }
+  .toggle-number { display:grid; gap:8px; padding:8px 10px; border:1px solid color-mix(in srgb, var(--divider-color) 75%, transparent); border-radius:9px; background:color-mix(in srgb, var(--primary-text-color) 3%, transparent); }
+  .toggle-number .toggle { min-height:0; border:0; background:transparent; padding:0; }
+  .toggle-number-value { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--secondary-text-color); }
+  .toggle-number-value input[type="range"] { flex:1; min-height:24px; accent-color:var(--primary-color); }
   .toggle input { position:relative; width:38px; height:22px; min-height:22px; flex:none; padding:0; appearance:none; border:0; border-radius:99px; background:color-mix(in srgb, var(--primary-text-color) 24%, transparent); cursor:pointer; }
   .toggle input::before { content:""; position:absolute; width:18px; height:18px; left:2px; top:2px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgb(0 0 0 / 32%); transition:transform .18s ease; }
   .toggle input:checked { background:var(--primary-color); }
@@ -2643,8 +2647,8 @@ var Ee = o`
 			}
 		], this._config.popup_animation ?? "scale")}
           ${(this._config.popup_animation ?? "scale") === "none" ? B : this._number("popup_animation_duration", "Animation duration", 0, 1500, "ms")}
-          ${this._number("popup_backdrop_dim", "Background dim", 0, 95, "%")}
-          ${this._number("popup_backdrop_blur", "Background blur", 0, 24, "px")}
+          ${this._toggleNumber("popup_backdrop_dim", "Dim background", 1, 95, "%")}
+          ${this._toggleNumber("popup_backdrop_blur", "Blur background", 1, 24, "px")}
           ${this._appearanceText("popup_background", "Popup background", "Theme variable, colour, or rgba()", !0)}
         </details>
         <details class="section">
@@ -2796,6 +2800,10 @@ var Ee = o`
 	}
 	_number(e, t, n, r, i) {
 		return R`<label>${t} (${i})<input type="number" min=${n} max=${r} data-key=${e} .value=${this._config[e] === void 0 ? "" : String(this._config[e])} @change=${this._input}></label>`;
+	}
+	_toggleNumber(e, t, n, r, i) {
+		let a = Number(this._config[e] ?? 0) > 0;
+		return R`<label class="toggle-number"><span class="toggle"><input type="checkbox" .checked=${a} @change=${(t) => this._update(e, t.currentTarget.checked ? Math.max(n, 1) : 0)}>${t}</span>${a ? R`<span class="toggle-number-value"><input type="range" min=${n} max=${r} data-key=${e} .value=${String(this._config[e] ?? n)} @change=${this._input} @input=${this._input}> <span>${this._config[e] ?? n}${i}</span></span>` : B}</label>`;
 	}
 	_appearanceText(e, t, n, r = !1) {
 		let i = String(this._config[e] ?? this._presetValue(e) ?? ""), a = this._config[e] !== void 0, o = this._toHexColour(i);

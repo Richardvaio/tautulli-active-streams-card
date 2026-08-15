@@ -349,8 +349,8 @@ export class TautulliMediaCardEditor extends LitElement {
           ${this._select("popup_width", "Popup width", [{value:"compact",label:"Compact"},{value:"standard",label:"Standard"},{value:"wide",label:"Wide"}], this._config.popup_width ?? "standard")}
           ${this._select("popup_animation", "Open animation", [{value:"none",label:"None"},{value:"fade",label:"Fade in"},{value:"scale",label:"Scale up"},{value:"rise",label:"Rise from below"}], this._config.popup_animation ?? "scale")}
           ${(this._config.popup_animation ?? "scale") !== "none" ? this._number("popup_animation_duration", "Animation duration", 0, 1500, "ms") : nothing}
-          ${this._number("popup_backdrop_dim", "Background dim", 0, 95, "%")}
-          ${this._number("popup_backdrop_blur", "Background blur", 0, 24, "px")}
+          ${this._toggleNumber("popup_backdrop_dim", "Dim background", 1, 95, "%")}
+          ${this._toggleNumber("popup_backdrop_blur", "Blur background", 1, 24, "px")}
           ${this._appearanceText("popup_background", "Popup background", "Theme variable, colour, or rgba()", true)}
         </details>
         <details class="section">
@@ -541,6 +541,11 @@ export class TautulliMediaCardEditor extends LitElement {
 
   private _number(key: keyof CardConfig, label: string, min: number, max: number, suffix: string) {
     return html`<label>${label} (${suffix})<input type="number" min=${min} max=${max} data-key=${key} .value=${this._config[key] === undefined ? "" : String(this._config[key])} @change=${this._input}></label>`;
+  }
+
+  private _toggleNumber(key: keyof CardConfig, label: string, min: number, max: number, suffix: string) {
+    const enabled = Number(this._config[key] ?? 0) > 0;
+    return html`<label class="toggle-number"><span class="toggle"><input type="checkbox" .checked=${enabled} @change=${(event: Event) => this._update(key, (event.currentTarget as HTMLInputElement).checked ? Math.max(min, 1) : 0)}>${label}</span>${enabled ? html`<span class="toggle-number-value"><input type="range" min=${min} max=${max} data-key=${key} .value=${String(this._config[key] ?? min)} @change=${this._input} @input=${this._input}> <span>${this._config[key] ?? min}${suffix}</span></span>` : nothing}</label>`;
   }
 
   private _appearanceText(key: keyof CardConfig, label: string, placeholder: string, colour = false) {
