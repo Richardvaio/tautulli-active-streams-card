@@ -66,6 +66,9 @@ export const DEFAULT_CONFIG: CardConfig = {
   popup_content_style: "open",
   popup_detail_order: DEFAULT_POPUP_DETAIL_ORDER,
   popup_width: "standard",
+  popup_animation: "scale",
+  popup_backdrop_dim: 58,
+  popup_backdrop_blur: 0,
   termination_popup_placement: "footer",
   termination_button_style: "label",
   popup_show_artwork: true,
@@ -138,6 +141,8 @@ export function normalizeConfig(config: Partial<CardConfig>): CardConfig {
     ["title_size", 11, 32],
     ["progress_height", 2, 24],
     ["backdrop_opacity", 0, 100],
+    ["popup_backdrop_dim", 0, 95],
+    ["popup_backdrop_blur", 0, 24],
   ] as const) {
     const value = merged[key];
     if (value !== undefined) merged[key] = Math.min(max, Math.max(min, Number(value) || min));

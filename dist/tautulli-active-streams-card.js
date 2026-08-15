@@ -636,6 +636,9 @@ var Q = [
 	popup_content_style: "open",
 	popup_detail_order: Q,
 	popup_width: "standard",
+	popup_animation: "scale",
+	popup_backdrop_dim: 58,
+	popup_backdrop_blur: 0,
 	termination_popup_placement: "footer",
 	termination_button_style: "label",
 	popup_show_artwork: !0,
@@ -728,6 +731,16 @@ function $(e) {
 			"backdrop_opacity",
 			0,
 			100
+		],
+		[
+			"popup_backdrop_dim",
+			0,
+			95
+		],
+		[
+			"popup_backdrop_blur",
+			0,
+			24
 		]
 	]) {
 		let i = n[e];
@@ -940,6 +953,13 @@ var Ee = o`
   :host([animations]) .classic-item.paused .classic-progress::before { animation:pulse 1.5s ease-in-out infinite; }
   :host([animations]) .classic-item.buffering .classic-progress::before { animation:pulse .8s ease-in-out infinite; }
   .dialog-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; background:rgb(0 0 0 / 58%); }
+  .details-dialog.anim-fade { animation:dialog-fade .18s ease-out; }
+  .details-dialog.anim-scale { animation:dialog-scale .22s cubic-bezier(.2,.8,.2,1); }
+  .details-dialog.anim-rise { animation:dialog-rise .26s cubic-bezier(.2,.8,.2,1); }
+  :host(:not([animations])) .details-dialog { animation:none !important; }
+  @keyframes dialog-fade { from { opacity:0; } }
+  @keyframes dialog-scale { from { opacity:0; transform:scale(.96) translateY(6px); } }
+  @keyframes dialog-rise { from { opacity:0; transform:translateY(22px); } }
   .confirm-dialog { width:min(420px, 100%); overflow:hidden; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:var(--card-background-color); box-shadow:0 18px 54px rgb(0 0 0 / 42%); }
   .dialog-content { display:grid; gap:14px; padding:24px; }
   .dialog-icon { width:48px; height:48px; display:grid; place-items:center; border-radius:50%; color:var(--error-color); background:color-mix(in srgb, var(--error-color) 14%, transparent); }
@@ -1604,9 +1624,9 @@ var Ee = o`
 		return this._config.mode === "active" ? this._renderActiveDetails(t) : this._config.mode === "users" ? this._renderUserDetails(t) : this._renderMediaDetails(t);
 	}
 	_renderDialogShell(e, t, n, r = !1) {
-		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}")` : "";
-		return R`<div class="dialog-backdrop" @click=${(e) => e.target === e.currentTarget && this._closeDetails()} @keydown=${this._detailsKeydown}>
-      <section class="details-dialog popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${n ? "has-backdrop" : ""}" style=${i} role="dialog" aria-modal="true" aria-labelledby="details-title">
+		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}")` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `background:rgb(0 0 0 / ${a}%);${o ? `backdrop-filter:blur(${o}px);` : ""}`, c = this._config.popup_background, l = `${i}${c ? `background:${c};` : ""}`;
+		return R`<div class="dialog-backdrop" style=${s} @click=${(e) => e.target === e.currentTarget && this._closeDetails()} @keydown=${this._detailsKeydown}>
+      <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${n ? "has-backdrop" : ""}" style=${l} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
         <div class="details-content">${r ? B : R`<h2 id="details-title">${e}</h2>`}${t}</div>
       </section>
@@ -1973,7 +1993,9 @@ var Ee = o`
 				"artwork_inset",
 				"title_size",
 				"progress_height",
-				"backdrop_opacity"
+				"backdrop_opacity",
+				"popup_backdrop_dim",
+				"popup_backdrop_blur"
 			].includes(n) && (r = t.value === "" ? void 0 : Number(t.value)), n === "columns" && t.value !== "auto" && (r = Number(t.value)), n === "popup_summary_lines" && (r = Number(t.value)), [
 				"section_id",
 				"user_id",
@@ -1984,7 +2006,8 @@ var Ee = o`
 				"item_shadow",
 				"playing_color",
 				"paused_color",
-				"buffering_color"
+				"buffering_color",
+				"popup_background"
 			].includes(n) && t.value === "" && (r = void 0), n === "style_preset") {
 				let e = {
 					...this._config,
@@ -2594,6 +2617,27 @@ var Ee = o`
 				label: "Wide"
 			}
 		], this._config.popup_width ?? "standard")}
+          ${this._select("popup_animation", "Open animation", [
+			{
+				value: "none",
+				label: "None"
+			},
+			{
+				value: "fade",
+				label: "Fade in"
+			},
+			{
+				value: "scale",
+				label: "Scale up"
+			},
+			{
+				value: "rise",
+				label: "Rise from below"
+			}
+		], this._config.popup_animation ?? "scale")}
+          ${this._number("popup_backdrop_dim", "Background dim", 0, 95, "%")}
+          ${this._number("popup_backdrop_blur", "Background blur", 0, 24, "px")}
+          ${this._appearanceText("popup_background", "Popup background", "Theme variable, colour, or rgba()", !0)}
         </details>
         <details class="section">
           <summary>Popup summary</summary>

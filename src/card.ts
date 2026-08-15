@@ -656,8 +656,13 @@ export class TautulliMediaCard extends LitElement {
 
   private _renderDialogShell(title: string, content: TemplateResult, backdrop?: string, titleInContent = false): TemplateResult {
     const style = backdrop ? `--details-backdrop:url("${backdrop.replaceAll('"', "")}")` : "";
-    return html`<div class="dialog-backdrop" @click=${(event: Event) => event.target === event.currentTarget && this._closeDetails()} @keydown=${this._detailsKeydown}>
-      <section class="details-dialog popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${backdrop ? "has-backdrop" : ""}" style=${style} role="dialog" aria-modal="true" aria-labelledby="details-title">
+    const dim = this._config.popup_backdrop_dim ?? 58;
+    const blur = this._config.popup_backdrop_blur ?? 0;
+    const backdropStyle = `background:rgb(0 0 0 / ${dim}%);${blur ? `backdrop-filter:blur(${blur}px);` : ""}`;
+    const popupBackground = this._config.popup_background;
+    const dialogStyle = `${style}${popupBackground ? `background:${popupBackground};` : ""}`;
+    return html`<div class="dialog-backdrop" style=${backdropStyle} @click=${(event: Event) => event.target === event.currentTarget && this._closeDetails()} @keydown=${this._detailsKeydown}>
+      <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${backdrop ? "has-backdrop" : ""}" style=${dialogStyle} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
         <div class="details-content">${titleInContent ? nothing : html`<h2 id="details-title">${title}</h2>`}${content}</div>
       </section>

@@ -102,6 +102,10 @@ export interface CardConfig {
   popup_summary_show_user?: boolean;
   popup_summary_lines?: 0 | 2 | 3 | 5;
   popup_width?: "compact" | "standard" | "wide";
+  popup_animation?: "none" | "fade" | "scale" | "rise";
+  popup_backdrop_dim?: number;
+  popup_backdrop_blur?: number;
+  popup_background?: string;
   termination_popup_placement?: "top" | "footer";
   termination_button_style?: "label" | "icon";
   popup_show_technical?: boolean;
