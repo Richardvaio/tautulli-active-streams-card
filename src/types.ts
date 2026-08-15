@@ -55,7 +55,7 @@ export interface CardConfig {
   artwork?: ArtworkMode;
   artwork_fit?: ArtworkFit;
   artwork_aspect?: ArtworkAspect;
-  artwork_position?: string;
+  artwork_position?: "center" | "top" | "bottom" | "left" | "right";
   artwork_placement?: ArtworkPlacement;
   backdrop_opacity?: number;
   style_preset?: StylePreset;

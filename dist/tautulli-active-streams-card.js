@@ -1,4 +1,4 @@
-//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/css-tag.js
+//#region node_modules/@lit/reactive-element/css-tag.js
 var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, n = Symbol(), r = /* @__PURE__ */ new WeakMap(), i = class {
 	constructor(e, t, r) {
 		if (this._$cssResult$ = !0, r !== n) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
@@ -253,7 +253,7 @@ var x = class extends HTMLElement {
 };
 x.elementStyles = [], x.shadowRootOptions = { mode: "open" }, x[_("elementProperties")] = /* @__PURE__ */ new Map(), x[_("finalized")] = /* @__PURE__ */ new Map(), te?.({ ReactiveElement: x }), (h.reactiveElementVersions ??= []).push("2.1.2");
 //#endregion
-//#region node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/lit-html.js
+//#region node_modules/lit-html/lit-html.js
 var S = globalThis, C = (e) => e, w = S.trustedTypes, ne = w ? w.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, T = "$lit$", E = `lit$${Math.random().toFixed(9).slice(2)}$`, D = "?" + E, re = `<${D}>`, O = document, k = () => O.createComment(""), A = (e) => e === null || typeof e != "object" && typeof e != "function", j = Array.isArray, ie = (e) => j(e) || typeof e?.[Symbol.iterator] == "function", M = "[ 	\n\f\r]", N = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, P = /-->/g, ae = />/g, F = RegExp(`>|${M}(?:([^\\s"'>=/]+)(${M}*=${M}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), oe = /'/g, I = /"/g, L = /^(?:script|style|textarea|title)$/i, R = ((e) => (t, ...n) => ({
 	_$litType$: e,
 	strings: t,
@@ -2438,16 +2438,16 @@ var Ee = o`
           ${e === "active" ? this._toggle("show_user", "Plex user") : B}
           ${e === "active" ? this._toggle("show_device", "Player and device") : B}
           ${e === "active" ? this._toggle("show_quality", "Quality and bandwidth") : B}
-          ${e === "active" ? this._toggle("show_progress", "Progress") : B}
-          ${e === "active" ? this._toggle("show_state", "Playback state") : B}
-          ${e === "active" && this._config.show_progress ? this._toggle("show_progress_percent", "Progress percentage") : B}
-          ${e === "active" && this._config.show_state ? this._toggle("show_pause_duration", "Paused duration") : B}
-          ${e === "active" && this._config.show_state ? this._toggle("show_track_number", "Music track number") : B}
           ${e === "active" ? this._toggle("show_media_details", "Year / episode") : B}
           ${e === "active" ? this._toggle("show_eta", "Estimated finish time") : B}
           ${e === "active" ? this._toggle("show_remaining", "Time remaining") : B}
           ${e === "active" ? this._toggle("show_bandwidth", "Bandwidth") : B}
           ${e === "active" ? this._toggle("show_audio_quality", "Music audio quality") : B}
+          ${e === "active" ? this._toggle("show_progress", "Progress") : B}
+          ${e === "active" && this._config.show_progress ? this._toggle("show_progress_percent", "Progress percentage") : B}
+          ${e === "active" ? this._toggle("show_state", "Playback state") : B}
+          ${e === "active" && this._config.show_state ? this._toggle("show_pause_duration", "Paused duration") : B}
+          ${e === "active" && this._config.show_state ? this._toggle("show_track_number", "Music track number") : B}
           ${e === "active" ? B : this._toggle("show_summary", "Summary")}
           ${this._toggle("show_empty", "Show when empty")}
           ${this._toggle("animations", "State animations")}
@@ -2545,9 +2545,9 @@ var Ee = o`
           <summary>Popup summary</summary>
           <p class="section-description">Choose the media context displayed above the progress bar.</p>
           <div class="toggles">
-            ${this._toggle("popup_show_artwork", "Artwork")}
-            ${this._toggle("popup_show_summary", "Media description")}
-            ${this._config.popup_show_summary ? this._select("popup_summary_lines", "Description length", [
+            ${e === "users" ? B : this._toggle("popup_show_artwork", "Artwork")}
+            ${e === "users" ? B : this._toggle("popup_show_summary", "Media description")}
+            ${e !== "users" && this._config.popup_show_summary ? this._select("popup_summary_lines", "Description length", [
 			{
 				value: "2",
 				label: "2 lines"

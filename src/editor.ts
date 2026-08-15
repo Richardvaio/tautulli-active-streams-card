@@ -256,16 +256,16 @@ export class TautulliMediaCardEditor extends LitElement {
           ${mode === "active" ? this._toggle("show_user", "Plex user") : nothing}
           ${mode === "active" ? this._toggle("show_device", "Player and device") : nothing}
           ${mode === "active" ? this._toggle("show_quality", "Quality and bandwidth") : nothing}
-          ${mode === "active" ? this._toggle("show_progress", "Progress") : nothing}
-          ${mode === "active" ? this._toggle("show_state", "Playback state") : nothing}
-          ${mode === "active" && this._config.show_progress ? this._toggle("show_progress_percent", "Progress percentage") : nothing}
-          ${mode === "active" && this._config.show_state ? this._toggle("show_pause_duration", "Paused duration") : nothing}
-          ${mode === "active" && this._config.show_state ? this._toggle("show_track_number", "Music track number") : nothing}
           ${mode === "active" ? this._toggle("show_media_details", "Year / episode") : nothing}
           ${mode === "active" ? this._toggle("show_eta", "Estimated finish time") : nothing}
           ${mode === "active" ? this._toggle("show_remaining", "Time remaining") : nothing}
           ${mode === "active" ? this._toggle("show_bandwidth", "Bandwidth") : nothing}
           ${mode === "active" ? this._toggle("show_audio_quality", "Music audio quality") : nothing}
+          ${mode === "active" ? this._toggle("show_progress", "Progress") : nothing}
+          ${mode === "active" && this._config.show_progress ? this._toggle("show_progress_percent", "Progress percentage") : nothing}
+          ${mode === "active" ? this._toggle("show_state", "Playback state") : nothing}
+          ${mode === "active" && this._config.show_state ? this._toggle("show_pause_duration", "Paused duration") : nothing}
+          ${mode === "active" && this._config.show_state ? this._toggle("show_track_number", "Music track number") : nothing}
           ${mode !== "active" ? this._toggle("show_summary", "Summary") : nothing}
           ${this._toggle("show_empty", "Show when empty")}
           ${this._toggle("animations", "State animations")}
@@ -312,9 +312,9 @@ export class TautulliMediaCardEditor extends LitElement {
           <summary>Popup summary</summary>
           <p class="section-description">Choose the media context displayed above the progress bar.</p>
           <div class="toggles">
-            ${this._toggle("popup_show_artwork", "Artwork")}
-            ${this._toggle("popup_show_summary", "Media description")}
-            ${this._config.popup_show_summary ? this._select("popup_summary_lines", "Description length", [{value:"2",label:"2 lines"},{value:"3",label:"3 lines"},{value:"5",label:"5 lines"},{value:"0",label:"Full description"}], String(this._config.popup_summary_lines ?? 3)) : nothing}
+            ${mode !== "users" ? this._toggle("popup_show_artwork", "Artwork") : nothing}
+            ${mode !== "users" ? this._toggle("popup_show_summary", "Media description") : nothing}
+            ${mode !== "users" && this._config.popup_show_summary ? this._select("popup_summary_lines", "Description length", [{value:"2",label:"2 lines"},{value:"3",label:"3 lines"},{value:"5",label:"5 lines"},{value:"0",label:"Full description"}], String(this._config.popup_summary_lines ?? 3)) : nothing}
             ${mode === "active" ? this._toggle("popup_summary_show_user", "Plex user") : nothing}
             ${mode === "history" ? this._toggle("popup_show_user", "Plex user") : nothing}
             ${mode === "active" ? this._toggle("popup_show_progress", "Progress") : nothing}
