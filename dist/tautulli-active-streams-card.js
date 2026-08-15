@@ -902,10 +902,11 @@ var Ee = o`
   .background-art::before { content:""; position:absolute; z-index:0; inset:0 0 0 28%; background-image:linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 35%) 32%, rgb(0 0 0 / 10%) 100%), var(--tas-background-image); background-size:cover; background-position:var(--tas-art-position, center); opacity:var(--tas-backdrop-opacity, .35); -webkit-mask-image:linear-gradient(90deg, transparent, #000 35%); mask-image:linear-gradient(90deg, transparent, #000 35%); }
   .background-art > * { position:relative; z-index:1; }
   .item.background-art:not(.art-left) .body,.classic-item.background-art:not(.art-left) .classic-body { padding:12px; }
-  .interactive { cursor:pointer; }
+  .interactive { cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .interactive:hover { border-color:color-mix(in srgb, var(--primary-color) 55%, var(--tas-border-color)); }
   .interactive:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }
-  .open-details { position:absolute; z-index:2; inset:0; width:100%; height:100%; padding:0; border:0; border-radius:inherit; background:transparent; cursor:pointer; }
+  .interactive:active { transform:scale(.985); transition:transform .12s ease; }
+  .open-details { position:absolute; z-index:2; inset:0; width:100%; height:100%; padding:0; border:0; border-radius:inherit; background:transparent; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .open-details:focus-visible { outline:2px solid var(--primary-color); outline-offset:-3px; }
   .terminate { z-index:4; }
   .art { width:calc(100% - var(--tas-art-inset, 0px) - var(--tas-art-inset, 0px)); height:calc(100% - var(--tas-art-inset, 0px) - var(--tas-art-inset, 0px)); min-height:128px; margin:var(--tas-art-inset, 0px); object-fit:var(--tas-art-fit, cover); object-position:var(--tas-art-position, center); border-radius:max(0px, calc(var(--tas-radius, 12px) - 2px)); background:var(--secondary-background-color); }
@@ -1267,12 +1268,15 @@ var Ee = o`
 				n && this._openDetails(n);
 			};
 		}), this.renderRoot.querySelectorAll(".open-details").forEach((e) => {
-			let t = (t) => {
-				t.stopPropagation();
-				let n = this._filteredItems().find((t) => this._itemId(t) === e.dataset.detailId);
-				n && this._openDetails(n);
+			let t = 0, n = (n) => {
+				n.stopPropagation(), n.preventDefault();
+				let r = Date.now();
+				if (r - t < 400) return;
+				t = r;
+				let i = this._filteredItems().find((t) => this._itemId(t) === e.dataset.detailId);
+				i && this._openDetails(i);
 			};
-			e.onclick = t, e.onpointerup = t;
+			e.onclick = n, e.onpointerup = n;
 		}), e.has("hass") && this.hass && !this._data && !this._error && this._connect(), e.has("_pendingTermination") && this._pendingTermination && this.renderRoot.querySelector(".dialog-confirm")?.focus(), e.has("_selectedItem") && this._selectedItem && this.renderRoot.querySelector(".dialog-close")?.focus();
 	}
 	_disconnect() {
@@ -1603,7 +1607,10 @@ var Ee = o`
 		return t && n.push(`--state-color:${t}`), e && (n.push(`--tas-background-image:url("${e.replaceAll("\"", "")}")`), n.push(`--tas-backdrop-opacity:${(this._config.backdrop_opacity ?? 35) / 100}`)), n.join(";");
 	}
 	_openDetails(e) {
-		this._config.click_action === "details" && (this._selectedItem = e, this._lockBodyScroll(), this.requestUpdate());
+		if (this._config.click_action === "details") {
+			if (this._selectedItem === e) return;
+			this._selectedItem = e, this._lockBodyScroll(), this.requestUpdate();
+		}
 	}
 	_openDetailsButton(e, t) {
 		return this._config.click_action === "details" ? R`<button class="open-details" type="button" data-detail-id=${this._itemId(e)} aria-label="Open details for ${String(t)}"></button>` : B;

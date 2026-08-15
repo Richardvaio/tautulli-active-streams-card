@@ -141,8 +141,13 @@ export class TautulliMediaCard extends LitElement {
       };
     });
     this.renderRoot.querySelectorAll<HTMLButtonElement>(".open-details").forEach((button) => {
+      let lastOpenAt = 0;
       const open = (event: Event): void => {
         event.stopPropagation();
+        event.preventDefault();
+        const now = Date.now();
+        if (now - lastOpenAt < 400) return;
+        lastOpenAt = now;
         const item = this._filteredItems().find((candidate) => this._itemId(candidate) === button.dataset.detailId);
         if (item) this._openDetails(item);
       };
@@ -590,6 +595,7 @@ export class TautulliMediaCard extends LitElement {
 
   private _openDetails(item: UnknownItem): void {
     if (this._config.click_action === "details") {
+      if (this._selectedItem === item) return;
       this._selectedItem = item;
       this._lockBodyScroll();
       this.requestUpdate();
