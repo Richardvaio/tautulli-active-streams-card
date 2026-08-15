@@ -1000,7 +1000,8 @@ var Ee = o`
   .details-hero.with-poster { grid-template-columns:minmax(90px, 150px) minmax(0,1fr); }
   .details-hero > img { width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:10px; box-shadow:0 8px 24px rgb(0 0 0 / 35%); }
   .details-primary { min-width:0; display:grid; align-content:end; gap:10px; }
-  .details-hero .details-primary { align-content:start; }
+  .details-hero .details-primary { align-content:start; display:flex; flex-direction:column; gap:8px; }
+  .details-hero .details-primary .details-progress { margin-top:auto; }
   .details-heading-line { min-width:0; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
   .details-inline-title { max-width:none !important; margin:0; padding-right:4px; font-size:clamp(22px, 4cqw, 32px); line-height:1.12; }
   .details-summary-user { max-width:42%; flex:none; display:flex; align-items:center; gap:5px; overflow:hidden; padding:5px 9px; border:1px solid color-mix(in srgb, var(--divider-color) 70%, transparent); border-radius:999px; color:var(--secondary-text-color); background:color-mix(in srgb, var(--primary-text-color) 7%, transparent); font-size:11px; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
