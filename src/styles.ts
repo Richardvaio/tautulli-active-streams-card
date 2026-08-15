@@ -90,9 +90,9 @@ export const cardStyles = css`
   :host([animations]) .classic-item.paused .classic-progress::before { animation:pulse 1.5s ease-in-out infinite; }
   :host([animations]) .classic-item.buffering .classic-progress::before { animation:pulse .8s ease-in-out infinite; }
   .dialog-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; background:rgb(0 0 0 / 58%); }
-  .details-dialog.anim-fade { animation:dialog-fade .18s ease-out; }
-  .details-dialog.anim-scale { animation:dialog-scale .22s cubic-bezier(.2,.8,.2,1); }
-  .details-dialog.anim-rise { animation:dialog-rise .26s cubic-bezier(.2,.8,.2,1); }
+  .details-dialog.anim-fade { animation:dialog-fade var(--dialog-animation-duration, 220ms) ease-out; }
+  .details-dialog.anim-scale { animation:dialog-scale var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
+  .details-dialog.anim-rise { animation:dialog-rise var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
   :host(:not([animations])) .details-dialog { animation:none !important; }
   @keyframes dialog-fade { from { opacity:0; } }
   @keyframes dialog-scale { from { opacity:0; transform:scale(.96) translateY(6px); } }

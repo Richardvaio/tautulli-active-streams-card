@@ -637,6 +637,7 @@ var Q = [
 	popup_detail_order: Q,
 	popup_width: "standard",
 	popup_animation: "scale",
+	popup_animation_duration: 220,
 	popup_backdrop_dim: 58,
 	popup_backdrop_blur: 0,
 	termination_popup_placement: "footer",
@@ -731,6 +732,11 @@ function $(e) {
 			"backdrop_opacity",
 			0,
 			100
+		],
+		[
+			"popup_animation_duration",
+			0,
+			1500
 		],
 		[
 			"popup_backdrop_dim",
@@ -953,9 +959,9 @@ var Ee = o`
   :host([animations]) .classic-item.paused .classic-progress::before { animation:pulse 1.5s ease-in-out infinite; }
   :host([animations]) .classic-item.buffering .classic-progress::before { animation:pulse .8s ease-in-out infinite; }
   .dialog-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; background:rgb(0 0 0 / 58%); }
-  .details-dialog.anim-fade { animation:dialog-fade .18s ease-out; }
-  .details-dialog.anim-scale { animation:dialog-scale .22s cubic-bezier(.2,.8,.2,1); }
-  .details-dialog.anim-rise { animation:dialog-rise .26s cubic-bezier(.2,.8,.2,1); }
+  .details-dialog.anim-fade { animation:dialog-fade var(--dialog-animation-duration, 220ms) ease-out; }
+  .details-dialog.anim-scale { animation:dialog-scale var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
+  .details-dialog.anim-rise { animation:dialog-rise var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
   :host(:not([animations])) .details-dialog { animation:none !important; }
   @keyframes dialog-fade { from { opacity:0; } }
   @keyframes dialog-scale { from { opacity:0; transform:scale(.96) translateY(6px); } }
@@ -1624,7 +1630,7 @@ var Ee = o`
 		return this._config.mode === "active" ? this._renderActiveDetails(t) : this._config.mode === "users" ? this._renderUserDetails(t) : this._renderMediaDetails(t);
 	}
 	_renderDialogShell(e, t, n, r = !1) {
-		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}")` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `background:rgb(0 0 0 / ${a}%);${o ? `backdrop-filter:blur(${o}px);` : ""}`, c = this._config.popup_background, l = `${i}${c ? `background:${c};` : ""}`;
+		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}")` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `background:rgb(0 0 0 / ${a}%);${o ? `backdrop-filter:blur(${o}px);` : ""}`, c = this._config.popup_background, l = `${i}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;${c ? `background:${c};` : ""}`;
 		return R`<div class="dialog-backdrop" style=${s} @click=${(e) => e.target === e.currentTarget && this._closeDetails()} @keydown=${this._detailsKeydown}>
       <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${n ? "has-backdrop" : ""}" style=${l} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
@@ -1994,6 +2000,7 @@ var Ee = o`
 				"title_size",
 				"progress_height",
 				"backdrop_opacity",
+				"popup_animation_duration",
 				"popup_backdrop_dim",
 				"popup_backdrop_blur"
 			].includes(n) && (r = t.value === "" ? void 0 : Number(t.value)), n === "columns" && t.value !== "auto" && (r = Number(t.value)), n === "popup_summary_lines" && (r = Number(t.value)), [
@@ -2635,6 +2642,7 @@ var Ee = o`
 				label: "Rise from below"
 			}
 		], this._config.popup_animation ?? "scale")}
+          ${(this._config.popup_animation ?? "scale") === "none" ? B : this._number("popup_animation_duration", "Animation duration", 0, 1500, "ms")}
           ${this._number("popup_backdrop_dim", "Background dim", 0, 95, "%")}
           ${this._number("popup_backdrop_blur", "Background blur", 0, 24, "px")}
           ${this._appearanceText("popup_background", "Popup background", "Theme variable, colour, or rgba()", !0)}

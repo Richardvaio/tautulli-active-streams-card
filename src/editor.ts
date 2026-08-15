@@ -348,6 +348,7 @@ export class TautulliMediaCardEditor extends LitElement {
           ${this._select("popup_style", "Popup appearance", [{value:"clean",label:"Clean surface"},{value:"panel",label:"Framed summary"},{value:"cinematic",label:"Cinematic backdrop"}], this._config.popup_style ?? "clean")}
           ${this._select("popup_width", "Popup width", [{value:"compact",label:"Compact"},{value:"standard",label:"Standard"},{value:"wide",label:"Wide"}], this._config.popup_width ?? "standard")}
           ${this._select("popup_animation", "Open animation", [{value:"none",label:"None"},{value:"fade",label:"Fade in"},{value:"scale",label:"Scale up"},{value:"rise",label:"Rise from below"}], this._config.popup_animation ?? "scale")}
+          ${(this._config.popup_animation ?? "scale") !== "none" ? this._number("popup_animation_duration", "Animation duration", 0, 1500, "ms") : nothing}
           ${this._number("popup_backdrop_dim", "Background dim", 0, 95, "%")}
           ${this._number("popup_backdrop_blur", "Background blur", 0, 24, "px")}
           ${this._appearanceText("popup_background", "Popup background", "Theme variable, colour, or rgba()", true)}
@@ -634,7 +635,7 @@ export class TautulliMediaCardEditor extends LitElement {
     const key = target.dataset.key as keyof CardConfig;
     let value: unknown = target.value;
     if (target instanceof HTMLInputElement && target.type === "checkbox") value = target.checked;
-    if (["max_items", "time_range", "border_radius", "item_gap", "artwork_width", "artwork_inset", "title_size", "progress_height", "backdrop_opacity", "popup_backdrop_dim", "popup_backdrop_blur"].includes(key)) {
+    if (["max_items", "time_range", "border_radius", "item_gap", "artwork_width", "artwork_inset", "title_size", "progress_height", "backdrop_opacity", "popup_animation_duration", "popup_backdrop_dim", "popup_backdrop_blur"].includes(key)) {
       value = target.value === "" ? undefined : Number(target.value);
     }
     if (key === "columns" && target.value !== "auto") value = Number(target.value);
