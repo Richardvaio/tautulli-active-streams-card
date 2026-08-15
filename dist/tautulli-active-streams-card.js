@@ -1201,7 +1201,7 @@ var Ee = o`
 		this.styles = Ee;
 	}
 	constructor() {
-		super(), this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._scrollLockCount = 0, this._visibilityChanged = () => {
+		super(), this._dialogOpenedAt = 0, this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._scrollLockCount = 0, this._visibilityChanged = () => {
 			document.visibilityState === "visible" && this._config.mode !== "active" && this._loadData();
 		}, this._delegatedItemClick = (e) => {
 			if (this._config.click_action !== "details") return;
@@ -1213,6 +1213,10 @@ var Ee = o`
 			r && this._openDetails(r);
 		}, this._closeDetails = () => {
 			this._selectedItem = void 0, this._unlockBodyScroll();
+		}, this._backdropClickClose = (e) => {
+			e.target === e.currentTarget && (Date.now() - this._dialogOpenedAt < 350 || this._closeDetails());
+		}, this._backdropTerminationClose = (e) => {
+			e.target === e.currentTarget && (Date.now() - this._dialogOpenedAt < 350 || this._closeTerminationDialog());
 		}, this._config = $({}), this._loading = !0, this._terminating = !1, this._pauseClock = Date.now();
 	}
 	static getStubConfig() {
@@ -1609,7 +1613,7 @@ var Ee = o`
 	_openDetails(e) {
 		if (this._config.click_action === "details") {
 			if (this._selectedItem === e) return;
-			this._selectedItem = e, this._lockBodyScroll(), this.requestUpdate();
+			this._selectedItem = e, this._dialogOpenedAt = Date.now(), this._lockBodyScroll(), this.requestUpdate();
 		}
 	}
 	_openDetailsButton(e, t) {
@@ -1655,7 +1659,7 @@ var Ee = o`
 	}
 	_renderDialogShell(e, t, n, r = !1) {
 		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}");` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `background:rgb(0 0 0 / ${a}%);${o ? `backdrop-filter:blur(${o}px);` : ""}`, c = this._config.popup_background, l = `${i}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;${c ? `background:${c};` : ""}`;
-		return R`<div class="dialog-backdrop" style=${s} @click=${(e) => e.target === e.currentTarget && this._closeDetails()} @keydown=${this._detailsKeydown}>
+		return R`<div class="dialog-backdrop" style=${s} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
       <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${n ? "has-backdrop" : ""}" style=${l} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
         <div class="details-content">${r ? B : R`<h2 id="details-title">${e}</h2>`}${t}</div>
@@ -1832,7 +1836,7 @@ var Ee = o`
 		return e.includes("history_disabled") ? "Watch history is disabled in the integration’s Dashboard card access settings." : e.includes("unauthorized") ? "Administrator permission is required for this view." : e;
 	}
 	_openTerminationDialog(e, t) {
-		t.stopPropagation(), this._terminationTrigger = t.currentTarget, this._pendingTermination = e;
+		t.stopPropagation(), this._terminationTrigger = t.currentTarget, this._pendingTermination = e, this._dialogOpenedAt = Date.now();
 	}
 	_closeTerminationDialog() {
 		this._terminating || (this._pendingTermination = void 0, requestAnimationFrame(() => this._terminationTrigger?.focus()));
@@ -1856,7 +1860,7 @@ var Ee = o`
 			e.client?.product,
 			e.client?.player
 		].filter(Boolean).join(" · ");
-		return R`<div class="dialog-backdrop" tabindex="-1" @click=${(e) => e.target === e.currentTarget && this._closeTerminationDialog()} @keydown=${this._dialogKeydown}>
+		return R`<div class="dialog-backdrop" tabindex="-1" @click=${this._backdropTerminationClose} @keydown=${this._dialogKeydown}>
       <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="terminate-title" aria-describedby="terminate-description">
         <div class="dialog-content">
           <div class="dialog-icon"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></div>

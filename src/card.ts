@@ -51,6 +51,7 @@ export class TautulliMediaCard extends LitElement {
   declare private _pauseClock: number;
   private _terminationTrigger?: HTMLElement;
   declare private _selectedItem?: UnknownItem;
+  private _dialogOpenedAt = 0;
   private _unsubscribe?: () => void;
   private _refreshTimer?: number;
   private _retryTimer?: number;
@@ -597,6 +598,7 @@ export class TautulliMediaCard extends LitElement {
     if (this._config.click_action === "details") {
       if (this._selectedItem === item) return;
       this._selectedItem = item;
+      this._dialogOpenedAt = Date.now();
       this._lockBodyScroll();
       this.requestUpdate();
     }
@@ -624,6 +626,12 @@ export class TautulliMediaCard extends LitElement {
   private _closeDetails = (): void => {
     this._selectedItem = undefined;
     this._unlockBodyScroll();
+  };
+
+  private _backdropClickClose = (event: Event): void => {
+    if (event.target !== event.currentTarget) return;
+    if (Date.now() - this._dialogOpenedAt < 350) return;
+    this._closeDetails();
   };
 
   private _lockBodyScroll(): void {
@@ -693,7 +701,7 @@ export class TautulliMediaCard extends LitElement {
     const popupBackground = this._config.popup_background;
     const animationDuration = this._config.popup_animation_duration ?? 220;
     const dialogStyle = `${style}--dialog-animation-duration:${animationDuration}ms;${popupBackground ? `background:${popupBackground};` : ""}`;
-    return html`<div class="dialog-backdrop" style=${backdropStyle} @click=${(event: Event) => event.target === event.currentTarget && this._closeDetails()} @keydown=${this._detailsKeydown}>
+    return html`<div class="dialog-backdrop" style=${backdropStyle} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
       <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${backdrop ? "has-backdrop" : ""}" style=${dialogStyle} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
         <div class="details-content">${titleInContent ? nothing : html`<h2 id="details-title">${title}</h2>`}${content}</div>
@@ -946,7 +954,14 @@ export class TautulliMediaCard extends LitElement {
     event.stopPropagation();
     this._terminationTrigger = event.currentTarget as HTMLElement;
     this._pendingTermination = item;
+    this._dialogOpenedAt = Date.now();
   }
+
+  private _backdropTerminationClose = (event: Event): void => {
+    if (event.target !== event.currentTarget) return;
+    if (Date.now() - this._dialogOpenedAt < 350) return;
+    this._closeTerminationDialog();
+  };
 
   private _closeTerminationDialog(): void {
     if (!this._terminating) {
@@ -981,7 +996,7 @@ export class TautulliMediaCard extends LitElement {
     if (!item) return nothing;
     const title = item.media.full_title || item.media.title || "Untitled stream";
     const details = [item.user?.display_name, item.client?.product, item.client?.player].filter(Boolean).join(" · ");
-    return html`<div class="dialog-backdrop" tabindex="-1" @click=${(event: Event) => event.target === event.currentTarget && this._closeTerminationDialog()} @keydown=${this._dialogKeydown}>
+    return html`<div class="dialog-backdrop" tabindex="-1" @click=${this._backdropTerminationClose} @keydown=${this._dialogKeydown}>
       <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="terminate-title" aria-describedby="terminate-description">
         <div class="dialog-content">
           <div class="dialog-icon"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></div>
