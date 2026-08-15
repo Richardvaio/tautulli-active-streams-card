@@ -1100,6 +1100,8 @@ var Ee = o`
   .detail-order-toggle:checked { background:var(--primary-color); }
   .detail-order-toggle:checked::before { transform:translateX(16px); }
   .hint { margin:0; font-size:12px; color:var(--secondary-text-color); line-height:1.4; }
+  .reset-all { display:block; margin:12px 0 0; padding:8px 14px; border:1px solid var(--error-color, #db4437); border-radius:8px; color:var(--error-color, #db4437); background:transparent; font:600 12px inherit; cursor:pointer; }
+  .reset-all:hover { background:color-mix(in srgb, var(--error-color, #db4437) 10%, transparent); }
   .error { color:var(--error-color); font-size:12px; }
   .section details { border-top:1px solid var(--divider-color); padding-top:10px; }
   .section details summary { cursor:pointer; color:var(--primary-text-color); font-size:13px; font-weight:600; }
@@ -1957,6 +1959,9 @@ var Ee = o`
 				"buffering_color"
 			]) delete e[t];
 			this._config = $(e), this._emitConfig();
+		}, this._resetAllDefaults = () => {
+			let e = this._config.entry_id;
+			this._config = $({ ...e ? { entry_id: e } : {} }), this._emitConfig();
 		}, this._input = (e) => {
 			let t = e.currentTarget, n = t.dataset.key, r = t.value;
 			if (t instanceof HTMLInputElement && t.type === "checkbox" && (r = t.checked), [
@@ -2344,6 +2349,20 @@ var Ee = o`
         ${this._config.artwork === "none" ? B : R`<details class="inline-advanced">
           <summary>Artwork adjustments</summary>
           <p class="section-description">Recommended values come from the selected look. These controls only affect the artwork currently in use.</p>
+          ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_placement", "Artwork position", [
+			{
+				value: "left",
+				label: "Left of content"
+			},
+			{
+				value: "right",
+				label: "Right of content"
+			},
+			{
+				value: "background",
+				label: "Behind content (background)"
+			}
+		], this._config.artwork_placement ?? "left") : B}
           ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_aspect", "Poster / cover shape", [
 			{
 				value: "auto",
@@ -2430,29 +2449,63 @@ var Ee = o`
       </details>
 
       <details class="section">
-        <summary>Card information</summary>
-        <p class="section-description">Hide secondary details for a cleaner card or reveal the full playback picture.</p>
+        <summary>General</summary>
+        <p class="section-description">Control header, empty states and animation behaviour.</p>
         <div class="toggles">
           ${this._toggle("show_header", "Header")}
           ${this._toggle("show_count", "Item count")}
-          ${e === "active" ? this._toggle("show_user", "Plex user") : B}
-          ${e === "active" ? this._toggle("show_device", "Player and device") : B}
-          ${e === "active" ? this._toggle("show_quality", "Quality and bandwidth") : B}
-          ${e === "active" ? this._toggle("show_media_details", "Year / episode") : B}
-          ${e === "active" ? this._toggle("show_eta", "Estimated finish time") : B}
-          ${e === "active" ? this._toggle("show_remaining", "Time remaining") : B}
-          ${e === "active" ? this._toggle("show_bandwidth", "Bandwidth") : B}
-          ${e === "active" ? this._toggle("show_audio_quality", "Music audio quality") : B}
-          ${e === "active" ? this._toggle("show_progress", "Progress") : B}
-          ${e === "active" && this._config.show_progress ? this._toggle("show_progress_percent", "Progress percentage") : B}
-          ${e === "active" ? this._toggle("show_state", "Playback state") : B}
-          ${e === "active" && this._config.show_state ? this._toggle("show_pause_duration", "Paused duration") : B}
-          ${e === "active" && this._config.show_state ? this._toggle("show_track_number", "Music track number") : B}
-          ${e === "active" ? B : this._toggle("show_summary", "Summary")}
           ${this._toggle("show_empty", "Show when empty")}
           ${this._toggle("animations", "State animations")}
         </div>
       </details>
+
+      ${e === "active" ? R`
+      <details class="section">
+        <summary>Stream information</summary>
+        <p class="section-description">Control which identity and playback details appear on each stream card.</p>
+        <details class="inline-advanced">
+          <summary>Identity</summary>
+          <div class="toggles">
+            ${this._toggle("show_user", "Plex user")}
+            ${this._toggle("show_device", "Player and device")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Media details</summary>
+          <div class="toggles">
+            ${this._toggle("show_media_details", "Year / episode")}
+            ${this._toggle("show_audio_quality", "Music audio quality")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Playback and progress</summary>
+          <div class="toggles">
+            ${this._toggle("show_progress", "Progress bar")}
+            ${this._toggle("show_progress_percent", "Progress percentage")}
+            ${this._toggle("show_state", "Playback state")}
+            ${this._toggle("show_pause_duration", "Paused duration")}
+            ${this._toggle("show_track_number", "Music track number")}
+            ${this._toggle("show_eta", "Estimated finish time")}
+            ${this._toggle("show_remaining", "Time remaining")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Quality and bandwidth</summary>
+          <div class="toggles">
+            ${this._toggle("show_quality", "Video quality")}
+            ${this._toggle("show_bandwidth", "Bandwidth")}
+          </div>
+        </details>
+      </details>
+      ` : R`
+      <details class="section">
+        <summary>Card information</summary>
+        <p class="section-description">Control what information appears on each item.</p>
+        <div class="toggles">
+          ${this._toggle("show_summary", "Summary")}
+        </div>
+      </details>
+      `}
 
       <details class="section">
         <summary>Card actions</summary>
@@ -2598,6 +2651,7 @@ var Ee = o`
         </details>
       ` : B}
       <p class="hint">Privacy and destructive permissions are enforced by the Tautulli Active Streams integration. Tokens and upstream image paths are never sent to this card.</p>
+      <button class="reset-all" type="button" @click=${this._resetAllDefaults}>Reset all settings to defaults</button>
     </div>`;
 	}
 	_connectionMessage(e) {

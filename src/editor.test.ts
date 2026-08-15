@@ -186,12 +186,13 @@ describe("visual editor", () => {
     expect(editor.renderRoot.querySelector('select[data-key="artwork_aspect"]')).not.toBeNull();
     expect(editor.renderRoot.querySelector('select[data-key="artwork_fit"]')).not.toBeNull();
     expect(editor.renderRoot.querySelector('input[data-key="backdrop_opacity"]')).not.toBeNull();
-    expect(editor.renderRoot.querySelector('select[data-key="artwork_placement"]')).toBeNull();
+    expect(editor.renderRoot.querySelector('select[data-key="artwork_placement"]')).not.toBeNull();
 
     editor.setConfig({ type: "custom:tautulli-media-card", mode: "active", artwork: "backdrop" });
     await editor.updateComplete;
     expect(editor.renderRoot.querySelector('select[data-key="artwork_aspect"]')).toBeNull();
     expect(editor.renderRoot.querySelector('select[data-key="artwork_fit"]')).toBeNull();
+    expect(editor.renderRoot.querySelector('select[data-key="artwork_placement"]')).toBeNull();
     expect(editor.renderRoot.querySelector('input[data-key="artwork_width"]')).toBeNull();
     expect(editor.renderRoot.querySelector('input[data-key="backdrop_opacity"]')).not.toBeNull();
   });

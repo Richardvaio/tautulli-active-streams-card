@@ -213,6 +213,9 @@ export class TautulliMediaCardEditor extends LitElement {
         ${this._config.artwork !== "none" ? html`<details class="inline-advanced">
           <summary>Artwork adjustments</summary>
           <p class="section-description">Recommended values come from the selected look. These controls only affect the artwork currently in use.</p>
+          ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_placement", "Artwork position", [
+            {value:"left",label:"Left of content"},{value:"right",label:"Right of content"},{value:"background",label:"Behind content (background)"},
+          ], this._config.artwork_placement ?? "left") : nothing}
           ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_aspect", "Poster / cover shape", [
             {value:"auto",label:"Automatic for media"},{value:"poster",label:"Poster (2:3)"},{value:"square",label:"Square (1:1)"},{value:"backdrop",label:"Widescreen (16:9)"},
           ], this._config.artwork_aspect ?? "auto") : nothing}
@@ -248,29 +251,63 @@ export class TautulliMediaCardEditor extends LitElement {
       </details>
 
       <details class="section">
-        <summary>Card information</summary>
-        <p class="section-description">Hide secondary details for a cleaner card or reveal the full playback picture.</p>
+        <summary>General</summary>
+        <p class="section-description">Control header, empty states and animation behaviour.</p>
         <div class="toggles">
           ${this._toggle("show_header", "Header")}
           ${this._toggle("show_count", "Item count")}
-          ${mode === "active" ? this._toggle("show_user", "Plex user") : nothing}
-          ${mode === "active" ? this._toggle("show_device", "Player and device") : nothing}
-          ${mode === "active" ? this._toggle("show_quality", "Quality and bandwidth") : nothing}
-          ${mode === "active" ? this._toggle("show_media_details", "Year / episode") : nothing}
-          ${mode === "active" ? this._toggle("show_eta", "Estimated finish time") : nothing}
-          ${mode === "active" ? this._toggle("show_remaining", "Time remaining") : nothing}
-          ${mode === "active" ? this._toggle("show_bandwidth", "Bandwidth") : nothing}
-          ${mode === "active" ? this._toggle("show_audio_quality", "Music audio quality") : nothing}
-          ${mode === "active" ? this._toggle("show_progress", "Progress") : nothing}
-          ${mode === "active" && this._config.show_progress ? this._toggle("show_progress_percent", "Progress percentage") : nothing}
-          ${mode === "active" ? this._toggle("show_state", "Playback state") : nothing}
-          ${mode === "active" && this._config.show_state ? this._toggle("show_pause_duration", "Paused duration") : nothing}
-          ${mode === "active" && this._config.show_state ? this._toggle("show_track_number", "Music track number") : nothing}
-          ${mode !== "active" ? this._toggle("show_summary", "Summary") : nothing}
           ${this._toggle("show_empty", "Show when empty")}
           ${this._toggle("animations", "State animations")}
         </div>
       </details>
+
+      ${mode === "active" ? html`
+      <details class="section">
+        <summary>Stream information</summary>
+        <p class="section-description">Control which identity and playback details appear on each stream card.</p>
+        <details class="inline-advanced">
+          <summary>Identity</summary>
+          <div class="toggles">
+            ${this._toggle("show_user", "Plex user")}
+            ${this._toggle("show_device", "Player and device")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Media details</summary>
+          <div class="toggles">
+            ${this._toggle("show_media_details", "Year / episode")}
+            ${this._toggle("show_audio_quality", "Music audio quality")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Playback and progress</summary>
+          <div class="toggles">
+            ${this._toggle("show_progress", "Progress bar")}
+            ${this._toggle("show_progress_percent", "Progress percentage")}
+            ${this._toggle("show_state", "Playback state")}
+            ${this._toggle("show_pause_duration", "Paused duration")}
+            ${this._toggle("show_track_number", "Music track number")}
+            ${this._toggle("show_eta", "Estimated finish time")}
+            ${this._toggle("show_remaining", "Time remaining")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Quality and bandwidth</summary>
+          <div class="toggles">
+            ${this._toggle("show_quality", "Video quality")}
+            ${this._toggle("show_bandwidth", "Bandwidth")}
+          </div>
+        </details>
+      </details>
+      ` : html`
+      <details class="section">
+        <summary>Card information</summary>
+        <p class="section-description">Control what information appears on each item.</p>
+        <div class="toggles">
+          ${this._toggle("show_summary", "Summary")}
+        </div>
+      </details>
+      `}
 
       <details class="section">
         <summary>Card actions</summary>
@@ -342,6 +379,7 @@ export class TautulliMediaCardEditor extends LitElement {
         </details>
       ` : nothing}
       <p class="hint">Privacy and destructive permissions are enforced by the Tautulli Active Streams integration. Tokens and upstream image paths are never sent to this card.</p>
+      <button class="reset-all" type="button" @click=${this._resetAllDefaults}>Reset all settings to defaults</button>
     </div>`;
   }
 
@@ -540,6 +578,12 @@ export class TautulliMediaCardEditor extends LitElement {
     const config = { ...this._config } as CardConfig;
     for (const key of ["card_background", "item_background", "border_color", "item_shadow", "border_radius", "item_gap", "artwork_width", "artwork_inset", "title_size", "progress_height", "playing_color", "paused_color", "buffering_color"] as const) delete config[key];
     this._config = normalizeConfig(config);
+    this._emitConfig();
+  };
+
+  private _resetAllDefaults = (): void => {
+    const entryId = this._config.entry_id;
+    this._config = normalizeConfig({ ...(entryId ? { entry_id: entryId } : {}) });
     this._emitConfig();
   };
 

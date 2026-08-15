@@ -252,6 +252,8 @@ export const editorStyles = css`
   .detail-order-toggle:checked { background:var(--primary-color); }
   .detail-order-toggle:checked::before { transform:translateX(16px); }
   .hint { margin:0; font-size:12px; color:var(--secondary-text-color); line-height:1.4; }
+  .reset-all { display:block; margin:12px 0 0; padding:8px 14px; border:1px solid var(--error-color, #db4437); border-radius:8px; color:var(--error-color, #db4437); background:transparent; font:600 12px inherit; cursor:pointer; }
+  .reset-all:hover { background:color-mix(in srgb, var(--error-color, #db4437) 10%, transparent); }
   .error { color:var(--error-color); font-size:12px; }
   .section details { border-top:1px solid var(--divider-color); padding-top:10px; }
   .section details summary { cursor:pointer; color:var(--primary-text-color); font-size:13px; font-weight:600; }
