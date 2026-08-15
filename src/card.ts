@@ -655,7 +655,7 @@ export class TautulliMediaCard extends LitElement {
   }
 
   private _renderDialogShell(title: string, content: TemplateResult, backdrop?: string, titleInContent = false): TemplateResult {
-    const style = backdrop ? `--details-backdrop:url("${backdrop.replaceAll('"', "")}")` : "";
+    const style = backdrop ? `--details-backdrop:url("${backdrop.replaceAll('"', "")}");` : "";
     const dim = this._config.popup_backdrop_dim ?? 58;
     const blur = this._config.popup_backdrop_blur ?? 0;
     const backdropStyle = `background:rgb(0 0 0 / ${dim}%);${blur ? `backdrop-filter:blur(${blur}px);` : ""}`;
