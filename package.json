@@ -1,6 +1,6 @@
 {
   "name": "tautulli-active-streams-card",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A responsive Home Assistant dashboard card for Tautulli Active Streams",
   "type": "module",
   "scripts": {
