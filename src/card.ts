@@ -71,6 +71,9 @@ export class TautulliMediaCard extends LitElement {
   private _pointerDownAt: { x: number; y: number } | null = null;
   private _marqueeSetWidth = 0;
   private _marqueeTouching = false;
+  private _marqueeShiftTotal = 0;
+  private _marqueeDurationS = 0;
+  private _marqueeDrag: { pointerId: number; startX: number; p: number } | null = null;
   private _showcaseIndex = 0;
 
   constructor() {
@@ -676,11 +679,13 @@ export class TautulliMediaCard extends LitElement {
   private _pointerDownTracker = (event: PointerEvent): void => {
     this._pointerDownAt = { x: event.clientX, y: event.clientY };
     this._marqueeTouching = true;
+    this._syncMarqueePause();
   };
 
   /** A press that moved >12px before release was a scroll, not a tap - suppress its click. */
   private _pointerUpClassifier = (event: PointerEvent): void => {
     this._marqueeTouching = false;
+    this._syncMarqueePause();
     const start = this._pointerDownAt;
     this._pointerDownAt = null;
     if (!start) return;
@@ -798,6 +803,7 @@ export class TautulliMediaCard extends LitElement {
    *  sets duration, and pauses/resumes. */
   private _startMarquee(): void {
     if ((this._filteredItems().length || 0) < 2) return; // one card: no loop
+    if (this._marqueeDrag) return; // mid-drag: the finger owns the track
     const strip = this.renderRoot.querySelector<HTMLElement>(".content.marquee");
     const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
     if (!strip || !track) return;
@@ -812,14 +818,91 @@ export class TautulliMediaCard extends LitElement {
     const speed = this._config.autoscroll_speed ?? 60;
     const rtl = this._config.autoscroll_direction === "rtl";
     const durationS = setWidth / speed;
+    this._marqueeShiftTotal = rtl ? setWidth : -setWidth;
+    this._marqueeDurationS = durationS;
     track.style.setProperty("--marquee-shift", rtl ? `${setWidth}px` : `-${setWidth}px`);
+    // Preserve the visible position across restarts (data refreshes re-run this).
+    const prevP = this._marqueeProgress();
     track.style.animation = `marquee-glide ${durationS}s linear infinite`;
+    const anim = track.getAnimations()[0];
+    if (anim && prevP > 0) anim.currentTime = prevP * durationS * 1000;
+    this._attachMarqueeDrag(strip);
     this._syncMarqueePause(track);
   }
 
   private _stopMarquee(): void {
     const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
-    if (track) track.style.animation = "";
+    if (track) {
+      track.style.animation = "";
+      track.style.transform = "";
+    }
+  }
+
+  /** Finger-driven scrolling on the transform track: the drag moves the strip
+   *  directly (with seamless wrap via progress normalisation), and releasing
+   *  resumes the compositor glide from the exact position the finger left. */
+  private _attachMarqueeDrag(strip: HTMLElement): void {
+    if (strip.dataset.dragBound === "1") return;
+    strip.dataset.dragBound = "1";
+    strip.addEventListener("pointerdown", (event: PointerEvent) => {
+      if (this._marqueeDrag || !this._marqueeShiftTotal) return;
+      const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
+      if (!track) return;
+      // Strict order: read live position, lock it as an inline transform, THEN
+      // retire the animation. Reveal order guarantees no frame at wrong pixels.
+      const p = this._marqueeProgress();
+      track.style.transform = `translateX(${p * this._marqueeShiftTotal}px)`;
+      track.style.animation = "none";
+      this._marqueeDrag = { pointerId: event.pointerId, startX: event.clientX, p };
+      strip.setPointerCapture(event.pointerId);
+    });
+    strip.addEventListener("pointermove", (event: PointerEvent) => {
+      const drag = this._marqueeDrag;
+      if (!drag || drag.pointerId !== event.pointerId || !this._marqueeShiftTotal) return;
+      const dx = event.clientX - drag.startX;
+      drag.startX = event.clientX;
+      drag.p = (((drag.p + dx / this._marqueeShiftTotal) % 1) + 1) % 1;
+      const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
+      if (track) track.style.transform = `translateX(${drag.p * this._marqueeShiftTotal}px)`;
+    });
+    const release = (event: PointerEvent): void => {
+      const drag = this._marqueeDrag;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      this._marqueeDrag = null;
+      this._resumeMarqueeAt(drag.p);
+    };
+    strip.addEventListener("pointerup", release);
+    strip.addEventListener("pointercancel", release);
+  }
+
+  /** Current glide progress (0-1): from the live animation clock, falling back
+   *  to the actual rendered transform matrix (a not-yet-ticked or restarted
+   *  animation reports 0 and would visibly lurch the strip). */
+  private _marqueeProgress(): number {
+    const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
+    if (!track || !this._marqueeShiftTotal) return 0;
+    const anim = track.getAnimations()[0];
+    if (anim && anim.currentTime !== null && this._marqueeDurationS) {
+      const p = (Number(anim.currentTime) / (this._marqueeDurationS * 1000)) % 1;
+      return p < 0 ? p + 1 : p;
+    }
+    const matrix = new DOMMatrixReadOnly(getComputedStyle(track).transform);
+    if (matrix.isIdentity || matrix.m41 === 0) return 0;
+    const p = matrix.m41 / this._marqueeShiftTotal;
+    return ((p % 1) + 1) % 1;
+  }
+
+  /** Restart the glide at progress p (finger release / popup close).
+   *  Order matters: start the animation and seek it to p BEFORE dropping the
+   *  inline transform, so no frame ever renders at the wrong position. */
+  private _resumeMarqueeAt(p: number): void {
+    const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
+    if (!track || !this._marqueeDurationS) return;
+    track.style.animation = `marquee-glide ${this._marqueeDurationS}s linear infinite`;
+    const anim = track.getAnimations()[0];
+    if (anim) anim.currentTime = p * this._marqueeDurationS * 1000;
+    track.style.transform = "";
+    this._syncMarqueePause(track);
   }
 
   /** Pause the glide while popups are open / finger is down; resume after. */

@@ -18,8 +18,8 @@ export const cardStyles = css`
   .content.stack > .classic-item { --tas-title-size:15px; }
   .content.stack > .item .name { font-size:14px; }
   .content.carousel { display:flex; overflow-x:auto; overscroll-behavior-inline:contain; scroll-snap-type:x mandatory; scrollbar-width:thin; padding-bottom:12px; }
-  .content.marquee { display:block; overflow:hidden; padding-right:0; }
-  .content.marquee .marquee-track { display:flex; flex-wrap:nowrap; gap:var(--scroll-gap, 8px); will-change:transform; animation-play-state:paused; }
+  .content.marquee { display:block; overflow:hidden; padding-right:0; touch-action:pan-y; }
+  .content.marquee .marquee-track { display:flex; flex-wrap:nowrap; gap:var(--scroll-gap, 8px); will-change:transform; animation-play-state:paused; user-select:none; -webkit-user-select:none; }
   .content.marquee .marquee-track .item { flex:0 0 min(72cqw, var(--carousel-width, 280px)); flex-shrink:0; }
   .content.marquee .marquee-track .classic-item { flex:0 0 min(88cqw, 600px); flex-shrink:0; }
   .content.marquee .marquee-track .media-item { display:flex; flex-direction:column; --media-aspect:2/3; }

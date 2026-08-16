@@ -992,8 +992,8 @@ var Ne = o`
   .content.stack > .classic-item { --tas-title-size:15px; }
   .content.stack > .item .name { font-size:14px; }
   .content.carousel { display:flex; overflow-x:auto; overscroll-behavior-inline:contain; scroll-snap-type:x mandatory; scrollbar-width:thin; padding-bottom:12px; }
-  .content.marquee { display:block; overflow:hidden; padding-right:0; }
-  .content.marquee .marquee-track { display:flex; flex-wrap:nowrap; gap:var(--scroll-gap, 8px); will-change:transform; animation-play-state:paused; }
+  .content.marquee { display:block; overflow:hidden; padding-right:0; touch-action:pan-y; }
+  .content.marquee .marquee-track { display:flex; flex-wrap:nowrap; gap:var(--scroll-gap, 8px); will-change:transform; animation-play-state:paused; user-select:none; -webkit-user-select:none; }
   .content.marquee .marquee-track .item { flex:0 0 min(72cqw, var(--carousel-width, 280px)); flex-shrink:0; }
   .content.marquee .marquee-track .classic-item { flex:0 0 min(88cqw, 600px); flex-shrink:0; }
   .content.marquee .marquee-track .media-item { display:flex; flex-direction:column; --media-aspect:2/3; }
@@ -1359,15 +1359,15 @@ var Ne = o`
 		this.styles = Ne;
 	}
 	constructor() {
-		super(), this._dialogOpenedAt = 0, this._dialogClosing = !1, this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._scrollLockCount = 0, this._marqueeVelocity = 0, this._showcaseTimer = 0, this._showcaseReloopBound = () => this._showcaseReloop(), this._marqueeSets = 2, this._suppressNextClick = !1, this._pointerDownAt = null, this._marqueeSetWidth = 0, this._marqueeTouching = !1, this._showcaseIndex = 0, this._visibilityChanged = () => {
+		super(), this._dialogOpenedAt = 0, this._dialogClosing = !1, this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._scrollLockCount = 0, this._marqueeVelocity = 0, this._showcaseTimer = 0, this._showcaseReloopBound = () => this._showcaseReloop(), this._marqueeSets = 2, this._suppressNextClick = !1, this._pointerDownAt = null, this._marqueeSetWidth = 0, this._marqueeTouching = !1, this._marqueeShiftTotal = 0, this._marqueeDurationS = 0, this._marqueeDrag = null, this._showcaseIndex = 0, this._visibilityChanged = () => {
 			document.visibilityState === "visible" && this._config.mode !== "active" && this._loadData();
 		}, this._pointerDownTracker = (e) => {
 			this._pointerDownAt = {
 				x: e.clientX,
 				y: e.clientY
-			}, this._marqueeTouching = !0;
+			}, this._marqueeTouching = !0, this._syncMarqueePause();
 		}, this._pointerUpClassifier = (e) => {
-			this._marqueeTouching = !1;
+			this._marqueeTouching = !1, this._syncMarqueePause();
 			let t = this._pointerDownAt;
 			this._pointerDownAt = null, t && Math.hypot(e.clientX - t.x, e.clientY - t.y) > 12 && (this._suppressNextClick = !0);
 		}, this._delegatedItemClick = (e) => {
@@ -1839,7 +1839,7 @@ var Ne = o`
 		return Math.max(1, this._filteredItems().length || this._data?.items.length || 1);
 	}
 	_startMarquee() {
-		if ((this._filteredItems().length || 0) < 2) return;
+		if ((this._filteredItems().length || 0) < 2 || this._marqueeDrag) return;
 		let e = this.renderRoot.querySelector(".content.marquee"), t = this.renderRoot.querySelector(".marquee-track");
 		if (!e || !t) return;
 		let n = this._marqueeItemsPerSet();
@@ -1847,11 +1847,59 @@ var Ne = o`
 		let r = t.children[0], i = t.children[n], a = (i.firstElementChild instanceof HTMLElement ? i.firstElementChild : i).getBoundingClientRect().left - r.getBoundingClientRect().left;
 		if (a <= 0) return;
 		let o = this._config.autoscroll_speed ?? 60, s = this._config.autoscroll_direction === "rtl", c = a / o;
-		t.style.setProperty("--marquee-shift", s ? `${a}px` : `-${a}px`), t.style.animation = `marquee-glide ${c}s linear infinite`, this._syncMarqueePause(t);
+		this._marqueeShiftTotal = s ? a : -a, this._marqueeDurationS = c, t.style.setProperty("--marquee-shift", s ? `${a}px` : `-${a}px`);
+		let l = this._marqueeProgress();
+		t.style.animation = `marquee-glide ${c}s linear infinite`;
+		let u = t.getAnimations()[0];
+		u && l > 0 && (u.currentTime = l * c * 1e3), this._attachMarqueeDrag(e), this._syncMarqueePause(t);
 	}
 	_stopMarquee() {
 		let e = this.renderRoot.querySelector(".marquee-track");
-		e && (e.style.animation = "");
+		e && (e.style.animation = "", e.style.transform = "");
+	}
+	_attachMarqueeDrag(e) {
+		if (e.dataset.dragBound === "1") return;
+		e.dataset.dragBound = "1", e.addEventListener("pointerdown", (t) => {
+			if (this._marqueeDrag || !this._marqueeShiftTotal) return;
+			let n = this.renderRoot.querySelector(".marquee-track");
+			if (!n) return;
+			let r = this._marqueeProgress();
+			n.style.transform = `translateX(${r * this._marqueeShiftTotal}px)`, n.style.animation = "none", this._marqueeDrag = {
+				pointerId: t.pointerId,
+				startX: t.clientX,
+				p: r
+			}, e.setPointerCapture(t.pointerId);
+		}), e.addEventListener("pointermove", (e) => {
+			let t = this._marqueeDrag;
+			if (!t || t.pointerId !== e.pointerId || !this._marqueeShiftTotal) return;
+			let n = e.clientX - t.startX;
+			t.startX = e.clientX, t.p = ((t.p + n / this._marqueeShiftTotal) % 1 + 1) % 1;
+			let r = this.renderRoot.querySelector(".marquee-track");
+			r && (r.style.transform = `translateX(${t.p * this._marqueeShiftTotal}px)`);
+		});
+		let t = (e) => {
+			let t = this._marqueeDrag;
+			!t || t.pointerId !== e.pointerId || (this._marqueeDrag = null, this._resumeMarqueeAt(t.p));
+		};
+		e.addEventListener("pointerup", t), e.addEventListener("pointercancel", t);
+	}
+	_marqueeProgress() {
+		let e = this.renderRoot.querySelector(".marquee-track");
+		if (!e || !this._marqueeShiftTotal) return 0;
+		let t = e.getAnimations()[0];
+		if (t && t.currentTime !== null && this._marqueeDurationS) {
+			let e = Number(t.currentTime) / (this._marqueeDurationS * 1e3) % 1;
+			return e < 0 ? e + 1 : e;
+		}
+		let n = new DOMMatrixReadOnly(getComputedStyle(e).transform);
+		return n.isIdentity || n.m41 === 0 ? 0 : (n.m41 / this._marqueeShiftTotal % 1 + 1) % 1;
+	}
+	_resumeMarqueeAt(e) {
+		let t = this.renderRoot.querySelector(".marquee-track");
+		if (!t || !this._marqueeDurationS) return;
+		t.style.animation = `marquee-glide ${this._marqueeDurationS}s linear infinite`;
+		let n = t.getAnimations()[0];
+		n && (n.currentTime = e * this._marqueeDurationS * 1e3), t.style.transform = "", this._syncMarqueePause(t);
 	}
 	_syncMarqueePause(e) {
 		let t = e ?? this.renderRoot.querySelector(".marquee-track");
@@ -3903,7 +3951,7 @@ customElements.get("tautulli-media-card") || customElements.define("tautulli-med
 	name: "Tautulli Media Card",
 	description: "Active streams, recently added media, popular titles, and watch history from Tautulli.",
 	preview: !0
-}), console.info("%c TAUTULLI MEDIA CARD %c 0.1.1 ", "color:white;background:#e5a00d;font-weight:700", "color:#e5a00d;background:#1f2329");
+}), console.info("%c TAUTULLI MEDIA CARD %c 0.2.0 ", "color:white;background:#e5a00d;font-weight:700", "color:#e5a00d;background:#1f2329");
 //#endregion
 
 //# sourceMappingURL=tautulli-active-streams-card.js.map
