@@ -43,8 +43,8 @@ export const cardStyles = css`
   .open-details:focus-visible { outline:2px solid var(--primary-color); outline-offset:-3px; }
   .terminate { z-index:4; }
   .art { width:calc(100% - var(--tas-art-inset, 0px) - var(--tas-art-inset, 0px)); height:calc(100% - var(--tas-art-inset, 0px) - var(--tas-art-inset, 0px)); min-height:128px; margin:var(--tas-art-inset, 0px); object-fit:var(--tas-art-fit, cover); object-position:var(--tas-art-position, center); border-radius:max(0px, calc(var(--tas-radius, 12px) - 2px)); background:var(--secondary-background-color); }
-  .body { min-width:0; padding:10px 10px 10px 0; display:flex; flex-direction:column; gap:5px; }
-  .no-art .body { padding:12px; }
+  .body { min-width:0; padding:10px 10px 14px 0; display:flex; flex-direction:column; gap:5px; }
+  .no-art .body { padding:12px 12px 16px; }
   .eyebrow,.meta,.details,.summary { color:var(--secondary-text-color); }
   .eyebrow { display:flex; gap:7px; align-items:center; font-size:12px; min-width:0; }
   .eyebrow span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -57,7 +57,7 @@ export const cardStyles = css`
   .summary { font-size:12px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
   .progress { height:var(--tas-progress-height, 7px); border-radius:99px; overflow:hidden; background:color-mix(in srgb, var(--primary-text-color) 14%, transparent); margin-top:auto; }
   .progress::before { content:""; display:block; height:100%; width:var(--progress, 0%); background:var(--state-color, var(--primary-color)); transition:width .4s ease; }
-  .modern-progress-row { display:grid; grid-template-columns:minmax(64px,1fr) auto; align-items:center; gap:10px; margin-top:auto; }
+  .modern-progress-row { display:grid; grid-template-columns:minmax(64px,1fr) auto; align-items:center; gap:10px; margin-top:auto; padding-bottom:4px; }
   .modern-progress-row .progress { width:100%; margin-top:0; }
   .modern-progress-remaining { color:var(--secondary-text-color); font-size:11px; text-align:right; white-space:nowrap; }
   .terminate { position:absolute; right:6px; top:6px; display:grid; place-items:center; width:32px; height:32px; padding:0; border:1px solid color-mix(in srgb, var(--error-color) 28%, transparent); border-radius:50%; color:var(--error-color); background:color-mix(in srgb, var(--error-color) 16%, transparent); box-shadow:0 3px 10px rgb(0 0 0 / 14%); cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }

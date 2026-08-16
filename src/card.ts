@@ -135,7 +135,6 @@ export class TautulliMediaCard extends LitElement {
   }
 
   protected override updated(changed: PropertyValues): void {
-    this._applyEdgeToEdgeStretch();
     this.renderRoot.querySelectorAll<HTMLElement>("[data-item-id]").forEach((element) => {
       element.onclick = (event: MouseEvent): void => {
         if (event.composedPath().some((node) => node instanceof Element && node.matches(".terminate"))) return;
@@ -168,44 +167,6 @@ export class TautulliMediaCard extends LitElement {
     }
   }
 
-  /**
-   * In transparent container mode, stretch edge-to-edge like hand-styled cards do.
-   * Measures the real horizontal inset between this host element and the scrollable
-   * dashboard container, then pulls the card outward by exactly that amount using
-   * negative margins so the item aligns with the section/screen edges.
-   */
-  private _applyEdgeToEdgeStretch(): void {
-    const enabled = this._config?.container_style === "transparent";
-    if (!enabled) {
-      this.style.removeProperty("margin-left");
-      this.style.removeProperty("margin-right");
-      return;
-    }
-    let node: HTMLElement | null = this.parentElement;
-    let left = 0;
-    let right = 0;
-    let found = false;
-    while (node && node !== document.body) {
-      const style = window.getComputedStyle(node);
-      if (/(auto|scroll)/.test(style.overflowX) || /(auto|scroll)/.test(style.overflow)) {
-        const hostRect = this.getBoundingClientRect();
-        const nodeRect = node.getBoundingClientRect();
-        left = Math.max(0, hostRect.left - nodeRect.left);
-        right = Math.max(0, nodeRect.right - hostRect.right);
-        found = true;
-        break;
-      }
-      node = node.parentElement;
-    }
-    if (!found) return;
-    const pull = (inset: number): string => (inset > 1 ? `-${Math.min(inset, 32)}px` : "");
-    const ml = pull(left);
-    const mr = pull(right);
-    if (ml) this.style.setProperty("margin-left", ml);
-    else this.style.removeProperty("margin-left");
-    if (mr) this.style.setProperty("margin-right", mr);
-    else this.style.removeProperty("margin-right");
-  }
 
   private _visibilityChanged = (): void => {
     if (document.visibilityState === "visible" && this._config.mode !== "active") {

@@ -924,8 +924,8 @@ var Ae = o`
   .open-details:focus-visible { outline:2px solid var(--primary-color); outline-offset:-3px; }
   .terminate { z-index:4; }
   .art { width:calc(100% - var(--tas-art-inset, 0px) - var(--tas-art-inset, 0px)); height:calc(100% - var(--tas-art-inset, 0px) - var(--tas-art-inset, 0px)); min-height:128px; margin:var(--tas-art-inset, 0px); object-fit:var(--tas-art-fit, cover); object-position:var(--tas-art-position, center); border-radius:max(0px, calc(var(--tas-radius, 12px) - 2px)); background:var(--secondary-background-color); }
-  .body { min-width:0; padding:10px 10px 10px 0; display:flex; flex-direction:column; gap:5px; }
-  .no-art .body { padding:12px; }
+  .body { min-width:0; padding:10px 10px 14px 0; display:flex; flex-direction:column; gap:5px; }
+  .no-art .body { padding:12px 12px 16px; }
   .eyebrow,.meta,.details,.summary { color:var(--secondary-text-color); }
   .eyebrow { display:flex; gap:7px; align-items:center; font-size:12px; min-width:0; }
   .eyebrow span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -938,7 +938,7 @@ var Ae = o`
   .summary { font-size:12px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
   .progress { height:var(--tas-progress-height, 7px); border-radius:99px; overflow:hidden; background:color-mix(in srgb, var(--primary-text-color) 14%, transparent); margin-top:auto; }
   .progress::before { content:""; display:block; height:100%; width:var(--progress, 0%); background:var(--state-color, var(--primary-color)); transition:width .4s ease; }
-  .modern-progress-row { display:grid; grid-template-columns:minmax(64px,1fr) auto; align-items:center; gap:10px; margin-top:auto; }
+  .modern-progress-row { display:grid; grid-template-columns:minmax(64px,1fr) auto; align-items:center; gap:10px; margin-top:auto; padding-bottom:4px; }
   .modern-progress-row .progress { width:100%; margin-top:0; }
   .modern-progress-remaining { color:var(--secondary-text-color); font-size:11px; text-align:right; white-space:nowrap; }
   .terminate { position:absolute; right:6px; top:6px; display:grid; place-items:center; width:32px; height:32px; padding:0; border:1px solid color-mix(in srgb, var(--error-color) 28%, transparent); border-radius:50%; color:var(--error-color); background:color-mix(in srgb, var(--error-color) 16%, transparent); box-shadow:0 3px 10px rgb(0 0 0 / 14%); cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
@@ -1314,7 +1314,7 @@ var Ae = o`
 		e.has("_data") && this._syncPauseClock();
 	}
 	updated(e) {
-		this._applyEdgeToEdgeStretch(), this.renderRoot.querySelectorAll("[data-item-id]").forEach((e) => {
+		this.renderRoot.querySelectorAll("[data-item-id]").forEach((e) => {
 			e.onclick = (t) => {
 				if (t.composedPath().some((e) => e instanceof Element && e.matches(".terminate"))) return;
 				let n = this._filteredItems().find((t) => this._itemId(t) === e.dataset.itemId);
@@ -1331,25 +1331,6 @@ var Ae = o`
 			};
 			e.onclick = n, e.onpointerup = n;
 		}), e.has("hass") && this.hass && !this._data && !this._error && this._connect(), e.has("_pendingTermination") && this._pendingTermination && this.renderRoot.querySelector(".dialog-confirm")?.focus(), e.has("_selectedItem") && this._selectedItem && this.renderRoot.querySelector(".dialog-close")?.focus();
-	}
-	_applyEdgeToEdgeStretch() {
-		if (this._config?.container_style !== "transparent") {
-			this.style.removeProperty("margin-left"), this.style.removeProperty("margin-right");
-			return;
-		}
-		let e = this.parentElement, t = 0, n = 0, r = !1;
-		for (; e && e !== document.body;) {
-			let i = window.getComputedStyle(e);
-			if (/(auto|scroll)/.test(i.overflowX) || /(auto|scroll)/.test(i.overflow)) {
-				let i = this.getBoundingClientRect(), a = e.getBoundingClientRect();
-				t = Math.max(0, i.left - a.left), n = Math.max(0, a.right - i.right), r = !0;
-				break;
-			}
-			e = e.parentElement;
-		}
-		if (!r) return;
-		let i = (e) => e > 1 ? `-${Math.min(e, 32)}px` : "", a = i(t), o = i(n);
-		a ? this.style.setProperty("margin-left", a) : this.style.removeProperty("margin-left"), o ? this.style.setProperty("margin-right", o) : this.style.removeProperty("margin-right");
 	}
 	_disconnect() {
 		this._loadVersion += 1, this._unsubscribe?.(), this._unsubscribe = void 0, this._refreshTimer && window.clearInterval(this._refreshTimer), this._refreshTimer = void 0, this._retryTimer && window.clearTimeout(this._retryTimer), this._retryTimer = void 0, this._pauseTimer && window.clearInterval(this._pauseTimer), this._pauseTimer = void 0, this._pauseAnchors.clear();
