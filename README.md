@@ -8,7 +8,7 @@ The guided editor keeps card and popup settings separate while showing changes i
 
 ![Detailed active-stream popup with poster, backdrop, progress and stream statistics](images/details-popup.png)
 
-This is the initial public beta. It requires **Tautulli Active Streams 2.7.0 or newer**.
+It requires **Tautulli Active Streams 2.7.0 or newer**.
 
 ## Features
 
@@ -42,7 +42,7 @@ No additional dashboard cards are required.
 2. Restart Home Assistant.
 3. Open **HACS** and choose **Custom repositories** from the menu.
 4. Add `https://github.com/Richardvaio/tautulli-active-streams-card` as a **Dashboard** repository.
-5. Enable beta versions for the repository and download the latest beta.
+5. Download **Tautulli Active Streams Card**.
 6. Refresh the browser. A hard refresh may be required after an update.
 
 HACS adds the JavaScript resource automatically. If the card is not visible after installation, confirm that `/hacsfiles/tautulli-active-streams-card/tautulli-active-streams-card.js` appears under **Settings → Dashboards → Resources**.

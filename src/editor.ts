@@ -1,7 +1,9 @@
 import { LitElement, html, nothing } from "lit";
-import type { PropertyValues } from "lit";
+import type { PropertyValues, TemplateResult } from "lit";
 import { getEntries, getLibraries, getUsers, subscribeActive } from "./api";
 import { compactConfig, DEFAULT_POPUP_DETAIL_ORDER, normalizeConfig, STYLE_PRESETS } from "./config";
+import { appliesTo, EDITOR_SECTIONS } from "./editor-registry";
+import type { BlockField, Field, FieldContext, Section, SubSection } from "./editor-registry";
 import { editorStyles } from "./styles";
 import type { CardConfig, EntrySummary, HomeAssistant, PopupDetailField } from "./types";
 
@@ -53,6 +55,7 @@ export class TautulliMediaCardEditor extends LitElement {
   declare private _draggedDetailField?: PopupDetailField;
   declare private _dragPreviewOrder?: PopupDetailField[];
   private _lastDragTarget?: PopupDetailField;
+  private _lastGroupTitle?: string;
   private _dragOriginalOrder?: PopupDetailField[];
 
   constructor() {
@@ -139,257 +142,109 @@ export class TautulliMediaCardEditor extends LitElement {
     }
   }
 
+  private get _fieldContext(): FieldContext {
+    return {
+      config: this._config,
+      mode: this._config.mode,
+      data: {
+        entries: this._entries,
+        libraries: this._libraries,
+        users: this._users,
+        capabilities: this._entries.find((entry) => entry.entry_id === this._config.entry_id)?.capabilities,
+      },
+    };
+  }
+
   protected override render() {
-    const mode = this._config.mode;
-    const capabilities = this._entries.find(
-      (entry) => entry.entry_id === this._config.entry_id,
-    )?.capabilities;
-    const modes: SelectItem[] = [
-      { value: "active", label: "Active streams" },
-      ...(capabilities?.recently_added === false ? [] : [{ value: "recently_added", label: "Recently added" }]),
-      ...(capabilities?.home_stats === false ? [] : [{ value: "popular", label: "Popular and top media" }]),
-      ...(capabilities?.user_stats === false ? [] : [{ value: "users", label: "Plex user activity" }]),
-      ...(capabilities?.history === false ? [] : [{ value: "history", label: "Watch history (administrators)" }]),
-    ];
+    const ctx = this._fieldContext;
+    const capabilities = ctx.data.capabilities;
     return html`<div class="editor">
       ${this._error ? html`<div class="error" role="alert">${this._error}</div>` : nothing}
-      ${this._config.entry_id && capabilities ? html`<div class="compatibility"><span></span><div><strong>${this._entries.find((entry) => entry.entry_id === this._config.entry_id)?.name ?? "Tautulli"}</strong><small>${this._connectionMessage(mode)}</small></div></div>` : nothing}
-      <details class="section">
-        <summary>Content and source</summary>
-        <p class="section-description">Choose the server and the information this card should display.</p>
-        ${this._select("entry_id", "Tautulli server", this._entries.map((e) => ({ value: e.entry_id, label: e.name })), this._config.entry_id ?? "")}
-        ${this._select("mode", "View", modes, mode)}
-        <label>Title<input data-key="title" .value=${this._config.title ?? ""} @input=${this._input}></label>
-        ${mode === "active" ? this._select("media_type", "Media", [
-          { value: "all", label: "All active streams" }, { value: "video", label: "Movies and TV" }, { value: "music", label: "Music" },
-        ], this._config.media_type ?? "all") : nothing}
-        ${mode === "recently_added" ? this._select("media_type", "Media", [
-          { value: "all", label: "All media" }, { value: "movie", label: "Movies" }, { value: "show", label: "TV" }, { value: "artist", label: "Music" },
-        ], this._config.media_type ?? "all") : nothing}
-        ${mode === "recently_added" ? this._select("recent_grouping", "Group additions", [
-          {value:"none",label:"Show every item"},{value:"smart",label:"Smart TV and music grouping"},{value:"show",label:"Group TV by show"},{value:"season",label:"Group TV by season"},
-        ], this._config.recent_grouping ?? "none") : nothing}
-        ${mode !== "active" ? this._select("section_id", "Library", [{ value: "", label: "All libraries" }, ...this._libraries], this._config.section_id ?? "") : nothing}
-        ${["popular", "history"].includes(mode) ? this._select("user_id", "Plex user", [{ value: "", label: "All users" }, ...this._users], this._config.user_id ?? "") : nothing}
-        ${mode === "popular" ? html`
-          ${this._select("stat_id", "Ranking", [
-            {value:"popular_movies",label:"Popular movies"},{value:"top_movies",label:"Top movies"},{value:"popular_tv",label:"Popular TV"},{value:"top_tv",label:"Top TV"},{value:"popular_music",label:"Popular music"},{value:"top_music",label:"Top music"},{value:"top_users",label:"Top users"},{value:"top_libraries",label:"Top libraries"},{value:"top_platforms",label:"Top platforms"},{value:"last_watched",label:"Last watched"},{value:"most_concurrent",label:"Most concurrent"},
-          ], this._config.stat_id ?? "popular_movies")}
-          ${this._select("metric", "Rank by", [{value:"plays",label:"Play count"},{value:"duration",label:"Watch duration"}], this._config.metric ?? "plays")}
-          <label>Time range (days)<input type="number" min="1" max="3650" data-key="time_range" .value=${String(this._config.time_range ?? 30)} @change=${this._input}></label>
-        ` : nothing}
-      </details>
+      ${this._config.entry_id && capabilities ? html`<div class="compatibility"><span></span><div><strong>${ctx.data.entries.find((entry) => entry.entry_id === this._config.entry_id)?.name ?? "Tautulli"}</strong><small>${this._connectionMessage(ctx.mode)}</small></div></div>` : nothing}
+      ${EDITOR_SECTIONS.map((section) => this._renderSection(section, ctx))}
+      <p class="hint">Privacy and destructive permissions are enforced by the Tautulli Active Streams integration. Tokens and upstream image paths are never sent to this card.</p>
+      <button class="reset-all" type="button" @click=${this._resetAllDefaults}>Reset all settings to defaults</button>
+    </div>`;
+  }
 
-      <h3 class="editor-group-title">Card settings</h3>
-      <details class="section">
-        <summary>Card layout and appearance</summary>
-        <p class="section-description">Choose a ready-made look, then adjust only the layout and artwork settings that apply.</p>
-        <div class="recipe-grid" aria-label="Quick layouts">
+  private _renderSection(section: Section, ctx: FieldContext): TemplateResult | typeof nothing {
+    if (!appliesTo(section.applies, ctx)) return nothing;
+    let groupTitle: TemplateResult | typeof nothing = nothing;
+    if (section.groupTitle && this._lastGroupTitle !== section.groupTitle) {
+      this._lastGroupTitle = section.groupTitle;
+      groupTitle = html`<h3 class="editor-group-title">${section.groupTitle}</h3>`;
+    }
+    const renderedFields = (section.fields ?? []).map((field) => this._renderField(field, ctx));
+    const renderedSubsections = (section.subsections ?? []).map((sub) => this._renderSubSection(sub, ctx));
+    const description = typeof section.description === "function" ? section.description(ctx) : section.description;
+    return html`${groupTitle}<details class="section">
+      <summary>${typeof section.summary === "function" ? section.summary(ctx) : section.summary}</summary>
+      ${description ? html`<p class="section-description">${description}</p>` : nothing}
+      ${renderedFields}
+      ${renderedSubsections}
+    </details>`;
+  }
+
+  private _renderSubSection(sub: SubSection, ctx: FieldContext): TemplateResult | typeof nothing {
+    if (!appliesTo(sub.applies, ctx)) return nothing;
+    const rendered = (sub.fields ?? []).map((field) => this._renderField(field, ctx));
+    if (sub.header === "fineTune") {
+      return html`<details>
+        <summary>${sub.summary}</summary>
+        <div class="fine-tune-header"><span>The selected style's values are shown until you override them.</span><button type="button" @click=${this._resetAppearance}>Restore style defaults</button></div>
+        <div class="advanced">${rendered}</div>
+      </details>`;
+    }
+    return html`<details class=${sub.className ?? ""}>
+      <summary>${sub.summary}</summary>
+      ${sub.description ? html`<p class="section-description">${sub.description}</p>` : nothing}
+      ${rendered}
+    </details>`;
+  }
+
+  private _renderField(field: Field, ctx: FieldContext): TemplateResult | typeof nothing {
+    if (!appliesTo(field, ctx)) return nothing;
+    if (field.kind === "hint") {
+      return html`<p class="hint">${typeof field.text === "function" ? field.text(ctx) : field.text}</p>`;
+    }
+    if (field.kind === "block") return this._renderBlock(field.block);
+    const label = typeof field.label === "function" ? field.label(ctx) : field.label;
+    switch (field.kind) {
+      case "select": {
+        const options = typeof field.options === "function" ? field.options(ctx) : field.options;
+        return this._select(field.key, label, options, String(this._config[field.key] ?? options[0]?.value ?? ""));
+      }
+      case "toggle":
+        return this._toggle(field.key, label);
+      case "number":
+        return this._number(field.key, label, field.min, field.max, field.suffix);
+      case "toggleNumber":
+        return this._toggleNumber(field.key, label, field.min, field.max, field.suffix);
+      case "text":
+        return this._text(field.key, label, field.placeholder ?? "");
+      case "appearanceText":
+        return this._appearanceText(field.key, label, field.placeholder, field.colour ?? false);
+      case "appearanceNumber": {
+        const fallback = field.fallback ? field.fallback(ctx) : undefined;
+        return this._appearanceNumber(field.key, label, field.min, field.max, field.suffix, fallback);
+      }
+    }
+  }
+
+  private _renderBlock(block: BlockField["block"]): TemplateResult | typeof nothing {
+    switch (block) {
+      case "recipes":
+        return html`<div class="recipe-grid" aria-label="Quick layouts">
           ${this._recipe("classic", "Classic compact", "Original stream-panel look")}
           ${this._recipe("balanced", "Balanced", "Clean and adaptable")}
           ${this._recipe("cinematic", "Cinematic", "Backdrop and rich detail")}
           ${this._recipe("shelf", "Media shelf", "Horizontal poster carousel")}
-        </div>
-        ${this._select("style_preset", "Visual style", [
-          {value:"classic",label:"Classic Tautulli"},
-          {value:"modern",label:"Modern Home Assistant"},
-          {value:"minimal",label:"Minimal"},
-        ], this._config.style_preset ?? "classic")}
-        ${this._select("layout", "Layout style", [
-          {value:"grid",label:"Responsive grid"},{value:"list",label:"Single-column list"},{value:"carousel",label:"Poster shelf / carousel"},
-        ], this._config.layout ?? "grid")}
-        ${this._select("density", "Density", [{value:"compact",label:"Compact"},{value:"comfortable",label:"Comfortable"},{value:"detailed",label:"Detailed"}], this._config.density ?? "compact")}
-        ${this._config.layout === "grid" ? this._select("columns", "Columns", [{value:"auto",label:"Automatic"},{value:"1",label:"1"},{value:"2",label:"2"},{value:"3",label:"3"},{value:"4",label:"4"}], String(this._config.columns ?? "auto")) : nothing}
-        ${mode === "active" ? this._select("sort_by", "Sort active streams by", [
-          {value:"server",label:"Tautulli order"},{value:"user",label:"Plex user"},{value:"title",label:"Media title"},{value:"state",label:"Playback state"},{value:"progress",label:"Progress"},
-        ], this._config.sort_by ?? "server") : nothing}
-        ${mode === "active" && this._config.sort_by !== "server" ? this._select("sort_direction", "Sort direction", [{value:"ascending",label:"Ascending"},{value:"descending",label:"Descending"}], this._config.sort_direction ?? "ascending") : nothing}
-        ${this._select("artwork", "Artwork display", [
-          {value:"poster",label:"Poster / cover"},
-          {value:"backdrop",label:"Backdrop"},
-          {value:"both",label:"Poster / cover with backdrop"},
-          {value:"none",label:"None"},
-        ], this._config.artwork ?? "poster")}
-        ${this._config.artwork !== "none" ? html`<details class="inline-advanced">
-          <summary>Artwork adjustments</summary>
-          <p class="section-description">Recommended values come from the selected look. These controls only affect the artwork currently in use.</p>
-          ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_placement", "Artwork position", [
-            {value:"left",label:"Left of content"},{value:"right",label:"Right of content"},{value:"background",label:"Behind content (background)"},
-          ], this._config.artwork_placement ?? "left") : nothing}
-          ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_aspect", "Poster / cover shape", [
-            {value:"auto",label:"Automatic for media"},{value:"poster",label:"Poster (2:3)"},{value:"square",label:"Square (1:1)"},{value:"backdrop",label:"Widescreen (16:9)"},
-          ], this._config.artwork_aspect ?? "auto") : nothing}
-          ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_fit", "Poster / cover fit", [{value:"cover",label:"Crop to fill"},{value:"contain",label:"Show whole image"}], this._config.artwork_fit ?? "cover") : nothing}
-          ${this._select("artwork_position", "Image focus", [
-            {value:"center",label:"Centre"},{value:"top",label:"Top"},{value:"bottom",label:"Bottom"},{value:"left",label:"Left"},{value:"right",label:"Right"},
-          ], this._config.artwork_position ?? "center")}
-          ${["backdrop", "both"].includes(this._config.artwork ?? "poster") ? this._number("backdrop_opacity", "Backdrop strength", 0, 100, "%") : nothing}
-        </details>` : nothing}
-        ${this._select("container_style", "Outer card background", [
-          {value:"auto",label:"Automatic for style"},{value:"surface",label:"Home Assistant surface"},{value:"transparent",label:"Transparent (items only)"},
-        ], this._config.container_style ?? "auto")}
-        <label>${mode === "active" ? "Maximum active streams" : "Maximum items"}<input type="number" min="1" max="50" data-key="max_items" .value=${String(this._config.max_items ?? (mode === "active" ? 50 : 12))} @change=${this._input}></label>
-        <details>
-          <summary>Fine-tune colours and sizing</summary>
-          <div class="fine-tune-header"><span>The selected style's values are shown until you override them.</span><button type="button" @click=${this._resetAppearance}>Restore style defaults</button></div>
-          <div class="advanced">
-            ${this._appearanceText("card_background", "Card background", "Theme variable, colour, or rgba()", true)}
-            ${this._appearanceText("item_background", "Stream background", "Theme variable, colour, or rgba()", true)}
-            ${this._appearanceText("border_color", "Border colour", "Theme variable or colour", true)}
-            ${this._appearanceText("item_shadow", "Panel shadow", "CSS box-shadow value")}
-            ${this._appearanceNumber("border_radius", "Corner radius", 0, 32, "px")}
-            ${this._appearanceNumber("item_gap", "Item spacing", 0, 32, "px")}
-            ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._appearanceNumber("artwork_width", "Poster / cover width", 48, 240, "px", this._config.style_preset === "classic" ? 85 : this._config.density === "comfortable" ? 112 : this._config.density === "detailed" ? 140 : 92) : nothing}
-            ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._appearanceNumber("artwork_inset", "Poster / cover inset", 0, 24, "px") : nothing}
-            ${this._appearanceNumber("title_size", "Base title size", 11, 32, "px")}
-            ${this._appearanceNumber("progress_height", "Progress height", 2, 24, "px")}
-            ${this._appearanceText("playing_color", "Playing colour", "Theme variable or colour", true)}
-            ${this._appearanceText("paused_color", "Paused colour", "Theme variable or colour", true)}
-            ${this._appearanceText("buffering_color", "Buffering colour", "Theme variable or colour", true)}
-          </div>
-        </details>
-      </details>
-
-      <details class="section">
-        <summary>General</summary>
-        <p class="section-description">Control header, empty states and animation behaviour.</p>
-        <div class="toggles">
-          ${this._toggle("show_header", "Header")}
-          ${this._toggle("show_count", "Item count")}
-          ${this._toggle("show_empty", "Show when empty")}
-          ${this._toggle("animations", "State animations")}
-        </div>
-      </details>
-
-      ${mode === "active" ? html`
-      <details class="section">
-        <summary>Stream information</summary>
-        <p class="section-description">Control which identity and playback details appear on each stream card.</p>
-        <details class="inline-advanced">
-          <summary>Identity</summary>
-          <div class="toggles">
-            ${this._toggle("show_user", "Plex user")}
-            ${this._toggle("show_device", "Player and device")}
-          </div>
-        </details>
-        <details class="inline-advanced">
-          <summary>Media details</summary>
-          <div class="toggles">
-            ${this._toggle("show_media_details", "Year / episode")}
-            ${this._toggle("show_audio_quality", "Music audio quality")}
-          </div>
-        </details>
-        <details class="inline-advanced">
-          <summary>Playback and progress</summary>
-          <div class="toggles">
-            ${this._toggle("show_progress", "Progress bar")}
-            ${this._toggle("show_progress_percent", "Progress percentage")}
-            ${this._toggle("show_state", "Playback state")}
-            ${this._toggle("show_pause_duration", "Paused duration")}
-            ${this._toggle("show_track_number", "Music track number")}
-            ${this._toggle("show_eta", "Estimated finish time")}
-            ${this._toggle("show_remaining", "Time remaining")}
-          </div>
-        </details>
-        <details class="inline-advanced">
-          <summary>Quality and bandwidth</summary>
-          <div class="toggles">
-            ${this._toggle("show_quality", "Video quality")}
-            ${this._toggle("show_bandwidth", "Bandwidth")}
-          </div>
-        </details>
-      </details>
-      ` : html`
-      <details class="section">
-        <summary>Card information</summary>
-        <p class="section-description">Control what information appears on each item.</p>
-        <div class="toggles">
-          ${this._toggle("show_summary", "Summary")}
-        </div>
-      </details>
-      `}
-
-      <details class="section">
-        <summary>Tap behaviour</summary>
-        <p class="section-description">Choose what happens when an item is tapped on the dashboard card.</p>
-        ${this._select("click_action", "Tap action", [{value:"none",label:"Do nothing"},{value:"details",label:"Open details popup"}], this._config.click_action ?? "none")}
-        ${this._config.click_action === "details" ? html`<p class="hint">The popup has its own settings below under “Popup settings”.</p>` : nothing}
-      </details>
-
-      ${mode === "active" ? html`
-        <details class="section">
-          <summary>Terminate stream</summary>
-          <p class="section-description">${this._config.click_action === "details"
-            ? "Configure the administrator-only terminate button and where it appears."
-            : "The terminate button will appear directly on stream cards in the main card."}</p>
-          ${capabilities?.stream_termination
-            ? this._toggle("allow_termination", "Enable terminate-stream action")
-            : html`<p class="hint">Stream termination is disabled in the integration's Dashboard card access settings.</p>`}
-          ${capabilities?.stream_termination && this._config.allow_termination ? html`
-            ${this._config.click_action === "details"
-              ? this._select("termination_location", "Show button in", [
-                {value:"popup",label:"Details popup only"},{value:"card",label:"Main card only"},{value:"both",label:"Both popup and main card"},
-              ], this._config.termination_location ?? "popup")
-              : nothing}
-            ${this._config.click_action === "details" && ["popup", "both"].includes(this._config.termination_location ?? "popup") ? html`
-              ${this._select("termination_popup_placement", "Button position in popup", [{value:"footer",label:"Bottom right"},{value:"top",label:"Top right beside artwork"}], this._config.termination_popup_placement ?? "footer")}
-              ${this._select("termination_button_style", "Button style in popup", [{value:"label",label:"Icon and text"},{value:"icon",label:"Compact stop icon"}], this._config.termination_button_style ?? "label")}
-            ` : nothing}
-          ` : nothing}
-          <p class="hint">Requires “Allow administrators to terminate streams from cards” in the integration's Dashboard card access settings. A separate confirmation is always required.</p>
-        </details>
-      ` : nothing}
-
-      ${this._config.click_action === "details" ? html`
-        <h3 class="editor-group-title">Popup settings</h3>
-        <details class="section">
-          <summary>Popup layout and appearance</summary>
-          <p class="section-description">Control the details window independently from the dashboard card.</p>
-          ${this._select("popup_style", "Popup appearance", [{value:"clean",label:"Clean surface"},{value:"panel",label:"Framed summary"},{value:"cinematic",label:"Cinematic backdrop"}], this._config.popup_style ?? "clean")}
-          ${(this._config.popup_style ?? "clean") === "cinematic" ? this._toggleNumber("popup_cinematic_art", "Backdrop art strength", 5, 100, "%") : nothing}
-          ${this._select("popup_width", "Popup width", [{value:"compact",label:"Compact"},{value:"standard",label:"Standard"},{value:"wide",label:"Wide"}], this._config.popup_width ?? "standard")}
-          ${this._select("popup_animation", "Open animation", [{value:"none",label:"None"},{value:"fade",label:"Fade in"},{value:"scale",label:"Scale up"},{value:"rise",label:"Rise from below"}], this._config.popup_animation ?? "scale")}
-          ${(this._config.popup_animation ?? "scale") !== "none" ? this._number("popup_animation_duration", "Animation duration", 0, 1500, "ms") : nothing}
-          ${this._toggleNumber("popup_backdrop_dim", "Dim background", 1, 95, "%")}
-          ${this._toggleNumber("popup_backdrop_blur", "Blur background", 1, 24, "px")}
-          ${this._appearanceText("popup_background", "Popup background", "Theme variable, colour, or rgba()", true)}
-        </details>
-        <details class="section">
-          <summary>Popup summary</summary>
-          <p class="section-description">Choose the media context displayed above the progress bar.</p>
-          <div class="toggles">
-            ${mode !== "users" ? this._toggle("popup_show_artwork", "Artwork") : nothing}
-            ${mode !== "users" ? this._toggle("popup_show_summary", "Media description") : nothing}
-            ${mode !== "users" && this._config.popup_show_summary ? this._select("popup_summary_lines", "Description length", [{value:"2",label:"2 lines"},{value:"3",label:"3 lines"},{value:"5",label:"5 lines"},{value:"0",label:"Full description"}], String(this._config.popup_summary_lines ?? 3)) : nothing}
-            ${mode === "active" ? this._toggle("popup_summary_show_user", "Plex user") : nothing}
-            ${mode === "history" ? this._toggle("popup_show_user", "Plex user") : nothing}
-            ${mode === "active" ? this._toggle("popup_show_progress", "Progress") : nothing}
-          </div>
-        </details>
-        <details class="section">
-          <summary>${mode === "users" ? "User details" : mode === "active" ? "Stream details" : "Media details"}</summary>
-          <p class="section-description">Choose the layout and every field shown in the details area below the popup summary.</p>
-          ${this._select("popup_content_style", "Details presentation", [{value:"open",label:"Seamless — no panel"},{value:"panel",label:"Contained details panel"}], this._config.popup_content_style ?? "open")}
-          ${mode === "active" ? this._renderOrderedStreamDetails() : html`<div class="toggles">
-            ${mode !== "users" ? this._toggle("popup_show_media_type", "Media type") : nothing}
-            ${mode !== "users" ? this._toggle("popup_show_year", "Year") : nothing}
-            ${mode !== "users" ? this._toggle("popup_show_duration", "Duration") : nothing}
-            ${mode !== "users" ? this._toggle("popup_show_library", "Library") : nothing}
-            ${mode !== "users" ? this._toggle("popup_show_content_rating", "Content rating") : nothing}
-            ${mode !== "users" ? this._toggle("popup_show_rating", "Rating") : nothing}
-            ${mode !== "users" ? this._toggle("popup_show_audience_rating", "Audience rating") : nothing}
-            ${mode !== "users" ? this._toggle("popup_show_genres", "Genres") : nothing}
-            ${mode !== "users" ? this._toggle("popup_show_studio", "Studio") : nothing}
-            ${mode === "users" ? this._toggle("popup_show_playback_breakdown", "Playback breakdown") : nothing}
-            ${mode === "users" ? this._toggle("popup_show_favourites", "Favourite media") : nothing}
-            ${mode === "users" ? this._toggle("popup_show_habits", "Viewing habits and player") : nothing}
-            ${mode === "users" ? this._toggle("popup_show_recent_activity", "Recent activity") : nothing}
-          </div>`}
-        </details>
-      ` : nothing}
-      <p class="hint">Privacy and destructive permissions are enforced by the Tautulli Active Streams integration. Tokens and upstream image paths are never sent to this card.</p>
-      <button class="reset-all" type="button" @click=${this._resetAllDefaults}>Reset all settings to defaults</button>
-    </div>`;
+        </div>`;
+      case "streamDetailOrder":
+        return this._renderOrderedStreamDetails();
+      case "terminationUnavailableHint":
+        return html`<p class="hint">Stream termination is disabled in the integration's Dashboard card access settings.</p>`;
+    }
   }
 
   private _connectionMessage(mode: CardConfig["mode"]): string {
