@@ -633,9 +633,14 @@ var Q = [
 	termination_location: "popup",
 	click_action: "none",
 	popup_style: "clean",
+	popup_cinematic_art: 45,
 	popup_content_style: "open",
 	popup_detail_order: Q,
 	popup_width: "standard",
+	popup_animation: "scale",
+	popup_animation_duration: 220,
+	popup_backdrop_dim: 58,
+	popup_backdrop_blur: 0,
 	termination_popup_placement: "footer",
 	termination_button_style: "label",
 	popup_show_artwork: !0,
@@ -728,6 +733,26 @@ function $(e) {
 			"backdrop_opacity",
 			0,
 			100
+		],
+		[
+			"popup_animation_duration",
+			0,
+			1500
+		],
+		[
+			"popup_cinematic_art",
+			0,
+			100
+		],
+		[
+			"popup_backdrop_dim",
+			0,
+			95
+		],
+		[
+			"popup_backdrop_blur",
+			0,
+			24
 		]
 	]) {
 		let i = n[e];
@@ -883,10 +908,11 @@ var Ee = o`
   .background-art::before { content:""; position:absolute; z-index:0; inset:0 0 0 28%; background-image:linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 35%) 32%, rgb(0 0 0 / 10%) 100%), var(--tas-background-image); background-size:cover; background-position:var(--tas-art-position, center); opacity:var(--tas-backdrop-opacity, .35); -webkit-mask-image:linear-gradient(90deg, transparent, #000 35%); mask-image:linear-gradient(90deg, transparent, #000 35%); }
   .background-art > * { position:relative; z-index:1; }
   .item.background-art:not(.art-left) .body,.classic-item.background-art:not(.art-left) .classic-body { padding:12px; }
-  .interactive { cursor:pointer; }
+  .interactive { cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .interactive:hover { border-color:color-mix(in srgb, var(--primary-color) 55%, var(--tas-border-color)); }
   .interactive:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }
-  .open-details { position:absolute; z-index:2; inset:0; width:100%; height:100%; padding:0; border:0; border-radius:inherit; background:transparent; cursor:pointer; }
+  .interactive:active { transform:scale(.985); transition:transform .12s ease; }
+  .open-details { position:absolute; z-index:2; inset:0; width:100%; height:100%; padding:0; border:0; border-radius:inherit; background:transparent; cursor:pointer; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
   .open-details:focus-visible { outline:2px solid var(--primary-color); outline-offset:-3px; }
   .terminate { z-index:4; }
   .art { width:calc(100% - var(--tas-art-inset, 0px) - var(--tas-art-inset, 0px)); height:calc(100% - var(--tas-art-inset, 0px) - var(--tas-art-inset, 0px)); min-height:128px; margin:var(--tas-art-inset, 0px); object-fit:var(--tas-art-fit, cover); object-position:var(--tas-art-position, center); border-radius:max(0px, calc(var(--tas-radius, 12px) - 2px)); background:var(--secondary-background-color); }
@@ -939,7 +965,19 @@ var Ee = o`
   .progress-remaining { grid-column:3; padding-right:8px; color:rgb(255 255 255 / 42%); text-align:right; white-space:nowrap; }
   :host([animations]) .classic-item.paused .classic-progress::before { animation:pulse 1.5s ease-in-out infinite; }
   :host([animations]) .classic-item.buffering .classic-progress::before { animation:pulse .8s ease-in-out infinite; }
-  .dialog-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; background:rgb(0 0 0 / 58%); }
+  .dialog-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; }
+  .dialog-backdrop::before { content:""; position:absolute; inset:0; background:var(--scrim-color, rgb(0 0 0 / 58%)); }
+  .dialog-backdrop > * { position:relative; }
+  .details-dialog.anim-fade { animation:dialog-fade var(--dialog-animation-duration, 220ms) ease-out; }
+  .details-dialog.anim-scale { animation:dialog-scale var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
+  .details-dialog.anim-rise { animation:dialog-rise var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
+  :host(:not([animations])) .details-dialog { animation:none !important; }
+  @keyframes dialog-fade { from { opacity:0; } }
+  @keyframes backdrop-fade { from { opacity:0; } }
+  @keyframes cinematic-art-in { from { opacity:0; } }
+  @keyframes dialog-scale { from { transform:scale(.96) translateY(6px); } }
+  @keyframes dialog-rise { from { transform:translateY(100vh); } }
+  :host(:not([animations])) .dialog-backdrop { animation:none !important; }
   .confirm-dialog { width:min(420px, 100%); overflow:hidden; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:var(--card-background-color); box-shadow:0 18px 54px rgb(0 0 0 / 42%); }
   .dialog-content { display:grid; gap:14px; padding:24px; }
   .dialog-icon { width:48px; height:48px; display:grid; place-items:center; border-radius:50%; color:var(--error-color); background:color-mix(in srgb, var(--error-color) 14%, transparent); }
@@ -955,31 +993,33 @@ var Ee = o`
   .dialog-confirm { color:#fff; background:var(--error-color, #db4437); }
   .dialog-actions button:focus-visible,.terminate:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }
   .dialog-actions button:disabled { opacity:.55; cursor:wait; }
-  .details-dialog { position:relative; width:min(720px, 100%); max-height:min(86vh, 780px); overflow:auto; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:var(--card-background-color); box-shadow:0 18px 54px rgb(0 0 0 / 45%); isolation:isolate; }
+  .details-dialog { position:relative; width:min(720px, 100%); max-height:min(86vh, 780px); overflow-x:hidden; overflow-y:auto; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:linear-gradient(var(--card-background-color), var(--card-background-color)), linear-gradient(var(--primary-background-color, #fff), var(--primary-background-color, #fff)); box-shadow:0 18px 54px rgb(0 0 0 / 45%); isolation:isolate; min-width:0; }
   .details-dialog.popup-width-compact { width:min(520px, 100%); }
   .details-dialog.popup-width-wide { width:min(940px, 100%); }
   .details-dialog.has-backdrop::before { content:""; position:absolute; z-index:-1; inset:0 0 auto 28%; height:270px; background-image:linear-gradient(180deg, rgb(0 0 0 / 10%), var(--card-background-color) 96%), linear-gradient(90deg, transparent, rgb(0 0 0 / 20%)), var(--details-backdrop); background-size:cover; background-position:center; opacity:.5; -webkit-mask-image:linear-gradient(90deg, transparent, #000 35%); mask-image:linear-gradient(90deg, transparent, #000 35%); }
   .dialog-close { position:sticky; z-index:3; float:right; top:12px; right:12px; width:40px; height:40px; display:grid; place-items:center; margin:12px 12px 0 0; border:0; border-radius:50%; color:var(--primary-text-color); background:color-mix(in srgb, var(--card-background-color) 82%, transparent); cursor:pointer; backdrop-filter:blur(8px); }
-  .details-content { display:grid; gap:18px; padding:24px; clear:both; }
+  .details-content { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; padding:24px; clear:both; min-width:0; }
   .details-content h2 { max-width:calc(100% - 44px); margin:0; font-size:clamp(22px, 4cqw, 32px); line-height:1.12; }
   .details-hero { position:relative; display:grid; gap:16px; }
   .popup-summary { display:grid; gap:14px; padding:14px; border:1px solid color-mix(in srgb, var(--divider-color) 80%, transparent); border-radius:14px; background:color-mix(in srgb, var(--primary-text-color) 4%, transparent); backdrop-filter:blur(4px); }
   .popup-clean .popup-summary { padding:0; border:0; border-radius:0; background:transparent; backdrop-filter:none; }
-  .popup-cinematic.has-backdrop::before { inset:0; height:330px; opacity:.72; -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 100%); mask-image:linear-gradient(180deg,#000 0%,transparent 100%); }
+  .popup-cinematic.has-backdrop::before { inset:0; height:330px; opacity:calc(var(--cinematic-art-opacity, .45)); -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 100%); mask-image:linear-gradient(180deg,#000 0%,transparent 100%); animation:cinematic-art-in var(--dialog-animation-duration, 220ms) ease-out; }
   .popup-cinematic .popup-summary { min-height:190px; align-content:end; padding:22px; border:0; background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--card-background-color) 55%,transparent)); }
   .media-summary { justify-items:start; }
   .details-section-title { margin:2px 0 -8px; color:var(--secondary-text-color); font-size:12px; text-transform:uppercase; letter-spacing:.65px; }
   .details-hero.with-poster { grid-template-columns:minmax(90px, 150px) minmax(0,1fr); }
   .details-hero > img { width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:10px; box-shadow:0 8px 24px rgb(0 0 0 / 35%); }
   .details-primary { min-width:0; display:grid; align-content:end; gap:10px; }
-  .details-hero .details-primary { align-content:start; }
+  .details-hero .details-primary { align-content:start; display:flex; flex-direction:column; gap:8px; }
+  .details-hero .details-primary .details-progress { margin-top:auto; }
   .details-heading-line { min-width:0; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .details-inline-title { min-width:0; overflow-wrap:anywhere; }
   .details-inline-title { max-width:none !important; margin:0; padding-right:4px; font-size:clamp(22px, 4cqw, 32px); line-height:1.12; }
   .details-summary-user { max-width:42%; flex:none; display:flex; align-items:center; gap:5px; overflow:hidden; padding:5px 9px; border:1px solid color-mix(in srgb, var(--divider-color) 70%, transparent); border-radius:999px; color:var(--secondary-text-color); background:color-mix(in srgb, var(--primary-text-color) 7%, transparent); font-size:11px; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
   .details-summary-user ha-icon { --mdc-icon-size:15px; flex:none; }
   .details-primary p,.details-subtitle { margin:0; color:var(--secondary-text-color); }
-  .details-chips { display:flex; flex-wrap:wrap; gap:6px; }
-  .details-chips span { padding:4px 9px; border-radius:999px; color:var(--secondary-text-color); background:color-mix(in srgb, var(--primary-text-color) 8%, transparent); font-size:12px; text-transform:capitalize; }
+  .details-chips { display:flex; flex-wrap:wrap; gap:6px; min-width:0; }
+  .details-chips span { padding:4px 9px; border-radius:999px; color:var(--secondary-text-color); background:color-mix(in srgb, var(--primary-text-color) 8%, transparent); font-size:12px; text-transform:capitalize; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .details-chips .state { color:var(--primary-text-color); background:color-mix(in srgb, var(--primary-color) 32%, transparent); }
   .details-chips .state.paused { color:var(--secondary-text-color); background:color-mix(in srgb, var(--tas-paused-color, #e5a00d) 42%, transparent); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--tas-paused-color, #e5a00d) 58%, transparent); }
   .details-chips .state.buffering { color:var(--secondary-text-color); background:color-mix(in srgb, var(--tas-buffering-color, #d32f2f) 42%, transparent); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--tas-buffering-color, #d32f2f) 58%, transparent); }
@@ -1042,11 +1082,21 @@ var Ee = o`
     .remaining-label { display:none; }
     .progress-state { padding-left:5px; }
     .progress-remaining { padding-right:5px; }
-    .details-hero.with-poster { grid-template-columns:86px minmax(0,1fr); }
+    .details-hero.with-poster { grid-template-columns:72px minmax(0,1fr); gap:12px; }
+    .details-hero > img { border-radius:8px; }
     .details-heading-line { align-items:flex-start; flex-direction:column; gap:7px; }
     .details-summary-user { max-width:100%; }
-    .details-content { padding:18px; }
-    .details-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .details-content { padding:14px; gap:14px; }
+    .details-inline-title { font-size:20px; }
+    .details-grid { grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:6px; }
+    .detail-value { padding:8px 10px; }
+    .detail-value span { font-size:12px; white-space:normal; overflow-wrap:anywhere; }
+    .popup-summary { padding:10px; gap:10px; }
+    .details-progress { height:8px; }
+    .dialog-backdrop { padding:10px; }
+    .details-dialog { border-radius:14px; }
+    .dialog-close { width:36px; height:36px; margin:8px 8px 0 0; }
+    .details-actions button, .details-top-action button { min-height:44px; }
     .carousel-controls { display:none; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -1076,6 +1126,10 @@ var Ee = o`
   .option-group + .option-group { padding-top:12px; border-top:1px solid var(--divider-color); }
   .option-group h4 { margin:0; font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--secondary-text-color); }
   .toggle { min-height:42px; display:flex; flex-direction:row-reverse; align-items:center; justify-content:space-between; gap:9px; padding:0 10px; border:1px solid color-mix(in srgb, var(--divider-color) 75%, transparent); border-radius:9px; background:color-mix(in srgb, var(--primary-text-color) 3%, transparent); }
+  .toggle-number { display:grid; gap:8px; padding:8px 10px; border:1px solid color-mix(in srgb, var(--divider-color) 75%, transparent); border-radius:9px; background:color-mix(in srgb, var(--primary-text-color) 3%, transparent); }
+  .toggle-number .toggle { min-height:0; border:0; background:transparent; padding:0; }
+  .toggle-number-value { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--secondary-text-color); }
+  .toggle-number-value input[type="range"] { flex:1; min-height:24px; accent-color:var(--primary-color); }
   .toggle input { position:relative; width:38px; height:22px; min-height:22px; flex:none; padding:0; appearance:none; border:0; border-radius:99px; background:color-mix(in srgb, var(--primary-text-color) 24%, transparent); cursor:pointer; }
   .toggle input::before { content:""; position:absolute; width:18px; height:18px; left:2px; top:2px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgb(0 0 0 / 32%); transition:transform .18s ease; }
   .toggle input:checked { background:var(--primary-color); }
@@ -1100,6 +1154,8 @@ var Ee = o`
   .detail-order-toggle:checked { background:var(--primary-color); }
   .detail-order-toggle:checked::before { transform:translateX(16px); }
   .hint { margin:0; font-size:12px; color:var(--secondary-text-color); line-height:1.4; }
+  .reset-all { display:block; margin:12px 0 0; padding:8px 14px; border:1px solid var(--error-color, #db4437); border-radius:8px; color:var(--error-color, #db4437); background:transparent; font:600 12px inherit; cursor:pointer; }
+  .reset-all:hover { background:color-mix(in srgb, var(--error-color, #db4437) 10%, transparent); }
   .error { color:var(--error-color); font-size:12px; }
   .section details { border-top:1px solid var(--divider-color); padding-top:10px; }
   .section details summary { cursor:pointer; color:var(--primary-text-color); font-size:13px; font-weight:600; }
@@ -1165,7 +1221,7 @@ var Ee = o`
 		this.styles = Ee;
 	}
 	constructor() {
-		super(), this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._visibilityChanged = () => {
+		super(), this._dialogOpenedAt = 0, this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._scrollLockCount = 0, this._visibilityChanged = () => {
 			document.visibilityState === "visible" && this._config.mode !== "active" && this._loadData();
 		}, this._delegatedItemClick = (e) => {
 			if (this._config.click_action !== "details") return;
@@ -1176,7 +1232,11 @@ var Ee = o`
 			let r = this._filteredItems().find((e) => this._itemId(e) === n.dataset.itemId);
 			r && this._openDetails(r);
 		}, this._closeDetails = () => {
-			this._selectedItem = void 0;
+			this._selectedItem = void 0, this._unlockBodyScroll();
+		}, this._backdropClickClose = (e) => {
+			e.target === e.currentTarget && (Date.now() - this._dialogOpenedAt < 350 || this._closeDetails());
+		}, this._backdropTerminationClose = (e) => {
+			e.target === e.currentTarget && (Date.now() - this._dialogOpenedAt < 350 || this._closeTerminationDialog());
 		}, this._config = $({}), this._loading = !0, this._terminating = !1, this._pauseClock = Date.now();
 	}
 	static getStubConfig() {
@@ -1219,7 +1279,7 @@ var Ee = o`
 		super.connectedCallback(), document.addEventListener("visibilitychange", this._visibilityChanged), this.addEventListener("click", this._delegatedItemClick, { capture: !0 }), this.hass && this._connect();
 	}
 	disconnectedCallback() {
-		this._disconnect(), document.removeEventListener("visibilitychange", this._visibilityChanged), this.removeEventListener("click", this._delegatedItemClick, { capture: !0 }), super.disconnectedCallback();
+		this._scrollLockCount > 0 && (document.body.style.overflow = "", document.body.style.paddingRight = "", this._scrollLockCount = 0), this._disconnect(), document.removeEventListener("visibilitychange", this._visibilityChanged), this.removeEventListener("click", this._delegatedItemClick, { capture: !0 }), super.disconnectedCallback();
 	}
 	willUpdate(e) {
 		e.has("_data") && this._syncPauseClock();
@@ -1232,12 +1292,15 @@ var Ee = o`
 				n && this._openDetails(n);
 			};
 		}), this.renderRoot.querySelectorAll(".open-details").forEach((e) => {
-			let t = (t) => {
-				t.stopPropagation();
-				let n = this._filteredItems().find((t) => this._itemId(t) === e.dataset.detailId);
-				n && this._openDetails(n);
+			let t = 0, n = (n) => {
+				n.stopPropagation(), n.preventDefault();
+				let r = Date.now();
+				if (r - t < 400) return;
+				t = r;
+				let i = this._filteredItems().find((t) => this._itemId(t) === e.dataset.detailId);
+				i && this._openDetails(i);
 			};
-			e.onclick = t, e.onpointerup = t;
+			e.onclick = n, e.onpointerup = n;
 		}), e.has("hass") && this.hass && !this._data && !this._error && this._connect(), e.has("_pendingTermination") && this._pendingTermination && this.renderRoot.querySelector(".dialog-confirm")?.focus(), e.has("_selectedItem") && this._selectedItem && this.renderRoot.querySelector(".dialog-close")?.focus();
 	}
 	_disconnect() {
@@ -1568,13 +1631,26 @@ var Ee = o`
 		return t && n.push(`--state-color:${t}`), e && (n.push(`--tas-background-image:url("${e.replaceAll("\"", "")}")`), n.push(`--tas-backdrop-opacity:${(this._config.backdrop_opacity ?? 35) / 100}`)), n.join(";");
 	}
 	_openDetails(e) {
-		this._config.click_action === "details" && (this._selectedItem = e, this.requestUpdate());
+		if (this._config.click_action === "details") {
+			if (this._selectedItem === e) return;
+			this._selectedItem = e, this._dialogOpenedAt = Date.now(), this._lockBodyScroll(), this.requestUpdate();
+		}
 	}
 	_openDetailsButton(e, t) {
 		return this._config.click_action === "details" ? R`<button class="open-details" type="button" data-detail-id=${this._itemId(e)} aria-label="Open details for ${String(t)}"></button>` : B;
 	}
 	_itemId(e) {
 		return String(e.id ?? e.session_id ?? e.media?.id ?? `${e.rank ?? ""}:${e.display_name ?? e.media?.title ?? e.title ?? "item"}`);
+	}
+	_lockBodyScroll() {
+		if (this._scrollLockCount === 0 && document.body.scrollHeight > window.innerHeight) {
+			let e = window.innerWidth - document.documentElement.clientWidth;
+			document.body.style.overflow = "hidden", e > 0 && (document.body.style.paddingRight = `${e}px`);
+		}
+		this._scrollLockCount += 1;
+	}
+	_unlockBodyScroll() {
+		this._scrollLockCount = Math.max(0, this._scrollLockCount - 1), this._scrollLockCount === 0 && (document.body.style.overflow = "", document.body.style.paddingRight = "");
 	}
 	_detailsKeydown(e) {
 		if (e.key === "Escape") {
@@ -1602,9 +1678,9 @@ var Ee = o`
 		return this._config.mode === "active" ? this._renderActiveDetails(t) : this._config.mode === "users" ? this._renderUserDetails(t) : this._renderMediaDetails(t);
 	}
 	_renderDialogShell(e, t, n, r = !1) {
-		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}")` : "";
-		return R`<div class="dialog-backdrop" @click=${(e) => e.target === e.currentTarget && this._closeDetails()} @keydown=${this._detailsKeydown}>
-      <section class="details-dialog popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${n ? "has-backdrop" : ""}" style=${i} role="dialog" aria-modal="true" aria-labelledby="details-title">
+		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}");` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `--scrim-color:rgb(0 0 0 / ${a}%);${o ? `backdrop-filter:blur(${o}px);` : ""}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;`, c = this._config.popup_background, l = `${i}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;--cinematic-art-opacity:${(this._config.popup_cinematic_art ?? 45) / 100};${c ? `background:${c};` : ""}`;
+		return R`<div class="dialog-backdrop" style=${s} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
+      <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${n ? "has-backdrop" : ""}" style=${l} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
         <div class="details-content">${r ? B : R`<h2 id="details-title">${e}</h2>`}${t}</div>
       </section>
@@ -1780,7 +1856,7 @@ var Ee = o`
 		return e.includes("history_disabled") ? "Watch history is disabled in the integration’s Dashboard card access settings." : e.includes("unauthorized") ? "Administrator permission is required for this view." : e;
 	}
 	_openTerminationDialog(e, t) {
-		t.stopPropagation(), this._terminationTrigger = t.currentTarget, this._pendingTermination = e;
+		t.stopPropagation(), this._terminationTrigger = t.currentTarget, this._pendingTermination = e, this._dialogOpenedAt = Date.now();
 	}
 	_closeTerminationDialog() {
 		this._terminating || (this._pendingTermination = void 0, requestAnimationFrame(() => this._terminationTrigger?.focus()));
@@ -1804,7 +1880,7 @@ var Ee = o`
 			e.client?.product,
 			e.client?.player
 		].filter(Boolean).join(" · ");
-		return R`<div class="dialog-backdrop" tabindex="-1" @click=${(e) => e.target === e.currentTarget && this._closeTerminationDialog()} @keydown=${this._dialogKeydown}>
+		return R`<div class="dialog-backdrop" tabindex="-1" @click=${this._backdropTerminationClose} @keydown=${this._dialogKeydown}>
       <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="terminate-title" aria-describedby="terminate-description">
         <div class="dialog-content">
           <div class="dialog-icon"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></div>
@@ -1957,6 +2033,9 @@ var Ee = o`
 				"buffering_color"
 			]) delete e[t];
 			this._config = $(e), this._emitConfig();
+		}, this._resetAllDefaults = () => {
+			let e = this._config.entry_id;
+			this._config = $({ ...e ? { entry_id: e } : {} }), this._emitConfig();
 		}, this._input = (e) => {
 			let t = e.currentTarget, n = t.dataset.key, r = t.value;
 			if (t instanceof HTMLInputElement && t.type === "checkbox" && (r = t.checked), [
@@ -1968,7 +2047,11 @@ var Ee = o`
 				"artwork_inset",
 				"title_size",
 				"progress_height",
-				"backdrop_opacity"
+				"backdrop_opacity",
+				"popup_animation_duration",
+				"popup_cinematic_art",
+				"popup_backdrop_dim",
+				"popup_backdrop_blur"
 			].includes(n) && (r = t.value === "" ? void 0 : Number(t.value)), n === "columns" && t.value !== "auto" && (r = Number(t.value)), n === "popup_summary_lines" && (r = Number(t.value)), [
 				"section_id",
 				"user_id",
@@ -1979,7 +2062,8 @@ var Ee = o`
 				"item_shadow",
 				"playing_color",
 				"paused_color",
-				"buffering_color"
+				"buffering_color",
+				"popup_background"
 			].includes(n) && t.value === "" && (r = void 0), n === "style_preset") {
 				let e = {
 					...this._config,
@@ -2344,6 +2428,20 @@ var Ee = o`
         ${this._config.artwork === "none" ? B : R`<details class="inline-advanced">
           <summary>Artwork adjustments</summary>
           <p class="section-description">Recommended values come from the selected look. These controls only affect the artwork currently in use.</p>
+          ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_placement", "Artwork position", [
+			{
+				value: "left",
+				label: "Left of content"
+			},
+			{
+				value: "right",
+				label: "Right of content"
+			},
+			{
+				value: "background",
+				label: "Behind content (background)"
+			}
+		], this._config.artwork_placement ?? "left") : B}
           ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_aspect", "Poster / cover shape", [
 			{
 				value: "auto",
@@ -2430,49 +2528,84 @@ var Ee = o`
       </details>
 
       <details class="section">
-        <summary>Card information</summary>
-        <p class="section-description">Hide secondary details for a cleaner card or reveal the full playback picture.</p>
+        <summary>General</summary>
+        <p class="section-description">Control header, empty states and animation behaviour.</p>
         <div class="toggles">
           ${this._toggle("show_header", "Header")}
           ${this._toggle("show_count", "Item count")}
-          ${e === "active" ? this._toggle("show_user", "Plex user") : B}
-          ${e === "active" ? this._toggle("show_device", "Player and device") : B}
-          ${e === "active" ? this._toggle("show_quality", "Quality and bandwidth") : B}
-          ${e === "active" ? this._toggle("show_progress", "Progress") : B}
-          ${e === "active" ? this._toggle("show_state", "Playback state") : B}
-          ${e === "active" && this._config.show_progress ? this._toggle("show_progress_percent", "Progress percentage") : B}
-          ${e === "active" && this._config.show_state ? this._toggle("show_pause_duration", "Paused duration") : B}
-          ${e === "active" && this._config.show_state ? this._toggle("show_track_number", "Music track number") : B}
-          ${e === "active" ? this._toggle("show_media_details", "Year / episode") : B}
-          ${e === "active" ? this._toggle("show_eta", "Estimated finish time") : B}
-          ${e === "active" ? this._toggle("show_remaining", "Time remaining") : B}
-          ${e === "active" ? this._toggle("show_bandwidth", "Bandwidth") : B}
-          ${e === "active" ? this._toggle("show_audio_quality", "Music audio quality") : B}
-          ${e === "active" ? B : this._toggle("show_summary", "Summary")}
           ${this._toggle("show_empty", "Show when empty")}
           ${this._toggle("animations", "State animations")}
         </div>
       </details>
 
+      ${e === "active" ? R`
       <details class="section">
-        <summary>Card actions</summary>
-        <p class="section-description">Choose what happens on the dashboard card itself.</p>
-        ${this._select("click_action", "Clicking an item", [{
+        <summary>Stream information</summary>
+        <p class="section-description">Control which identity and playback details appear on each stream card.</p>
+        <details class="inline-advanced">
+          <summary>Identity</summary>
+          <div class="toggles">
+            ${this._toggle("show_user", "Plex user")}
+            ${this._toggle("show_device", "Player and device")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Media details</summary>
+          <div class="toggles">
+            ${this._toggle("show_media_details", "Year / episode")}
+            ${this._toggle("show_audio_quality", "Music audio quality")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Playback and progress</summary>
+          <div class="toggles">
+            ${this._toggle("show_progress", "Progress bar")}
+            ${this._toggle("show_progress_percent", "Progress percentage")}
+            ${this._toggle("show_state", "Playback state")}
+            ${this._toggle("show_pause_duration", "Paused duration")}
+            ${this._toggle("show_track_number", "Music track number")}
+            ${this._toggle("show_eta", "Estimated finish time")}
+            ${this._toggle("show_remaining", "Time remaining")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Quality and bandwidth</summary>
+          <div class="toggles">
+            ${this._toggle("show_quality", "Video quality")}
+            ${this._toggle("show_bandwidth", "Bandwidth")}
+          </div>
+        </details>
+      </details>
+      ` : R`
+      <details class="section">
+        <summary>Card information</summary>
+        <p class="section-description">Control what information appears on each item.</p>
+        <div class="toggles">
+          ${this._toggle("show_summary", "Summary")}
+        </div>
+      </details>
+      `}
+
+      <details class="section">
+        <summary>Tap behaviour</summary>
+        <p class="section-description">Choose what happens when an item is tapped on the dashboard card.</p>
+        ${this._select("click_action", "Tap action", [{
 			value: "none",
 			label: "Do nothing"
 		}, {
 			value: "details",
-			label: "Open detailed popup"
+			label: "Open details popup"
 		}], this._config.click_action ?? "none")}
+        ${this._config.click_action === "details" ? R`<p class="hint">The popup has its own settings below under “Popup settings”.</p>` : B}
       </details>
 
       ${e === "active" ? R`
         <details class="section">
           <summary>Terminate stream</summary>
-          <p class="section-description">Configure the administrator-only stream action and where it appears.</p>
+          <p class="section-description">${this._config.click_action === "details" ? "Configure the administrator-only terminate button and where it appears." : "The terminate button will appear directly on stream cards in the main card."}</p>
           ${t?.stream_termination ? this._toggle("allow_termination", "Enable terminate-stream action") : R`<p class="hint">Stream termination is disabled in the integration's Dashboard card access settings.</p>`}
           ${t?.stream_termination && this._config.allow_termination ? R`
-            ${this._config.click_action === "details" ? this._select("termination_location", "Show action in", [
+            ${this._config.click_action === "details" ? this._select("termination_location", "Show button in", [
 			{
 				value: "popup",
 				label: "Details popup only"
@@ -2483,18 +2616,18 @@ var Ee = o`
 			},
 			{
 				value: "both",
-				label: "Main card and popup"
+				label: "Both popup and main card"
 			}
-		], this._config.termination_location ?? "popup") : R`<p class="hint">The action will appear on the main card because the detailed popup is disabled.</p>`}
+		], this._config.termination_location ?? "popup") : B}
             ${this._config.click_action === "details" && ["popup", "both"].includes(this._config.termination_location ?? "popup") ? R`
-              ${this._select("termination_popup_placement", "Popup position", [{
+              ${this._select("termination_popup_placement", "Button position in popup", [{
 			value: "footer",
 			label: "Bottom right"
 		}, {
 			value: "top",
 			label: "Top right beside artwork"
 		}], this._config.termination_popup_placement ?? "footer")}
-              ${this._select("termination_button_style", "Popup control style", [{
+              ${this._select("termination_button_style", "Button style in popup", [{
 			value: "label",
 			label: "Icon and text"
 		}, {
@@ -2526,6 +2659,7 @@ var Ee = o`
 				label: "Cinematic backdrop"
 			}
 		], this._config.popup_style ?? "clean")}
+          ${(this._config.popup_style ?? "clean") === "cinematic" ? this._toggleNumber("popup_cinematic_art", "Backdrop art strength", 5, 100, "%") : B}
           ${this._select("popup_width", "Popup width", [
 			{
 				value: "compact",
@@ -2540,14 +2674,36 @@ var Ee = o`
 				label: "Wide"
 			}
 		], this._config.popup_width ?? "standard")}
+          ${this._select("popup_animation", "Open animation", [
+			{
+				value: "none",
+				label: "None"
+			},
+			{
+				value: "fade",
+				label: "Fade in"
+			},
+			{
+				value: "scale",
+				label: "Scale up"
+			},
+			{
+				value: "rise",
+				label: "Rise from below"
+			}
+		], this._config.popup_animation ?? "scale")}
+          ${(this._config.popup_animation ?? "scale") === "none" ? B : this._number("popup_animation_duration", "Animation duration", 0, 1500, "ms")}
+          ${this._toggleNumber("popup_backdrop_dim", "Dim background", 1, 95, "%")}
+          ${this._toggleNumber("popup_backdrop_blur", "Blur background", 1, 24, "px")}
+          ${this._appearanceText("popup_background", "Popup background", "Theme variable, colour, or rgba()", !0)}
         </details>
         <details class="section">
           <summary>Popup summary</summary>
           <p class="section-description">Choose the media context displayed above the progress bar.</p>
           <div class="toggles">
-            ${this._toggle("popup_show_artwork", "Artwork")}
-            ${this._toggle("popup_show_summary", "Media description")}
-            ${this._config.popup_show_summary ? this._select("popup_summary_lines", "Description length", [
+            ${e === "users" ? B : this._toggle("popup_show_artwork", "Artwork")}
+            ${e === "users" ? B : this._toggle("popup_show_summary", "Media description")}
+            ${e !== "users" && this._config.popup_show_summary ? this._select("popup_summary_lines", "Description length", [
 			{
 				value: "2",
 				label: "2 lines"
@@ -2598,6 +2754,7 @@ var Ee = o`
         </details>
       ` : B}
       <p class="hint">Privacy and destructive permissions are enforced by the Tautulli Active Streams integration. Tokens and upstream image paths are never sent to this card.</p>
+      <button class="reset-all" type="button" @click=${this._resetAllDefaults}>Reset all settings to defaults</button>
     </div>`;
 	}
 	_connectionMessage(e) {
@@ -2689,6 +2846,10 @@ var Ee = o`
 	}
 	_number(e, t, n, r, i) {
 		return R`<label>${t} (${i})<input type="number" min=${n} max=${r} data-key=${e} .value=${this._config[e] === void 0 ? "" : String(this._config[e])} @change=${this._input}></label>`;
+	}
+	_toggleNumber(e, t, n, r, i) {
+		let a = Number(this._config[e] ?? 0) > 0;
+		return R`<label class="toggle-number"><span class="toggle"><input type="checkbox" .checked=${a} @change=${(t) => this._update(e, t.currentTarget.checked ? Math.max(n, 1) : 0)}>${t}</span>${a ? R`<span class="toggle-number-value"><input type="range" min=${n} max=${r} data-key=${e} .value=${String(this._config[e] ?? n)} @change=${this._input} @input=${this._input}> <span>${this._config[e] ?? n}${i}</span></span>` : B}</label>`;
 	}
 	_appearanceText(e, t, n, r = !1) {
 		let i = String(this._config[e] ?? this._presetValue(e) ?? ""), a = this._config[e] !== void 0, o = this._toHexColour(i);
@@ -2824,7 +2985,7 @@ customElements.get("tautulli-media-card") || customElements.define("tautulli-med
 	name: "Tautulli Media Card",
 	description: "Active streams, recently added media, popular titles, and watch history from Tautulli.",
 	preview: !0
-}), console.info("%c TAUTULLI MEDIA CARD %c 0.1.0-beta.1 ", "color:white;background:#e5a00d;font-weight:700", "color:#e5a00d;background:#1f2329");
+}), console.info("%c TAUTULLI MEDIA CARD %c 0.1.0-beta.2 ", "color:white;background:#e5a00d;font-weight:700", "color:#e5a00d;background:#1f2329");
 //#endregion
 
 //# sourceMappingURL=tautulli-active-streams-card.js.map

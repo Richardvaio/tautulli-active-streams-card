@@ -51,6 +51,7 @@ export class TautulliMediaCard extends LitElement {
   declare private _pauseClock: number;
   private _terminationTrigger?: HTMLElement;
   declare private _selectedItem?: UnknownItem;
+  private _dialogOpenedAt = 0;
   private _unsubscribe?: () => void;
   private _refreshTimer?: number;
   private _retryTimer?: number;
@@ -58,6 +59,7 @@ export class TautulliMediaCard extends LitElement {
   private _loadVersion = 0;
   private _pauseTimer?: number;
   private _pauseAnchors = new Map<string, { baseSeconds: number; receivedAt: number }>();
+  private _scrollLockCount = 0;
 
   constructor() {
     super();
@@ -116,6 +118,11 @@ export class TautulliMediaCard extends LitElement {
   }
 
   override disconnectedCallback(): void {
+    if (this._scrollLockCount > 0) {
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+      this._scrollLockCount = 0;
+    }
     this._disconnect();
     document.removeEventListener("visibilitychange", this._visibilityChanged);
     this.removeEventListener("click", this._delegatedItemClick, { capture: true });
@@ -135,8 +142,13 @@ export class TautulliMediaCard extends LitElement {
       };
     });
     this.renderRoot.querySelectorAll<HTMLButtonElement>(".open-details").forEach((button) => {
+      let lastOpenAt = 0;
       const open = (event: Event): void => {
         event.stopPropagation();
+        event.preventDefault();
+        const now = Date.now();
+        if (now - lastOpenAt < 400) return;
+        lastOpenAt = now;
         const item = this._filteredItems().find((candidate) => this._itemId(candidate) === button.dataset.detailId);
         if (item) this._openDetails(item);
       };
@@ -584,7 +596,10 @@ export class TautulliMediaCard extends LitElement {
 
   private _openDetails(item: UnknownItem): void {
     if (this._config.click_action === "details") {
+      if (this._selectedItem === item) return;
       this._selectedItem = item;
+      this._dialogOpenedAt = Date.now();
+      this._lockBodyScroll();
       this.requestUpdate();
     }
   }
@@ -610,7 +625,31 @@ export class TautulliMediaCard extends LitElement {
 
   private _closeDetails = (): void => {
     this._selectedItem = undefined;
+    this._unlockBodyScroll();
   };
+
+  private _backdropClickClose = (event: Event): void => {
+    if (event.target !== event.currentTarget) return;
+    if (Date.now() - this._dialogOpenedAt < 350) return;
+    this._closeDetails();
+  };
+
+  private _lockBodyScroll(): void {
+    if (this._scrollLockCount === 0 && document.body.scrollHeight > window.innerHeight) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.style.overflow = "hidden";
+      if (scrollbarWidth > 0) document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    this._scrollLockCount += 1;
+  }
+
+  private _unlockBodyScroll(): void {
+    this._scrollLockCount = Math.max(0, this._scrollLockCount - 1);
+    if (this._scrollLockCount === 0) {
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+    }
+  }
 
   private _detailsKeydown(event: KeyboardEvent): void {
     if (event.key === "Escape") {
@@ -655,9 +694,16 @@ export class TautulliMediaCard extends LitElement {
   }
 
   private _renderDialogShell(title: string, content: TemplateResult, backdrop?: string, titleInContent = false): TemplateResult {
-    const style = backdrop ? `--details-backdrop:url("${backdrop.replaceAll('"', "")}")` : "";
-    return html`<div class="dialog-backdrop" @click=${(event: Event) => event.target === event.currentTarget && this._closeDetails()} @keydown=${this._detailsKeydown}>
-      <section class="details-dialog popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${backdrop ? "has-backdrop" : ""}" style=${style} role="dialog" aria-modal="true" aria-labelledby="details-title">
+    const style = backdrop ? `--details-backdrop:url("${backdrop.replaceAll('"', "")}");` : "";
+    const dim = this._config.popup_backdrop_dim ?? 58;
+    const blur = this._config.popup_backdrop_blur ?? 0;
+    const backdropStyle = `--scrim-color:rgb(0 0 0 / ${dim}%);${blur ? `backdrop-filter:blur(${blur}px);` : ""}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;`;
+    const popupBackground = this._config.popup_background;
+    const animationDuration = this._config.popup_animation_duration ?? 220;
+    const cinematicArt = (this._config.popup_cinematic_art ?? 45) / 100;
+    const dialogStyle = `${style}--dialog-animation-duration:${animationDuration}ms;--cinematic-art-opacity:${cinematicArt};${popupBackground ? `background:${popupBackground};` : ""}`;
+    return html`<div class="dialog-backdrop" style=${backdropStyle} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
+      <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${backdrop ? "has-backdrop" : ""}" style=${dialogStyle} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
         <div class="details-content">${titleInContent ? nothing : html`<h2 id="details-title">${title}</h2>`}${content}</div>
       </section>
@@ -683,7 +729,7 @@ export class TautulliMediaCard extends LitElement {
             <h2 id="details-title" class="details-inline-title">${title}</h2>
             ${this._config.popup_summary_show_user && item.user?.display_name ? html`<span class="details-summary-user"><ha-icon icon="mdi:account"></ha-icon>${item.user.display_name}</span>` : nothing}
           </div>
-          <div class="details-chips">${["paused", "buffering"].includes(item.state) ? html`<span class="state ${item.state}">${item.state}</span>` : nothing}${media.type ? html`<span>${media.type}</span>` : nothing}${media.year ? html`<span>${media.year}</span>` : nothing}</div>
+          <div class="details-chips">${[ "paused", "buffering" ].includes(item.state) ? html`<span class="state ${item.state}">${item.state}</span>` : nothing}${media.type ? html`<span>${media.type}</span>` : nothing}${media.year ? html`<span>${media.year}</span>` : nothing}</div>
           ${subtitle ? html`<p>${subtitle}</p>` : nothing}
           ${this._config.popup_show_summary && media.summary ? html`<p class="details-summary ${this._config.popup_summary_lines === 0 ? "" : "compact"}" style=${`--summary-lines:${this._config.popup_summary_lines ?? 3}`}>${media.summary}</p>` : nothing}
           ${this._config.popup_show_progress ? html`<div class="details-progress"><span style=${`width:${progress}%`}></span></div>
@@ -909,7 +955,14 @@ export class TautulliMediaCard extends LitElement {
     event.stopPropagation();
     this._terminationTrigger = event.currentTarget as HTMLElement;
     this._pendingTermination = item;
+    this._dialogOpenedAt = Date.now();
   }
+
+  private _backdropTerminationClose = (event: Event): void => {
+    if (event.target !== event.currentTarget) return;
+    if (Date.now() - this._dialogOpenedAt < 350) return;
+    this._closeTerminationDialog();
+  };
 
   private _closeTerminationDialog(): void {
     if (!this._terminating) {
@@ -944,7 +997,7 @@ export class TautulliMediaCard extends LitElement {
     if (!item) return nothing;
     const title = item.media.full_title || item.media.title || "Untitled stream";
     const details = [item.user?.display_name, item.client?.product, item.client?.player].filter(Boolean).join(" · ");
-    return html`<div class="dialog-backdrop" tabindex="-1" @click=${(event: Event) => event.target === event.currentTarget && this._closeTerminationDialog()} @keydown=${this._dialogKeydown}>
+    return html`<div class="dialog-backdrop" tabindex="-1" @click=${this._backdropTerminationClose} @keydown=${this._dialogKeydown}>
       <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="terminate-title" aria-describedby="terminate-description">
         <div class="dialog-content">
           <div class="dialog-icon"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></div>

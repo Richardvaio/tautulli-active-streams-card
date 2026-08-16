@@ -33,7 +33,7 @@ describe("visual editor", () => {
 
     const summaries = [...editor.renderRoot.querySelectorAll("summary")].map((element) => element.textContent?.trim());
     expect(summaries).toContain("Content and source");
-    expect(summaries).toContain("Card actions");
+    expect(summaries).toContain("Tap behaviour");
     expect(summaries).toContain("Terminate stream");
     expect(summaries).toContain("Popup layout and appearance");
     expect(summaries).toContain("Popup summary");
@@ -88,7 +88,7 @@ describe("visual editor", () => {
     await editor.updateComplete;
 
     await vi.waitFor(() => {
-      expect(editor.renderRoot.textContent).toContain("action will appear on the main card");
+      expect(editor.renderRoot.textContent).toContain("terminate button will appear directly on stream cards");
     });
 
     expect(editor.renderRoot.textContent).not.toContain("Popup settings");
@@ -186,12 +186,13 @@ describe("visual editor", () => {
     expect(editor.renderRoot.querySelector('select[data-key="artwork_aspect"]')).not.toBeNull();
     expect(editor.renderRoot.querySelector('select[data-key="artwork_fit"]')).not.toBeNull();
     expect(editor.renderRoot.querySelector('input[data-key="backdrop_opacity"]')).not.toBeNull();
-    expect(editor.renderRoot.querySelector('select[data-key="artwork_placement"]')).toBeNull();
+    expect(editor.renderRoot.querySelector('select[data-key="artwork_placement"]')).not.toBeNull();
 
     editor.setConfig({ type: "custom:tautulli-media-card", mode: "active", artwork: "backdrop" });
     await editor.updateComplete;
     expect(editor.renderRoot.querySelector('select[data-key="artwork_aspect"]')).toBeNull();
     expect(editor.renderRoot.querySelector('select[data-key="artwork_fit"]')).toBeNull();
+    expect(editor.renderRoot.querySelector('select[data-key="artwork_placement"]')).toBeNull();
     expect(editor.renderRoot.querySelector('input[data-key="artwork_width"]')).toBeNull();
     expect(editor.renderRoot.querySelector('input[data-key="backdrop_opacity"]')).not.toBeNull();
   });

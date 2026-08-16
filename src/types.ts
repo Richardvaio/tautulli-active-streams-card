@@ -55,7 +55,7 @@ export interface CardConfig {
   artwork?: ArtworkMode;
   artwork_fit?: ArtworkFit;
   artwork_aspect?: ArtworkAspect;
-  artwork_position?: string;
+  artwork_position?: "center" | "top" | "bottom" | "left" | "right";
   artwork_placement?: ArtworkPlacement;
   backdrop_opacity?: number;
   style_preset?: StylePreset;
@@ -95,6 +95,7 @@ export interface CardConfig {
   termination_location?: "popup" | "card" | "both";
   click_action?: "none" | "details";
   popup_style?: "clean" | "panel" | "cinematic";
+  popup_cinematic_art?: number;
   popup_content_style?: "open" | "panel";
   popup_detail_order?: PopupDetailField[];
   popup_show_artwork?: boolean;
@@ -102,6 +103,11 @@ export interface CardConfig {
   popup_summary_show_user?: boolean;
   popup_summary_lines?: 0 | 2 | 3 | 5;
   popup_width?: "compact" | "standard" | "wide";
+  popup_animation?: "none" | "fade" | "scale" | "rise";
+  popup_animation_duration?: number;
+  popup_backdrop_dim?: number;
+  popup_backdrop_blur?: number;
+  popup_background?: string;
   termination_popup_placement?: "top" | "footer";
   termination_button_style?: "label" | "icon";
   popup_show_technical?: boolean;

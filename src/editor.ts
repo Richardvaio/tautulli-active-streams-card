@@ -213,6 +213,9 @@ export class TautulliMediaCardEditor extends LitElement {
         ${this._config.artwork !== "none" ? html`<details class="inline-advanced">
           <summary>Artwork adjustments</summary>
           <p class="section-description">Recommended values come from the selected look. These controls only affect the artwork currently in use.</p>
+          ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_placement", "Artwork position", [
+            {value:"left",label:"Left of content"},{value:"right",label:"Right of content"},{value:"background",label:"Behind content (background)"},
+          ], this._config.artwork_placement ?? "left") : nothing}
           ${["poster", "both"].includes(this._config.artwork ?? "poster") ? this._select("artwork_aspect", "Poster / cover shape", [
             {value:"auto",label:"Automatic for media"},{value:"poster",label:"Poster (2:3)"},{value:"square",label:"Square (1:1)"},{value:"backdrop",label:"Widescreen (16:9)"},
           ], this._config.artwork_aspect ?? "auto") : nothing}
@@ -248,52 +251,89 @@ export class TautulliMediaCardEditor extends LitElement {
       </details>
 
       <details class="section">
-        <summary>Card information</summary>
-        <p class="section-description">Hide secondary details for a cleaner card or reveal the full playback picture.</p>
+        <summary>General</summary>
+        <p class="section-description">Control header, empty states and animation behaviour.</p>
         <div class="toggles">
           ${this._toggle("show_header", "Header")}
           ${this._toggle("show_count", "Item count")}
-          ${mode === "active" ? this._toggle("show_user", "Plex user") : nothing}
-          ${mode === "active" ? this._toggle("show_device", "Player and device") : nothing}
-          ${mode === "active" ? this._toggle("show_quality", "Quality and bandwidth") : nothing}
-          ${mode === "active" ? this._toggle("show_progress", "Progress") : nothing}
-          ${mode === "active" ? this._toggle("show_state", "Playback state") : nothing}
-          ${mode === "active" && this._config.show_progress ? this._toggle("show_progress_percent", "Progress percentage") : nothing}
-          ${mode === "active" && this._config.show_state ? this._toggle("show_pause_duration", "Paused duration") : nothing}
-          ${mode === "active" && this._config.show_state ? this._toggle("show_track_number", "Music track number") : nothing}
-          ${mode === "active" ? this._toggle("show_media_details", "Year / episode") : nothing}
-          ${mode === "active" ? this._toggle("show_eta", "Estimated finish time") : nothing}
-          ${mode === "active" ? this._toggle("show_remaining", "Time remaining") : nothing}
-          ${mode === "active" ? this._toggle("show_bandwidth", "Bandwidth") : nothing}
-          ${mode === "active" ? this._toggle("show_audio_quality", "Music audio quality") : nothing}
-          ${mode !== "active" ? this._toggle("show_summary", "Summary") : nothing}
           ${this._toggle("show_empty", "Show when empty")}
           ${this._toggle("animations", "State animations")}
         </div>
       </details>
 
+      ${mode === "active" ? html`
       <details class="section">
-        <summary>Card actions</summary>
-        <p class="section-description">Choose what happens on the dashboard card itself.</p>
-        ${this._select("click_action", "Clicking an item", [{value:"none",label:"Do nothing"},{value:"details",label:"Open detailed popup"}], this._config.click_action ?? "none")}
+        <summary>Stream information</summary>
+        <p class="section-description">Control which identity and playback details appear on each stream card.</p>
+        <details class="inline-advanced">
+          <summary>Identity</summary>
+          <div class="toggles">
+            ${this._toggle("show_user", "Plex user")}
+            ${this._toggle("show_device", "Player and device")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Media details</summary>
+          <div class="toggles">
+            ${this._toggle("show_media_details", "Year / episode")}
+            ${this._toggle("show_audio_quality", "Music audio quality")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Playback and progress</summary>
+          <div class="toggles">
+            ${this._toggle("show_progress", "Progress bar")}
+            ${this._toggle("show_progress_percent", "Progress percentage")}
+            ${this._toggle("show_state", "Playback state")}
+            ${this._toggle("show_pause_duration", "Paused duration")}
+            ${this._toggle("show_track_number", "Music track number")}
+            ${this._toggle("show_eta", "Estimated finish time")}
+            ${this._toggle("show_remaining", "Time remaining")}
+          </div>
+        </details>
+        <details class="inline-advanced">
+          <summary>Quality and bandwidth</summary>
+          <div class="toggles">
+            ${this._toggle("show_quality", "Video quality")}
+            ${this._toggle("show_bandwidth", "Bandwidth")}
+          </div>
+        </details>
+      </details>
+      ` : html`
+      <details class="section">
+        <summary>Card information</summary>
+        <p class="section-description">Control what information appears on each item.</p>
+        <div class="toggles">
+          ${this._toggle("show_summary", "Summary")}
+        </div>
+      </details>
+      `}
+
+      <details class="section">
+        <summary>Tap behaviour</summary>
+        <p class="section-description">Choose what happens when an item is tapped on the dashboard card.</p>
+        ${this._select("click_action", "Tap action", [{value:"none",label:"Do nothing"},{value:"details",label:"Open details popup"}], this._config.click_action ?? "none")}
+        ${this._config.click_action === "details" ? html`<p class="hint">The popup has its own settings below under “Popup settings”.</p>` : nothing}
       </details>
 
       ${mode === "active" ? html`
         <details class="section">
           <summary>Terminate stream</summary>
-          <p class="section-description">Configure the administrator-only stream action and where it appears.</p>
+          <p class="section-description">${this._config.click_action === "details"
+            ? "Configure the administrator-only terminate button and where it appears."
+            : "The terminate button will appear directly on stream cards in the main card."}</p>
           ${capabilities?.stream_termination
             ? this._toggle("allow_termination", "Enable terminate-stream action")
             : html`<p class="hint">Stream termination is disabled in the integration's Dashboard card access settings.</p>`}
           ${capabilities?.stream_termination && this._config.allow_termination ? html`
             ${this._config.click_action === "details"
-              ? this._select("termination_location", "Show action in", [
-                {value:"popup",label:"Details popup only"},{value:"card",label:"Main card only"},{value:"both",label:"Main card and popup"},
+              ? this._select("termination_location", "Show button in", [
+                {value:"popup",label:"Details popup only"},{value:"card",label:"Main card only"},{value:"both",label:"Both popup and main card"},
               ], this._config.termination_location ?? "popup")
-              : html`<p class="hint">The action will appear on the main card because the detailed popup is disabled.</p>`}
+              : nothing}
             ${this._config.click_action === "details" && ["popup", "both"].includes(this._config.termination_location ?? "popup") ? html`
-              ${this._select("termination_popup_placement", "Popup position", [{value:"footer",label:"Bottom right"},{value:"top",label:"Top right beside artwork"}], this._config.termination_popup_placement ?? "footer")}
-              ${this._select("termination_button_style", "Popup control style", [{value:"label",label:"Icon and text"},{value:"icon",label:"Compact stop icon"}], this._config.termination_button_style ?? "label")}
+              ${this._select("termination_popup_placement", "Button position in popup", [{value:"footer",label:"Bottom right"},{value:"top",label:"Top right beside artwork"}], this._config.termination_popup_placement ?? "footer")}
+              ${this._select("termination_button_style", "Button style in popup", [{value:"label",label:"Icon and text"},{value:"icon",label:"Compact stop icon"}], this._config.termination_button_style ?? "label")}
             ` : nothing}
           ` : nothing}
           <p class="hint">Requires “Allow administrators to terminate streams from cards” in the integration's Dashboard card access settings. A separate confirmation is always required.</p>
@@ -306,15 +346,21 @@ export class TautulliMediaCardEditor extends LitElement {
           <summary>Popup layout and appearance</summary>
           <p class="section-description">Control the details window independently from the dashboard card.</p>
           ${this._select("popup_style", "Popup appearance", [{value:"clean",label:"Clean surface"},{value:"panel",label:"Framed summary"},{value:"cinematic",label:"Cinematic backdrop"}], this._config.popup_style ?? "clean")}
+          ${(this._config.popup_style ?? "clean") === "cinematic" ? this._toggleNumber("popup_cinematic_art", "Backdrop art strength", 5, 100, "%") : nothing}
           ${this._select("popup_width", "Popup width", [{value:"compact",label:"Compact"},{value:"standard",label:"Standard"},{value:"wide",label:"Wide"}], this._config.popup_width ?? "standard")}
+          ${this._select("popup_animation", "Open animation", [{value:"none",label:"None"},{value:"fade",label:"Fade in"},{value:"scale",label:"Scale up"},{value:"rise",label:"Rise from below"}], this._config.popup_animation ?? "scale")}
+          ${(this._config.popup_animation ?? "scale") !== "none" ? this._number("popup_animation_duration", "Animation duration", 0, 1500, "ms") : nothing}
+          ${this._toggleNumber("popup_backdrop_dim", "Dim background", 1, 95, "%")}
+          ${this._toggleNumber("popup_backdrop_blur", "Blur background", 1, 24, "px")}
+          ${this._appearanceText("popup_background", "Popup background", "Theme variable, colour, or rgba()", true)}
         </details>
         <details class="section">
           <summary>Popup summary</summary>
           <p class="section-description">Choose the media context displayed above the progress bar.</p>
           <div class="toggles">
-            ${this._toggle("popup_show_artwork", "Artwork")}
-            ${this._toggle("popup_show_summary", "Media description")}
-            ${this._config.popup_show_summary ? this._select("popup_summary_lines", "Description length", [{value:"2",label:"2 lines"},{value:"3",label:"3 lines"},{value:"5",label:"5 lines"},{value:"0",label:"Full description"}], String(this._config.popup_summary_lines ?? 3)) : nothing}
+            ${mode !== "users" ? this._toggle("popup_show_artwork", "Artwork") : nothing}
+            ${mode !== "users" ? this._toggle("popup_show_summary", "Media description") : nothing}
+            ${mode !== "users" && this._config.popup_show_summary ? this._select("popup_summary_lines", "Description length", [{value:"2",label:"2 lines"},{value:"3",label:"3 lines"},{value:"5",label:"5 lines"},{value:"0",label:"Full description"}], String(this._config.popup_summary_lines ?? 3)) : nothing}
             ${mode === "active" ? this._toggle("popup_summary_show_user", "Plex user") : nothing}
             ${mode === "history" ? this._toggle("popup_show_user", "Plex user") : nothing}
             ${mode === "active" ? this._toggle("popup_show_progress", "Progress") : nothing}
@@ -342,6 +388,7 @@ export class TautulliMediaCardEditor extends LitElement {
         </details>
       ` : nothing}
       <p class="hint">Privacy and destructive permissions are enforced by the Tautulli Active Streams integration. Tokens and upstream image paths are never sent to this card.</p>
+      <button class="reset-all" type="button" @click=${this._resetAllDefaults}>Reset all settings to defaults</button>
     </div>`;
   }
 
@@ -497,6 +544,11 @@ export class TautulliMediaCardEditor extends LitElement {
     return html`<label>${label} (${suffix})<input type="number" min=${min} max=${max} data-key=${key} .value=${this._config[key] === undefined ? "" : String(this._config[key])} @change=${this._input}></label>`;
   }
 
+  private _toggleNumber(key: keyof CardConfig, label: string, min: number, max: number, suffix: string) {
+    const enabled = Number(this._config[key] ?? 0) > 0;
+    return html`<label class="toggle-number"><span class="toggle"><input type="checkbox" .checked=${enabled} @change=${(event: Event) => this._update(key, (event.currentTarget as HTMLInputElement).checked ? Math.max(min, 1) : 0)}>${label}</span>${enabled ? html`<span class="toggle-number-value"><input type="range" min=${min} max=${max} data-key=${key} .value=${String(this._config[key] ?? min)} @change=${this._input} @input=${this._input}> <span>${this._config[key] ?? min}${suffix}</span></span>` : nothing}</label>`;
+  }
+
   private _appearanceText(key: keyof CardConfig, label: string, placeholder: string, colour = false) {
     const value = String(this._config[key] ?? this._presetValue(key) ?? "");
     const overridden = this._config[key] !== undefined;
@@ -543,6 +595,12 @@ export class TautulliMediaCardEditor extends LitElement {
     this._emitConfig();
   };
 
+  private _resetAllDefaults = (): void => {
+    const entryId = this._config.entry_id;
+    this._config = normalizeConfig({ ...(entryId ? { entry_id: entryId } : {}) });
+    this._emitConfig();
+  };
+
   private _recipe(recipe: "classic" | "balanced" | "cinematic" | "shelf", title: string, description: string) {
     return html`<button class="recipe ${recipe}" type="button" @click=${() => this._applyRecipe(recipe)}><span class="recipe-preview"><i></i><i></i><i></i></span><strong>${title}</strong><small>${description}</small></button>`;
   }
@@ -583,12 +641,12 @@ export class TautulliMediaCardEditor extends LitElement {
     const key = target.dataset.key as keyof CardConfig;
     let value: unknown = target.value;
     if (target instanceof HTMLInputElement && target.type === "checkbox") value = target.checked;
-    if (["max_items", "time_range", "border_radius", "item_gap", "artwork_width", "artwork_inset", "title_size", "progress_height", "backdrop_opacity"].includes(key)) {
+    if (["max_items", "time_range", "border_radius", "item_gap", "artwork_width", "artwork_inset", "title_size", "progress_height", "backdrop_opacity", "popup_animation_duration", "popup_cinematic_art", "popup_backdrop_dim", "popup_backdrop_blur"].includes(key)) {
       value = target.value === "" ? undefined : Number(target.value);
     }
     if (key === "columns" && target.value !== "auto") value = Number(target.value);
     if (key === "popup_summary_lines") value = Number(target.value);
-    if (["section_id", "user_id", "title", "card_background", "item_background", "border_color", "item_shadow", "playing_color", "paused_color", "buffering_color"].includes(key) && target.value === "") value = undefined;
+    if (["section_id", "user_id", "title", "card_background", "item_background", "border_color", "item_shadow", "playing_color", "paused_color", "buffering_color", "popup_background"].includes(key) && target.value === "") value = undefined;
     if (key === "style_preset") {
       const config = { ...this._config, style_preset: value } as CardConfig;
       for (const appearanceKey of ["card_background", "item_background", "border_color", "item_shadow", "border_radius", "item_gap", "artwork_width", "artwork_inset", "title_size", "progress_height", "playing_color", "paused_color", "buffering_color"] as const) {
