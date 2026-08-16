@@ -697,7 +697,7 @@ export class TautulliMediaCard extends LitElement {
     const style = backdrop ? `--details-backdrop:url("${backdrop.replaceAll('"', "")}");` : "";
     const dim = this._config.popup_backdrop_dim ?? 58;
     const blur = this._config.popup_backdrop_blur ?? 0;
-    const backdropStyle = `background:rgb(0 0 0 / ${dim}%);${blur ? `backdrop-filter:blur(${blur}px);` : ""}`;
+    const backdropStyle = `background:rgb(0 0 0 / ${dim}%);${blur ? `backdrop-filter:blur(${blur}px);` : ""}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;`;
     const popupBackground = this._config.popup_background;
     const animationDuration = this._config.popup_animation_duration ?? 220;
     const dialogStyle = `${style}--dialog-animation-duration:${animationDuration}ms;${popupBackground ? `background:${popupBackground};` : ""}`;

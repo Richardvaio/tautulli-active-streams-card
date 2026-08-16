@@ -1672,7 +1672,7 @@ var Ee = o`
 		return this._config.mode === "active" ? this._renderActiveDetails(t) : this._config.mode === "users" ? this._renderUserDetails(t) : this._renderMediaDetails(t);
 	}
 	_renderDialogShell(e, t, n, r = !1) {
-		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}");` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `background:rgb(0 0 0 / ${a}%);${o ? `backdrop-filter:blur(${o}px);` : ""}`, c = this._config.popup_background, l = `${i}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;${c ? `background:${c};` : ""}`;
+		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}");` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `background:rgb(0 0 0 / ${a}%);${o ? `backdrop-filter:blur(${o}px);` : ""}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;`, c = this._config.popup_background, l = `${i}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;${c ? `background:${c};` : ""}`;
 		return R`<div class="dialog-backdrop" style=${s} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
       <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${n ? "has-backdrop" : ""}" style=${l} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
