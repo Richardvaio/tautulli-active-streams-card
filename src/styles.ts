@@ -4,6 +4,8 @@ export const cardStyles = css`
   :host { display: block; container-type: inline-size; }
   ha-card { overflow: hidden; background:var(--tas-card-background, var(--ha-card-background, var(--card-background-color))); }
   :host([container-style="transparent"]) ha-card { border:0; background:transparent; box-shadow:none; }
+  :host([container-style="transparent"]) .content { padding:0; gap:6px; }
+  :host([container-style="transparent"]) .header { padding-left:6px; padding-right:6px; }
   .header { display:flex; align-items:center; justify-content:space-between; padding:16px 16px 8px; gap:12px; }
   .title { margin:0; font-size:var(--ha-card-header-font-size, 20px); font-weight:500; line-height:1.25; }
   .badge { font-size:12px; min-width:1.5rem; text-align:center; color:var(--secondary-text-color); background:color-mix(in srgb, var(--primary-text-color) 9%, transparent); border-radius:999px; padding:3px 8px; }
@@ -91,17 +93,30 @@ export const cardStyles = css`
   :host([animations]) .classic-item.paused .classic-progress::before { animation:pulse 1.5s ease-in-out infinite; }
   :host([animations]) .classic-item.buffering .classic-progress::before { animation:pulse .8s ease-in-out infinite; }
   .dialog-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; }
-  .dialog-backdrop::before { content:""; position:absolute; inset:0; background:var(--scrim-color, rgb(0 0 0 / 58%)); }
+  .dialog-backdrop::before { content:""; position:absolute; inset:0; background:var(--scrim-color, rgb(0 0 0 / 58%)); backdrop-filter:var(--scrim-blur, none); -webkit-backdrop-filter:var(--scrim-blur, none); }
   .dialog-backdrop > * { position:relative; }
   .details-dialog.anim-fade { animation:dialog-fade var(--dialog-animation-duration, 220ms) ease-out; }
   .details-dialog.anim-scale { animation:dialog-scale var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
   .details-dialog.anim-rise { animation:dialog-rise var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
+  .details-dialog.anim-fade.closing { animation:dialog-fade-out var(--dialog-close-duration, 200ms) ease-in forwards; }
+  .details-dialog.anim-scale.closing { animation:dialog-scale-out var(--dialog-close-duration, 200ms) cubic-bezier(.4,0,1,1) forwards; }
+  .details-dialog.anim-rise.closing { animation:dialog-rise-out var(--dialog-close-duration, 200ms) cubic-bezier(.4,0,1,1) forwards; }
+  .dialog-backdrop.closing::before { animation:scrim-out var(--dialog-close-duration, 200ms) ease-in forwards; }
+  .details-dialog.popup-cinematic.closing { --cinematic-art-transition:none; }
+  .details-dialog.popup-cinematic.closing::before { animation:cinematic-art-out var(--dialog-close-duration, 200ms) ease-in forwards; }
   :host(:not([animations])) .details-dialog { animation:none !important; }
+  :host(:not([animations])) .dialog-backdrop.closing::before { animation:none !important; }
+  :host(:not([animations])) .details-dialog.popup-cinematic.closing::before { animation:none !important; }
   @keyframes dialog-fade { from { opacity:0; } }
+  @keyframes dialog-fade-out { to { opacity:0; } }
+  @keyframes scrim-out { to { opacity:0; } }
+  @keyframes cinematic-art-out { to { opacity:0; } }
   @keyframes backdrop-fade { from { opacity:0; } }
   @keyframes cinematic-art-in { from { opacity:0; } }
   @keyframes dialog-scale { from { transform:scale(.96) translateY(6px); } }
   @keyframes dialog-rise { from { transform:translateY(100vh); } }
+  @keyframes dialog-scale-out { to { transform:scale(.96) translateY(6px); opacity:0; } }
+  @keyframes dialog-rise-out { to { transform:translateY(100vh); } }
   :host(:not([animations])) .dialog-backdrop { animation:none !important; }
   .confirm-dialog { width:min(420px, 100%); overflow:hidden; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:var(--card-background-color); box-shadow:0 18px 54px rgb(0 0 0 / 42%); }
   .dialog-content { display:grid; gap:14px; padding:24px; }

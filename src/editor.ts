@@ -496,7 +496,7 @@ export class TautulliMediaCardEditor extends LitElement {
     const key = target.dataset.key as keyof CardConfig;
     let value: unknown = target.value;
     if (target instanceof HTMLInputElement && target.type === "checkbox") value = target.checked;
-    if (["max_items", "time_range", "border_radius", "item_gap", "artwork_width", "artwork_inset", "title_size", "progress_height", "backdrop_opacity", "popup_animation_duration", "popup_cinematic_art", "popup_backdrop_dim", "popup_backdrop_blur"].includes(key)) {
+    if (["max_items", "time_range", "border_radius", "item_gap", "artwork_width", "artwork_inset", "title_size", "progress_height", "backdrop_opacity", "popup_animation_duration", "popup_close_animation_duration", "popup_cinematic_art", "popup_backdrop_dim", "popup_backdrop_blur"].includes(key)) {
       value = target.value === "" ? undefined : Number(target.value);
     }
     if (key === "columns" && target.value !== "auto") value = Number(target.value);
