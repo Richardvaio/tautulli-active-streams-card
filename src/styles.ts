@@ -70,7 +70,7 @@ export const cardStyles = css`
   .classic-item.music .classic-art { height:auto; min-height:0; aspect-ratio:var(--tas-art-aspect, 1); align-self:center; }
   .classic-art.placeholder { display:grid; place-items:center; color:var(--secondary-text-color); }
   .classic-art.placeholder ha-icon { --mdc-icon-size:36px; }
-  .classic-body { min-width:0; display:grid; align-content:center; grid-template-rows:auto auto auto auto auto auto; gap:3px; padding:5px 7px 5px 0; }
+  .classic-body { min-width:0; display:grid; align-content:end; grid-template-rows:auto auto auto auto auto auto; gap:3px; padding:5px 7px 5px 0; }
   .classic-top,.classic-info,.classic-bottom { min-width:0; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; color:var(--secondary-text-color); font-size:11px; line-height:1.2; }
   .classic-top > span,.classic-bottom > span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .classic-top strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right; font:italic 700 12px Arial,sans-serif; letter-spacing:1.5px; color:var(--primary-text-color); }
@@ -84,7 +84,7 @@ export const cardStyles = css`
   .classic-info > :last-child,.classic-bottom > :last-child { text-align:right; }
   .media-detail { display:flex; align-items:center; gap:4px; color:var(--primary-text-color); font-size:15px; font-weight:600; }
   .media-detail ha-icon { --mdc-icon-size:15px; }
-  .classic-progress { position:relative; min-width:0; height:var(--tas-progress-height, 20px); display:grid; grid-template-columns:1fr auto 1fr; align-items:center; overflow:hidden; border-radius:999px; color:#fff; background:rgba(0,0,0,.6); font-size:11px; font-weight:600; }
+  .classic-progress { position:relative; min-width:0; height:var(--tas-progress-height, 20px); display:grid; grid-template-columns:1fr auto 1fr; align-items:center; overflow:hidden; border-radius:999px; color:#fff; background:rgba(0,0,0,.6); font-size:11px; font-weight:600; margin-bottom:5px; margin-top:9px; }
   .classic-progress::before { content:""; position:absolute; inset:0 auto 0 0; width:var(--progress, 0%); background:var(--state-color); transition:width .4s ease; }
   .classic-progress span { position:relative; z-index:1; }
   .progress-state { grid-column:1; padding-left:8px; text-transform:capitalize; white-space:nowrap; }
