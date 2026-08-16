@@ -966,8 +966,8 @@ var Ee = o`
   :host(:not([animations])) .details-dialog { animation:none !important; }
   @keyframes dialog-fade { from { opacity:0; } }
   @keyframes backdrop-fade { from { opacity:0; } }
-  @keyframes dialog-scale { from { opacity:0; transform:scale(.96) translateY(6px); } }
-  @keyframes dialog-rise { from { opacity:0; transform:translateY(100vh); } }
+  @keyframes dialog-scale { from { transform:scale(.96) translateY(6px); } }
+  @keyframes dialog-rise { from { transform:translateY(100vh); } }
   :host(:not([animations])) .dialog-backdrop { animation:none !important; }
   .confirm-dialog { width:min(420px, 100%); overflow:hidden; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:var(--card-background-color); box-shadow:0 18px 54px rgb(0 0 0 / 42%); }
   .dialog-content { display:grid; gap:14px; padding:24px; }
