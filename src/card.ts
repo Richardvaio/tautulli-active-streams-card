@@ -2,6 +2,7 @@ import { LitElement, html, nothing } from "lit";
 import type { PropertyValues, TemplateResult } from "lit";
 import { getCardData, getEntries, subscribeActive, SUPPORTED_SCHEMA, terminateSession } from "./api";
 import { DEFAULT_POPUP_DETAIL_ORDER, modeTitle, normalizeConfig, STYLE_PRESETS } from "./config";
+import { buildDemoStream } from "./demo";
 import { cardStyles } from "./styles";
 import type { ActiveStream, CardConfig, CardEnvelope, HomeAssistant, MediaItem, PopupDetailField } from "./types";
 
@@ -37,6 +38,7 @@ export class TautulliMediaCard extends LitElement {
     _terminating: { state: true },
     _selectedItem: { state: true },
     _pauseClock: { state: true },
+    _showcaseIndex: { state: true },
   };
 
   static override styles = cardStyles;
@@ -61,6 +63,18 @@ export class TautulliMediaCard extends LitElement {
   private _pauseTimer?: number;
   private _pauseAnchors = new Map<string, { baseSeconds: number; receivedAt: number }>();
   private _scrollLockCount = 0;
+  private _marqueeVelocity = 0;
+  private _showcaseTimer = 0;
+  private _showcaseReloopBound = (): void => this._showcaseReloop();
+  private _marqueeSets = 2;
+  private _suppressNextClick = false;
+  private _pointerDownAt: { x: number; y: number } | null = null;
+  private _marqueeSetWidth = 0;
+  private _marqueeTouching = false;
+  private _marqueeShiftTotal = 0;
+  private _marqueeDurationS = 0;
+  private _marqueeDrag: { pointerId: number; startX: number; p: number } | null = null;
+  private _showcaseIndex = 0;
 
   constructor() {
     super();
@@ -78,6 +92,15 @@ export class TautulliMediaCard extends LitElement {
 
   static getConfigElement(): HTMLElement {
     return document.createElement("tautulli-media-card-editor");
+  }
+
+  /** True while rendered inside the visual editor preview pane (pierces shadow roots). */
+  private get _inEditorPreview(): boolean {
+    for (let node: Element | null = this.parentElement; node;) {
+      if (node.matches(".card-preview, .element-preview, hui-card-preview")) return true;
+      node = node.parentElement ?? (node.getRootNode() instanceof ShadowRoot ? (node.getRootNode() as ShadowRoot).host : null);
+    }
+    return false;
   }
 
   getGridOptions() {
@@ -115,10 +138,13 @@ export class TautulliMediaCard extends LitElement {
     super.connectedCallback();
     document.addEventListener("visibilitychange", this._visibilityChanged);
     this.addEventListener("click", this._delegatedItemClick, { capture: true });
+    this.addEventListener("pointerdown", this._pointerDownTracker);
+    this.addEventListener("pointerup", this._pointerUpClassifier);
     if (this.hass) void this._connect();
   }
 
   override disconnectedCallback(): void {
+    window.clearInterval(this._showcaseTimer);
     if (this._scrollLockCount > 0) {
       document.body.style.overflow = "";
       document.body.style.paddingRight = "";
@@ -127,6 +153,8 @@ export class TautulliMediaCard extends LitElement {
     this._disconnect();
     document.removeEventListener("visibilitychange", this._visibilityChanged);
     this.removeEventListener("click", this._delegatedItemClick, { capture: true });
+    this.removeEventListener("pointerdown", this._pointerDownTracker);
+    this.removeEventListener("pointerup", this._pointerUpClassifier);
     super.disconnectedCallback();
   }
 
@@ -135,6 +163,21 @@ export class TautulliMediaCard extends LitElement {
   }
 
   protected override updated(changed: PropertyValues): void {
+    if (this._config?.layout === "marquee") {
+      this._startMarquee();
+      this._syncMarqueePause();
+    } else {
+      this._stopMarquee();
+    }
+    if (changed.has("_data") && this._config?.layout === "showcase") this._restartShowcase();
+    if (changed.has("_data") && this._config?.layout === "marquee") {
+      // Re-measure + restart the compositor glide after DOM settles.
+      window.setTimeout(() => this._startMarquee(), 150);
+    }
+    if (this._config?.layout === "showcase") {
+      const track = this.renderRoot.querySelector<HTMLElement>(".content.showcase");
+      track?.addEventListener("scrollend", this._showcaseReloopBound);
+    }
     this.renderRoot.querySelectorAll<HTMLElement>("[data-item-id]").forEach((element) => {
       element.onclick = (event: MouseEvent): void => {
         if (event.composedPath().some((node) => node instanceof Element && node.matches(".terminate"))) return;
@@ -153,8 +196,10 @@ export class TautulliMediaCard extends LitElement {
         const item = this._filteredItems().find((candidate) => this._itemId(candidate) === button.dataset.detailId);
         if (item) this._openDetails(item);
       };
+      // Activate on click ONLY: the browser fires click for taps that were not
+      // drags (scroll/swipe gestures cancel it natively). pointerup opens were
+      // the leak: they fire mid-gesture before drift is classified.
       button.onclick = open;
-      button.onpointerup = open;
     });
     if (changed.has("hass") && this.hass && !this._data && !this._error) {
       void this._connect();
@@ -302,8 +347,12 @@ export class TautulliMediaCard extends LitElement {
   protected override render(): TemplateResult | typeof nothing {
     const items = this._filteredItems();
     if (this._error && !this._data) return nothing;
-    if (!this._loading && !this._error && !items.length && !this._config.show_empty) return nothing;
+    const demoActive = !this._loading && !this._error && this._config.mode === "active" && !items.length
+      && this._config.demo_when_empty !== false && this._data && this._inEditorPreview;
+    const hiddenWhenEmpty = !demoActive && !this._config.show_empty;
+    if (!this._loading && !this._error && !items.length && hiddenWhenEmpty) return nothing;
     const columns = this._config.columns === "auto" ? "auto" : String(this._config.columns ?? 1);
+    const displayItems = demoActive ? [buildDemoStream()] : items;
     return html`
       <ha-card>
         ${this._config.show_header || this._config.show_count ? html`
@@ -313,13 +362,17 @@ export class TautulliMediaCard extends LitElement {
           </div>` : nothing}
         ${this._data?.stale ? html`<p class="stale">Showing the last successful update</p>` : nothing}
         ${this._loading ? this._renderLoading()
-          : !items.length ? html`<div class="empty">${this._config.mode === "active" ? "Nothing is playing" : "No matching media"}</div>`
-          : html`${this._config.layout === "carousel" ? html`<div class="carousel-controls" aria-label="Carousel controls">
-              <button @click=${() => this._scrollCarousel(-1)} aria-label="Previous items"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
-              <button @click=${() => this._scrollCarousel(1)} aria-label="Next items"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
+          : !displayItems.length ? html`<div class="empty">${this._config.mode === "active" ? "Nothing is playing" : "No matching media"}</div>`
+          : html`${(this._config.layout === "carousel" || (["marquee", "showcase"].includes(this._config.layout ?? "grid") && this._config.carousel_buttons !== false)) ? html`<div class="carousel-controls" aria-label="Carousel controls">
+              <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(-1) : this._scrollCarousel(-1)} aria-label="Previous items"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
+              <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(1) : this._scrollCarousel(1)} aria-label="Next items"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
             </div>` : nothing}
-            <div class="content ${this._config.layout ?? "grid"} ${columns === "auto" ? "auto" : ""}" style=${`--columns:${columns}`}>
-              ${items.map((item) => this._renderItem(item))}
+            <div class="content ${this._config.layout ?? "grid"} ${columns === "auto" ? "auto" : ""} ${["marquee", "showcase"].includes(this._config.layout ?? "") && this._filteredItems().length < 2 ? "single" : ""}" style=${`--columns:${columns};--scroll-gap:${this._config.scroll_gap ?? 8}px;--scroll-peek:${this._config.scroll_peek ?? 36}px;--marquee-speed:${this._config.autoscroll_speed ?? 40}px`}>
+              ${this._config.layout === "showcase"
+                ? html`${displayItems.map((item) => this._renderItem(item))}${displayItems.length >= 2 ? displayItems.map((item) => this._renderItem(item, undefined, true)) : nothing}`
+                : this._config.layout === "marquee"
+                  ? html`<div class="marquee-track">${this._renderMarqueeStrip(displayItems)}</div>`
+                  : displayItems.map((item) => this._renderItem(item))}
             </div>`}
       </ha-card>
       ${this._renderDetailsDialog()}
@@ -396,7 +449,11 @@ export class TautulliMediaCard extends LitElement {
     });
   }
 
-  private _renderItem(item: UnknownItem): TemplateResult {
+  private _renderItem(item: UnknownItem, _index?: number, clone = false): TemplateResult {
+    if (clone) {
+      // Duplicate copy for seamless infinite strips: same pixels, hidden from a11y tree.
+      return html`<div class="strip-clone" aria-hidden="true" data-item-id=${this._itemId(item)}>${this._renderItem(item, undefined, false)}</div>`;
+    }
     if (this._config.mode === "active") return this._renderActive(item as ActiveStream);
     if (this._config.mode === "users") return this._renderUser(item);
     const media: MediaItem = this._config.mode === "recently_added" ? item as MediaItem : item.media ?? {};
@@ -618,8 +675,32 @@ export class TautulliMediaCard extends LitElement {
     return String(item.id ?? item.session_id ?? item.media?.id ?? `${item.rank ?? ""}:${item.display_name ?? item.media?.title ?? item.title ?? "item"}`);
   }
 
+  /** Records where a touch/press started so we can tell taps from scroll gestures. */
+  private _pointerDownTracker = (event: PointerEvent): void => {
+    this._pointerDownAt = { x: event.clientX, y: event.clientY };
+    this._marqueeTouching = true;
+    this._syncMarqueePause();
+  };
+
+  /** A press that moved >12px before release was a scroll, not a tap - suppress its click. */
+  private _pointerUpClassifier = (event: PointerEvent): void => {
+    this._marqueeTouching = false;
+    this._syncMarqueePause();
+    const start = this._pointerDownAt;
+    this._pointerDownAt = null;
+    if (!start) return;
+    const drift = Math.hypot(event.clientX - start.x, event.clientY - start.y);
+    if (drift > 12) this._suppressNextClick = true;
+  };
+
   private _delegatedItemClick = (event: Event): void => {
     if (this._config.click_action !== "details") return;
+    if (this._suppressNextClick) {
+      this._suppressNextClick = false;
+      event.stopPropagation();
+      event.preventDefault();
+      return;
+    }
     const path = event.composedPath();
     if (path.some((node) => node instanceof Element && (node.matches(".terminate") || node.closest(".dialog-backdrop")))) return;
     const target = path.find((node) => node instanceof HTMLElement && node.dataset.itemId) as HTMLElement | undefined;
@@ -648,6 +729,7 @@ export class TautulliMediaCard extends LitElement {
       this._dialogClosing = false;
       this._unlockBodyScroll();
       this.requestUpdate();
+      if (this._config?.layout === "showcase") this._restartShowcase();
     }, duration + 60);
   };
 
@@ -692,6 +774,181 @@ export class TautulliMediaCard extends LitElement {
       event.preventDefault();
       first?.focus();
     }
+  }
+
+  /** Renders enough copies of the item set that the strip is far wider than the
+   *  viewport; the engine silently reloops by one set width for a seamless
+   *  infinite scroll (121212… / 123123123…). */
+  private _renderMarqueeStrip(items: UnknownItem[]): TemplateResult {
+    if (items.length < 2) {
+      // Single card: no loop needed - render it once at full width.
+      this._marqueeSets = 1;
+      return html`${items.map((item) => this._renderItem(item, undefined, false))}`;
+    }
+    const copies = items.length <= 4 ? 4 : items.length <= 8 ? 3 : 2;
+    this._marqueeSets = copies;
+    return html`${Array.from({ length: copies }, (_, copy) =>
+      items.map((item) => this._renderItem(item, undefined, copy > 0)))}`;
+  }
+
+  /** Marquee (auto-scroll) engine: rAF loop that scrolls the strip, decelerates
+   *  smoothly on pointer interaction, and resumes after popups close. */
+  private _marqueeItemsPerSet(): number {
+    return Math.max(1, this._filteredItems().length || this._data?.items.length || 1);
+  }
+
+  /** Marquee engine v2: GPU-compositor animation. The strip translates via a
+   *  CSS keyframe animation (never main-thread JS), so mobile dashboards with
+   *  busy main threads scroll just as smoothly as desktop. JS only measures,
+   *  sets duration, and pauses/resumes. */
+  private _startMarquee(): void {
+    if ((this._filteredItems().length || 0) < 2) return; // one card: no loop
+    if (this._marqueeDrag) return; // mid-drag: the finger owns the track
+    const strip = this.renderRoot.querySelector<HTMLElement>(".content.marquee");
+    const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
+    if (!strip || !track) return;
+    // Measure one set width from the DOM (clone wrapper has no box - measure child).
+    const perSet = this._marqueeItemsPerSet();
+    if (perSet <= 0 || track.children.length < perSet * 2) return;
+    const first = track.children[0] as HTMLElement;
+    const boundary = track.children[perSet] as HTMLElement;
+    const boundaryBox = boundary.firstElementChild instanceof HTMLElement ? boundary.firstElementChild : boundary;
+    const setWidth = boundaryBox.getBoundingClientRect().left - first.getBoundingClientRect().left;
+    if (setWidth <= 0) return;
+    const speed = this._config.autoscroll_speed ?? 60;
+    const rtl = this._config.autoscroll_direction === "rtl";
+    const durationS = setWidth / speed;
+    this._marqueeShiftTotal = rtl ? setWidth : -setWidth;
+    this._marqueeDurationS = durationS;
+    track.style.setProperty("--marquee-shift", rtl ? `${setWidth}px` : `-${setWidth}px`);
+    // Preserve the visible position across restarts (data refreshes re-run this).
+    const prevP = this._marqueeProgress();
+    track.style.animation = `marquee-glide ${durationS}s linear infinite`;
+    const anim = track.getAnimations()[0];
+    if (anim && prevP > 0) anim.currentTime = prevP * durationS * 1000;
+    this._attachMarqueeDrag(strip);
+    this._syncMarqueePause(track);
+  }
+
+  private _stopMarquee(): void {
+    const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
+    if (track) {
+      track.style.animation = "";
+      track.style.transform = "";
+    }
+  }
+
+  /** Finger-driven scrolling on the transform track: the drag moves the strip
+   *  directly (with seamless wrap via progress normalisation), and releasing
+   *  resumes the compositor glide from the exact position the finger left. */
+  private _attachMarqueeDrag(strip: HTMLElement): void {
+    if (strip.dataset.dragBound === "1") return;
+    strip.dataset.dragBound = "1";
+    strip.addEventListener("pointerdown", (event: PointerEvent) => {
+      if (this._marqueeDrag || !this._marqueeShiftTotal) return;
+      const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
+      if (!track) return;
+      // Strict order: read live position, lock it as an inline transform, THEN
+      // retire the animation. Reveal order guarantees no frame at wrong pixels.
+      const p = this._marqueeProgress();
+      track.style.transform = `translateX(${p * this._marqueeShiftTotal}px)`;
+      track.style.animation = "none";
+      this._marqueeDrag = { pointerId: event.pointerId, startX: event.clientX, p };
+      strip.setPointerCapture(event.pointerId);
+    });
+    strip.addEventListener("pointermove", (event: PointerEvent) => {
+      const drag = this._marqueeDrag;
+      if (!drag || drag.pointerId !== event.pointerId || !this._marqueeShiftTotal) return;
+      const dx = event.clientX - drag.startX;
+      drag.startX = event.clientX;
+      drag.p = (((drag.p + dx / this._marqueeShiftTotal) % 1) + 1) % 1;
+      const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
+      if (track) track.style.transform = `translateX(${drag.p * this._marqueeShiftTotal}px)`;
+    });
+    const release = (event: PointerEvent): void => {
+      const drag = this._marqueeDrag;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      this._marqueeDrag = null;
+      this._resumeMarqueeAt(drag.p);
+    };
+    strip.addEventListener("pointerup", release);
+    strip.addEventListener("pointercancel", release);
+  }
+
+  /** Current glide progress (0-1): from the live animation clock, falling back
+   *  to the actual rendered transform matrix (a not-yet-ticked or restarted
+   *  animation reports 0 and would visibly lurch the strip). */
+  private _marqueeProgress(): number {
+    const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
+    if (!track || !this._marqueeShiftTotal) return 0;
+    const anim = track.getAnimations()[0];
+    if (anim && anim.currentTime !== null && this._marqueeDurationS) {
+      const p = (Number(anim.currentTime) / (this._marqueeDurationS * 1000)) % 1;
+      return p < 0 ? p + 1 : p;
+    }
+    const matrix = new DOMMatrixReadOnly(getComputedStyle(track).transform);
+    if (matrix.isIdentity || matrix.m41 === 0) return 0;
+    const p = matrix.m41 / this._marqueeShiftTotal;
+    return ((p % 1) + 1) % 1;
+  }
+
+  /** Restart the glide at progress p (finger release / popup close).
+   *  Order matters: start the animation and seek it to p BEFORE dropping the
+   *  inline transform, so no frame ever renders at the wrong position. */
+  private _resumeMarqueeAt(p: number): void {
+    const track = this.renderRoot.querySelector<HTMLElement>(".marquee-track");
+    if (!track || !this._marqueeDurationS) return;
+    track.style.animation = `marquee-glide ${this._marqueeDurationS}s linear infinite`;
+    const anim = track.getAnimations()[0];
+    if (anim) anim.currentTime = p * this._marqueeDurationS * 1000;
+    track.style.transform = "";
+    this._syncMarqueePause(track);
+  }
+
+  /** Pause the glide while popups are open / finger is down; resume after. */
+  private _syncMarqueePause(track?: HTMLElement | null): void {
+    const el = track ?? this.renderRoot.querySelector<HTMLElement>(".marquee-track");
+    if (!el) return;
+    el.style.animationPlayState = this._marqueePaused() || this._marqueeTouching ? "paused" : "running";
+  }
+
+
+
+  private _marqueePaused(): boolean {
+    return Boolean(this._selectedItem) || this._dialogClosing || Boolean(this._pendingTermination);
+  }
+
+  /** Showcase: seamless infinite track. Items are rendered twice; when the
+   *  viewport drifts into the clone set the scroll silently jumps back by one
+   *  set width (identical pixels, no flicker), so auto-advance and swiping
+   *  loop forever. */
+  private _restartShowcase(): void {
+    if (this._config.layout !== "showcase") return;
+    window.clearInterval(this._showcaseTimer);
+    const seconds = this._config.showcase_advance ?? 6;
+    if ((this._filteredItems().length || 0) < 2) return; // one slide: nothing to advance to
+    this._showcaseTimer = window.setInterval(() => {
+      if (this._marqueePaused() || !this._data?.items.length) return;
+      const track = this.renderRoot.querySelector<HTMLElement>(".content.showcase");
+      track?.scrollBy({ left: track.clientWidth, behavior: "smooth" });
+    }, seconds * 1000);
+  }
+
+  /** After scrolling settles, jump back a full set when we crossed into the clones. */
+  private _showcaseReloop(): void {
+    const track = this.renderRoot.querySelector<HTMLElement>(".content.showcase");
+    if (!track) return;
+    if (track.scrollWidth <= track.clientWidth * 1.05) return; // not enough unique cards to loop
+    const setWidth = track.scrollWidth / 2;
+    if (setWidth <= 0) return;
+    if (track.scrollLeft >= setWidth * 1.5) track.scrollLeft -= setWidth;
+    else if (track.scrollLeft < setWidth * 0.25) track.scrollLeft += setWidth;
+  }
+
+  private _advanceShowcase(step: 1 | -1): void {
+    const track = this.renderRoot.querySelector<HTMLElement>(".content.showcase");
+    if (!track) return;
+    track.scrollBy({ left: step * track.clientWidth, behavior: "smooth" });
   }
 
   private _scrollCarousel(direction: -1 | 1): void {

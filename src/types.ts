@@ -1,7 +1,7 @@
 export type CardMode = "active" | "recently_added" | "popular" | "users" | "history";
 export type Density = "compact" | "comfortable" | "detailed";
 export type ArtworkMode = "poster" | "backdrop" | "both" | "none";
-export type LayoutMode = "grid" | "list" | "carousel";
+export type LayoutMode = "grid" | "list" | "stack" | "carousel" | "marquee" | "showcase";
 export type ArtworkFit = "cover" | "contain";
 export type ArtworkAspect = "auto" | "poster" | "square" | "backdrop";
 export type ArtworkPlacement = "left" | "right" | "background";
@@ -49,6 +49,14 @@ export interface CardConfig {
   max_items?: number;
   columns?: "auto" | number;
   layout?: LayoutMode;
+  scroll_gap?: number;
+  scroll_peek?: number;
+  autoscroll_speed?: number;
+  autoscroll_direction?: "ltr" | "rtl" | "bounce";
+  autoscroll_animation?: "linear" | "smooth";
+  carousel_buttons?: boolean;
+  showcase_advance?: number;
+  showcase_transition?: "fade" | "slide";
   sort_by?: "server" | "user" | "title" | "state" | "progress";
   sort_direction?: "ascending" | "descending";
   density?: Density;
@@ -90,6 +98,7 @@ export interface CardConfig {
   show_audio_quality?: boolean;
   show_summary?: boolean;
   show_empty?: boolean;
+  demo_when_empty?: boolean;
   animations?: boolean;
   allow_termination?: boolean;
   termination_location?: "popup" | "card" | "both";

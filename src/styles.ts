@@ -3,7 +3,7 @@ import { css } from "lit";
 export const cardStyles = css`
   :host { display: block; container-type: inline-size; }
   ha-card { overflow: hidden; background:var(--tas-card-background, var(--ha-card-background, var(--card-background-color))); }
-  :host([container-style="transparent"]) ha-card { border:0; background:transparent; box-shadow:none; }
+  :host([container-style="transparent"]) ha-card { border:0; background:transparent; box-shadow:none; overflow:visible; border-radius:0; }
   :host([container-style="transparent"]) .content { padding:0; gap:6px; }
   :host([container-style="transparent"]) .header { padding-left:6px; padding-right:6px; }
   .header { display:flex; align-items:center; justify-content:space-between; padding:16px 16px 8px; gap:12px; }
@@ -13,7 +13,30 @@ export const cardStyles = css`
   .content { display:grid; grid-template-columns:repeat(var(--columns, 1), minmax(0, 1fr)); gap:var(--tas-gap, 8px); padding:var(--tas-gap, 8px); }
   .content.grid.auto { grid-template-columns:repeat(auto-fit, minmax(min(100%, var(--item-min, 340px)), 1fr)); }
   .content.list { grid-template-columns:1fr; }
+  .content.stack { grid-template-columns:1fr; gap:var(--scroll-gap, 8px); }
+  .content.stack > .item, .content.stack > .classic-item { border-radius:var(--tas-radius, 14px); }
+  .content.stack > .classic-item { --tas-title-size:15px; }
+  .content.stack > .item .name { font-size:14px; }
   .content.carousel { display:flex; overflow-x:auto; overscroll-behavior-inline:contain; scroll-snap-type:x mandatory; scrollbar-width:thin; padding-bottom:12px; }
+  .content.marquee { display:block; overflow:hidden; padding-right:0; touch-action:pan-y; }
+  .content.marquee .marquee-track { display:flex; flex-wrap:nowrap; gap:var(--scroll-gap, 8px); will-change:transform; animation-play-state:paused; user-select:none; -webkit-user-select:none; }
+  .content.marquee .marquee-track .item { flex:0 0 min(72cqw, var(--carousel-width, 280px)); flex-shrink:0; }
+  .content.marquee .marquee-track .classic-item { flex:0 0 min(88cqw, 600px); flex-shrink:0; }
+  .content.marquee .marquee-track .media-item { display:flex; flex-direction:column; --media-aspect:2/3; }
+  .content.marquee .marquee-track .media-item.track, .content.marquee .marquee-track .media-item.album, .content.marquee .marquee-track .media-item.artist { --media-aspect:1/1; }
+  .content.marquee .marquee-track .media-item .art { height:auto; min-height:0; aspect-ratio:var(--tas-art-aspect, var(--media-aspect)); }
+  .content.marquee .marquee-track .media-item .body { flex:1; padding:10px 12px 12px; }
+  @keyframes marquee-glide { from { transform:translateX(0); } to { transform:translateX(var(--marquee-shift, -50%)); } }
+  .content.showcase { display:flex; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scrollbar-width:none; overscroll-behavior-x:contain; }
+  .content.showcase.single { overflow-x:hidden; scroll-snap-type:none; }
+  .content.marquee.single { overflow-x:hidden; }
+  .content.marquee.single .item, .content.marquee.single .classic-item { flex:1 1 100%; min-width:0; }
+  .content.showcase :is(.item, .classic-item, .media-item) { flex:0 0 100%; width:100%; min-width:100%; flex-shrink:0; scroll-snap-align:start; scroll-snap-stop:always; }
+  .content.showcase .strip-clone { display:contents; }
+  .content.marquee .strip-clone { display:contents; }
+  .content.showcase .media-item { display:grid; grid-template-columns:var(--art-width, 92px) minmax(0,1fr); gap:10px; --media-aspect:2/3; }
+  .content.showcase .media-item .art { height:100%; min-height:128px; aspect-ratio:auto; }
+  .content.showcase .media-item .body { padding:10px 10px 14px 0; }
   .content.carousel > .item { flex:0 0 min(78cqw, var(--carousel-width, 280px)); scroll-snap-align:start; }
   .content.carousel > .classic-item { flex:0 0 min(90cqw, 600px); scroll-snap-align:start; }
   .content.carousel > .media-item { display:flex; flex-direction:column; }

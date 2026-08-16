@@ -18,7 +18,7 @@ It requires **Tautulli Active Streams 2.7.0 or newer**.
 - Privacy-safe Plex user activity summaries.
 - Administrator-only, paginated watch history when enabled in the integration.
 - Classic, modern, minimal and cinematic presentation options.
-- Responsive grid, list and carousel layouts.
+- Responsive grid, list, vertical stack, carousel, auto-scrolling marquee and showcase layouts.
 - Poster/cover, backdrop, combined poster-with-backdrop and artwork-free treatments.
 - Configurable headers, counts, fields, colours, spacing, progress bars and artwork sizing.
 - Detailed popup with configurable summary and reorderable stream-detail fields.
@@ -92,6 +92,19 @@ Displays privacy-safe aggregate activity for Plex users. User names and client d
 ### Watch history
 
 Displays a bounded, paginated history view. It requires a Home Assistant administrator and **Allow administrators to view watch history in cards** in the integration options.
+
+## Layouts
+
+Every content view (active streams, recently added, popular and top media, user activity) supports the same layout modes, configured in the editor under **Card layout and appearance**:
+
+- **Responsive grid** — columns with per-mode density.
+- **Single-column list** — full-width rows.
+- **Vertical stack** — compact, tight-spacing rows for media views.
+- **Poster shelf / carousel** — horizontal shelf with scroll snap and optional arrows.
+- **Auto-scrolling shelf (marquee)** — a GPU-composited infinite glide. Configure speed (slider), direction, item spacing and how much of the next item peeks in. Touching or dragging the strip stops the glide and tracks your finger 1:1; releasing resumes scrolling from the exact position. Opening a popup pauses it; closing resumes.
+- **Showcase** — one item at a time with scroll-snap, swipe gestures, auto-advance every few seconds (also paused while a popup is open) and optional previous/next buttons. Loops seamlessly.
+
+With fewer than two unique items the marquee and showcase render a single static card — no scrolling, no duplicated slides.
 
 ## Visual editor
 

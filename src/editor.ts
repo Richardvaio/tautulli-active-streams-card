@@ -220,6 +220,8 @@ export class TautulliMediaCardEditor extends LitElement {
         return this._number(field.key, label, field.min, field.max, field.suffix);
       case "toggleNumber":
         return this._toggleNumber(field.key, label, field.min, field.max, field.suffix);
+      case "slider":
+        return this._slider(field.key, label, field.min, field.max, field.suffix);
       case "text":
         return this._text(field.key, label, field.placeholder ?? "");
       case "appearanceText":
@@ -404,6 +406,10 @@ export class TautulliMediaCardEditor extends LitElement {
     return html`<label class="toggle-number"><span class="toggle"><input type="checkbox" .checked=${enabled} @change=${(event: Event) => this._update(key, (event.currentTarget as HTMLInputElement).checked ? Math.max(min, 1) : 0)}>${label}</span>${enabled ? html`<span class="toggle-number-value"><input type="range" min=${min} max=${max} data-key=${key} .value=${String(this._config[key] ?? min)} @change=${this._input} @input=${this._input}> <span>${this._config[key] ?? min}${suffix}</span></span>` : nothing}</label>`;
   }
 
+  private _slider(key: keyof CardConfig, label: string, min: number, max: number, suffix: string) {
+    return html`<label class="toggle-number"><span>${label}</span><span class="toggle-number-value"><input type="range" min=${min} max=${max} data-key=${key} .value=${String(this._config[key] ?? min)} @change=${this._input} @input=${this._input}> <span>${this._config[key] ?? min}${suffix}</span></span></label>`;
+  }
+
   private _appearanceText(key: keyof CardConfig, label: string, placeholder: string, colour = false) {
     const value = String(this._config[key] ?? this._presetValue(key) ?? "");
     const overridden = this._config[key] !== undefined;
@@ -496,7 +502,7 @@ export class TautulliMediaCardEditor extends LitElement {
     const key = target.dataset.key as keyof CardConfig;
     let value: unknown = target.value;
     if (target instanceof HTMLInputElement && target.type === "checkbox") value = target.checked;
-    if (["max_items", "time_range", "border_radius", "item_gap", "artwork_width", "artwork_inset", "title_size", "progress_height", "backdrop_opacity", "popup_animation_duration", "popup_close_animation_duration", "popup_cinematic_art", "popup_backdrop_dim", "popup_backdrop_blur"].includes(key)) {
+    if (["max_items", "time_range", "border_radius", "item_gap", "artwork_width", "artwork_inset", "title_size", "progress_height", "backdrop_opacity", "scroll_gap", "scroll_peek", "autoscroll_speed", "showcase_advance", "popup_animation_duration", "popup_close_animation_duration", "popup_cinematic_art", "popup_backdrop_dim", "popup_backdrop_blur"].includes(key)) {
       value = target.value === "" ? undefined : Number(target.value);
     }
     if (key === "columns" && target.value !== "auto") value = Number(target.value);
