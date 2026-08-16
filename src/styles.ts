@@ -145,9 +145,6 @@ export const cardStyles = css`
   .details-primary p,.details-subtitle { margin:0; color:var(--secondary-text-color); }
   .details-chips { display:flex; flex-wrap:wrap; gap:6px; min-width:0; }
   .details-chips span { padding:4px 9px; border-radius:999px; color:var(--secondary-text-color); background:color-mix(in srgb, var(--primary-text-color) 8%, transparent); font-size:12px; text-transform:capitalize; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .details-chips .chip-user { display:inline-flex; align-items:center; gap:5px; max-width:100%; }
-  .details-chips .chip-user ha-icon { --mdc-icon-size:14px; flex:none; }
-  .details-chips .chip-user span, .details-chips .chip-user { overflow:hidden; text-overflow:ellipsis; }
   .details-chips .state { color:var(--primary-text-color); background:color-mix(in srgb, var(--primary-color) 32%, transparent); }
   .details-chips .state.paused { color:var(--secondary-text-color); background:color-mix(in srgb, var(--tas-paused-color, #e5a00d) 42%, transparent); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--tas-paused-color, #e5a00d) 58%, transparent); }
   .details-chips .state.buffering { color:var(--secondary-text-color); background:color-mix(in srgb, var(--tas-buffering-color, #d32f2f) 42%, transparent); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--tas-buffering-color, #d32f2f) 58%, transparent); }
