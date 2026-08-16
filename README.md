@@ -95,21 +95,35 @@ Displays a bounded, paginated history view. It requires a Home Assistant adminis
 
 ## Visual editor
 
-The editor separates dashboard-card settings from popup settings and keeps sections collapsed until needed.
+The editor separates dashboard-card settings from popup settings and keeps sections collapsed until needed. Settings that do not apply to the selected view are hidden automatically.
 
 - **Content and source** selects the Tautulli server and view.
 - **Card layout and appearance** combines presets, layout, columns, density, artwork, background and optional fine-tuning in one relevant section.
-- **Visible information** controls the fields displayed on dashboard items.
-- **Card actions** controls item clicks and the details popup.
-- **Popup settings** controls popup width, artwork, summaries, progress and ordered detail fields.
+- **General** controls the header, item count, empty state and animations.
+- **Stream information** (active streams) groups the visible fields into collapsible sub-sections: identity, media details, playback and progress, and quality and bandwidth.
+- **Tap behaviour** controls what happens when an item is tapped.
+- **Popup settings** controls popup appearance, width, open animation, summaries, progress and ordered detail fields.
 - **Terminate stream** appears only for compatible active-stream actions.
 - **Fine-tune colours and sizing** exposes current values, unit-aware sizing controls and restore-to-style-default behaviour.
+- **Reset all settings to defaults** restores the card configuration while keeping the selected server.
 
 Classic artwork defaults to 85px wide. Artwork retains its source aspect ratio and uses the selected crop or contain treatment without stretching.
 
 ## Details popup
 
 The optional popup can show artwork, summary, Plex user, progress, remaining time, estimated finish, paused duration, client, device, playback decision, video/audio quality, bandwidth, media metadata and ratings. Stream-detail fields can be reordered by dragging their handles in the editor.
+
+### Popup animation and background
+
+- **Open animation** — none, fade in, scale up, or rise from below (a bottom-sheet slide), with a configurable duration.
+- **Dim background** — darkens the whole screen behind the popup.
+- **Blur background** — applies a frosted blur to the background behind the popup.
+- **Popup background** — overrides the popup surface colour with a theme variable, colour or `rgba()` value.
+- **Backdrop art strength** (cinematic appearance only) — controls how strongly the backdrop art renders inside the popup.
+
+While a popup is open, the dashboard behind it does not scroll. On touch devices, taps open the popup once without ghost-click double triggering, and tapping the backdrop closes it.
+
+The popup is responsive on narrow screens: the Plex user moves below the title, long text wraps instead of scrolling sideways, and dialog buttons use comfortable touch targets.
 
 Paused duration is updated every second in the browser between integration polls. Paused and buffering states use distinct, theme-aware status colours.
 

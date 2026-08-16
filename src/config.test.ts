@@ -135,4 +135,57 @@ describe("card configuration", () => {
     const independent = normalizeConfig({ popup_summary_show_user: true, popup_show_user: false });
     expect(normalizeConfig(compactConfig(independent))).toEqual(independent);
   });
+
+  it("applies popup animation and background defaults", () => {
+    const config = normalizeConfig({});
+    expect(config.popup_animation).toBe("scale");
+    expect(config.popup_animation_duration).toBe(220);
+    expect(config.popup_backdrop_dim).toBe(58);
+    expect(config.popup_backdrop_blur).toBe(0);
+    expect(config.popup_cinematic_art).toBe(45);
+    expect(config.popup_background).toBeUndefined();
+  });
+
+  it("clamps popup animation and background values to their supported ranges", () => {
+    const config = normalizeConfig({
+      popup_animation: "rise",
+      popup_animation_duration: 99999,
+      popup_backdrop_dim: 200,
+      popup_backdrop_blur: -5,
+      popup_cinematic_art: 0,
+    });
+    expect(config.popup_animation).toBe("rise");
+    expect(config.popup_animation_duration).toBe(1500);
+    expect(config.popup_backdrop_dim).toBe(95);
+    expect(config.popup_backdrop_blur).toBe(0);
+    expect(config.popup_cinematic_art).toBe(0);
+  });
+
+  it("round-trips custom popup appearance settings through compactConfig", () => {
+    const config = normalizeConfig({
+      popup_animation: "rise",
+      popup_animation_duration: 600,
+      popup_backdrop_dim: 0,
+      popup_backdrop_blur: 8,
+      popup_cinematic_art: 30,
+      popup_background: "rgba(10, 14, 26, 0.9)",
+    });
+    const saved = compactConfig(config);
+    expect(saved.popup_animation).toBe("rise");
+    expect(saved.popup_animation_duration).toBe(600);
+    expect(saved.popup_backdrop_dim).toBe(0);
+    expect(saved.popup_backdrop_blur).toBe(8);
+    expect(saved.popup_cinematic_art).toBe(30);
+    expect(saved.popup_background).toBe("rgba(10, 14, 26, 0.9)");
+    expect(normalizeConfig(saved)).toEqual(config);
+  });
+
+  it("omits default popup appearance settings from the saved config", () => {
+    const saved = compactConfig(normalizeConfig({}));
+    expect(saved.popup_animation).toBeUndefined();
+    expect(saved.popup_animation_duration).toBeUndefined();
+    expect(saved.popup_backdrop_dim).toBeUndefined();
+    expect(saved.popup_backdrop_blur).toBeUndefined();
+    expect(saved.popup_cinematic_art).toBeUndefined();
+  });
 });
