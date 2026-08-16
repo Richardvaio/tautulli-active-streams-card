@@ -2985,7 +2985,7 @@ customElements.get("tautulli-media-card") || customElements.define("tautulli-med
 	name: "Tautulli Media Card",
 	description: "Active streams, recently added media, popular titles, and watch history from Tautulli.",
 	preview: !0
-}), console.info("%c TAUTULLI MEDIA CARD %c 0.1.0-beta.2 ", "color:white;background:#e5a00d;font-weight:700", "color:#e5a00d;background:#1f2329");
+}), console.info("%c TAUTULLI MEDIA CARD %c 0.1.0 ", "color:white;background:#e5a00d;font-weight:700", "color:#e5a00d;background:#1f2329");
 //#endregion
 
 //# sourceMappingURL=tautulli-active-streams-card.js.map
