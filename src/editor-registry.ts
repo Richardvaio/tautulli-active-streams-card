@@ -54,6 +54,13 @@ export interface ToggleNumberField extends BaseField {
   suffix: string;
 }
 
+export interface SliderField extends BaseField {
+  kind: "slider";
+  min: number;
+  max: number;
+  suffix: string;
+}
+
 export interface TextField extends BaseField {
   kind: "text";
   placeholder?: string;
@@ -89,6 +96,7 @@ export type Field =
   | ToggleField
   | NumberField
   | ToggleNumberField
+  | SliderField
   | TextField
   | AppearanceTextField
   | AppearanceNumberField
@@ -239,7 +247,36 @@ export const EDITOR_SECTIONS: Section[] = [
         options: [
           { value: "grid", label: "Responsive grid" },
           { value: "list", label: "Single-column list" },
+          { value: "stack", label: "Vertical stack" },
           { value: "carousel", label: "Poster shelf / carousel" },
+          { value: "marquee", label: "Auto-scrolling shelf" },
+          { value: "showcase", label: "Showcase (one at a time)" },
+        ],
+      },
+      { kind: "number", key: "scroll_gap", label: "Item spacing", min: 0, max: 48, suffix: "px",
+        when: (ctx) => ["stack", "carousel", "marquee"].includes(ctx.config.layout ?? "grid") },
+      { kind: "number", key: "scroll_peek", label: "Next item peek", min: 0, max: 200, suffix: "px",
+        when: (ctx) => ["carousel", "marquee"].includes(ctx.config.layout ?? "grid") },
+      {
+        kind: "select", key: "autoscroll_direction", label: "Scroll direction",
+        when: (ctx) => ctx.config.layout === "marquee",
+        options: [
+          { value: "ltr", label: "Left to right" },
+          { value: "rtl", label: "Right to left" },
+        ],
+      },
+      { kind: "slider", key: "autoscroll_speed", label: "Auto-scroll speed", min: 10, max: 200, suffix: "px/s",
+        when: (ctx) => ctx.config.layout === "marquee" },
+      { kind: "toggle", key: "carousel_buttons", label: "Show previous / next buttons",
+        when: (ctx) => ["marquee", "showcase"].includes(ctx.config.layout ?? "grid") },
+      { kind: "number", key: "showcase_advance", label: "Advance every", min: 2, max: 60, suffix: "s",
+        when: (ctx) => ctx.config.layout === "showcase" },
+      {
+        kind: "select", key: "showcase_transition", label: "Transition",
+        when: (ctx) => ctx.config.layout === "showcase",
+        options: [
+          { value: "fade", label: "Fade in" },
+          { value: "slide", label: "Slide up" },
         ],
       },
       {
@@ -373,6 +410,7 @@ export const EDITOR_SECTIONS: Section[] = [
       { kind: "toggle", key: "show_header", label: "Header" },
       { kind: "toggle", key: "show_count", label: "Item count" },
       { kind: "toggle", key: "show_empty", label: "Show when empty" },
+      { kind: "toggle", key: "demo_when_empty", label: "Demo stream in active view when empty", when: (ctx) => ctx.mode === "active" },
       { kind: "toggle", key: "animations", label: "State animations" },
     ],
   },
