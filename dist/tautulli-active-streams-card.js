@@ -984,12 +984,12 @@ var Ee = o`
   .dialog-confirm { color:#fff; background:var(--error-color, #db4437); }
   .dialog-actions button:focus-visible,.terminate:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }
   .dialog-actions button:disabled { opacity:.55; cursor:wait; }
-  .details-dialog { position:relative; width:min(720px, 100%); max-height:min(86vh, 780px); overflow:auto; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:var(--card-background-color); box-shadow:0 18px 54px rgb(0 0 0 / 45%); isolation:isolate; }
+  .details-dialog { position:relative; width:min(720px, 100%); max-height:min(86vh, 780px); overflow-x:hidden; overflow-y:auto; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:var(--card-background-color); box-shadow:0 18px 54px rgb(0 0 0 / 45%); isolation:isolate; min-width:0; }
   .details-dialog.popup-width-compact { width:min(520px, 100%); }
   .details-dialog.popup-width-wide { width:min(940px, 100%); }
   .details-dialog.has-backdrop::before { content:""; position:absolute; z-index:-1; inset:0 0 auto 28%; height:270px; background-image:linear-gradient(180deg, rgb(0 0 0 / 10%), var(--card-background-color) 96%), linear-gradient(90deg, transparent, rgb(0 0 0 / 20%)), var(--details-backdrop); background-size:cover; background-position:center; opacity:.5; -webkit-mask-image:linear-gradient(90deg, transparent, #000 35%); mask-image:linear-gradient(90deg, transparent, #000 35%); }
   .dialog-close { position:sticky; z-index:3; float:right; top:12px; right:12px; width:40px; height:40px; display:grid; place-items:center; margin:12px 12px 0 0; border:0; border-radius:50%; color:var(--primary-text-color); background:color-mix(in srgb, var(--card-background-color) 82%, transparent); cursor:pointer; backdrop-filter:blur(8px); }
-  .details-content { display:grid; gap:18px; padding:24px; clear:both; }
+  .details-content { display:grid; grid-template-columns:minmax(0,1fr); gap:18px; padding:24px; clear:both; min-width:0; }
   .details-content h2 { max-width:calc(100% - 44px); margin:0; font-size:clamp(22px, 4cqw, 32px); line-height:1.12; }
   .details-hero { position:relative; display:grid; gap:16px; }
   .popup-summary { display:grid; gap:14px; padding:14px; border:1px solid color-mix(in srgb, var(--divider-color) 80%, transparent); border-radius:14px; background:color-mix(in srgb, var(--primary-text-color) 4%, transparent); backdrop-filter:blur(4px); }
@@ -1004,12 +1004,16 @@ var Ee = o`
   .details-hero .details-primary { align-content:start; display:flex; flex-direction:column; gap:8px; }
   .details-hero .details-primary .details-progress { margin-top:auto; }
   .details-heading-line { min-width:0; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .details-inline-title { min-width:0; overflow-wrap:anywhere; }
   .details-inline-title { max-width:none !important; margin:0; padding-right:4px; font-size:clamp(22px, 4cqw, 32px); line-height:1.12; }
   .details-summary-user { max-width:42%; flex:none; display:flex; align-items:center; gap:5px; overflow:hidden; padding:5px 9px; border:1px solid color-mix(in srgb, var(--divider-color) 70%, transparent); border-radius:999px; color:var(--secondary-text-color); background:color-mix(in srgb, var(--primary-text-color) 7%, transparent); font-size:11px; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
   .details-summary-user ha-icon { --mdc-icon-size:15px; flex:none; }
   .details-primary p,.details-subtitle { margin:0; color:var(--secondary-text-color); }
-  .details-chips { display:flex; flex-wrap:wrap; gap:6px; }
-  .details-chips span { padding:4px 9px; border-radius:999px; color:var(--secondary-text-color); background:color-mix(in srgb, var(--primary-text-color) 8%, transparent); font-size:12px; text-transform:capitalize; }
+  .details-chips { display:flex; flex-wrap:wrap; gap:6px; min-width:0; }
+  .details-chips span { padding:4px 9px; border-radius:999px; color:var(--secondary-text-color); background:color-mix(in srgb, var(--primary-text-color) 8%, transparent); font-size:12px; text-transform:capitalize; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .details-chips .chip-user { display:inline-flex; align-items:center; gap:5px; max-width:100%; }
+  .details-chips .chip-user ha-icon { --mdc-icon-size:14px; flex:none; }
+  .details-chips .chip-user span, .details-chips .chip-user { overflow:hidden; text-overflow:ellipsis; }
   .details-chips .state { color:var(--primary-text-color); background:color-mix(in srgb, var(--primary-color) 32%, transparent); }
   .details-chips .state.paused { color:var(--secondary-text-color); background:color-mix(in srgb, var(--tas-paused-color, #e5a00d) 42%, transparent); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--tas-paused-color, #e5a00d) 58%, transparent); }
   .details-chips .state.buffering { color:var(--secondary-text-color); background:color-mix(in srgb, var(--tas-buffering-color, #d32f2f) 42%, transparent); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--tas-buffering-color, #d32f2f) 58%, transparent); }
@@ -1072,11 +1076,21 @@ var Ee = o`
     .remaining-label { display:none; }
     .progress-state { padding-left:5px; }
     .progress-remaining { padding-right:5px; }
-    .details-hero.with-poster { grid-template-columns:86px minmax(0,1fr); }
+    .details-hero.with-poster { grid-template-columns:72px minmax(0,1fr); gap:12px; }
+    .details-hero > img { border-radius:8px; }
     .details-heading-line { align-items:flex-start; flex-direction:column; gap:7px; }
     .details-summary-user { max-width:100%; }
-    .details-content { padding:18px; }
-    .details-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .details-content { padding:14px; gap:14px; }
+    .details-inline-title { font-size:20px; }
+    .details-grid { grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:6px; }
+    .detail-value { padding:8px 10px; }
+    .detail-value span { font-size:12px; white-space:normal; overflow-wrap:anywhere; }
+    .popup-summary { padding:10px; gap:10px; }
+    .details-progress { height:8px; }
+    .dialog-backdrop { padding:10px; }
+    .details-dialog { border-radius:14px; }
+    .dialog-close { width:36px; height:36px; margin:8px 8px 0 0; }
+    .details-actions button, .details-top-action button { min-height:44px; }
     .carousel-controls { display:none; }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -1674,9 +1688,8 @@ var Ee = o`
         <div class="details-primary">
           <div class="details-heading-line">
             <h2 id="details-title" class="details-inline-title">${l}</h2>
-            ${this._config.popup_summary_show_user && e.user?.display_name ? R`<span class="details-summary-user"><ha-icon icon="mdi:account"></ha-icon>${e.user.display_name}</span>` : B}
           </div>
-          <div class="details-chips">${["paused", "buffering"].includes(e.state) ? R`<span class="state ${e.state}">${e.state}</span>` : B}${t.type ? R`<span>${t.type}</span>` : B}${t.year ? R`<span>${t.year}</span>` : B}</div>
+          <div class="details-chips">${["paused", "buffering"].includes(e.state) ? R`<span class="state ${e.state}">${e.state}</span>` : B}${t.type ? R`<span>${t.type}</span>` : B}${t.year ? R`<span>${t.year}</span>` : B}${this._config.popup_summary_show_user && e.user?.display_name ? R`<span class="chip-user"><ha-icon icon="mdi:account"></ha-icon>${e.user.display_name}</span>` : B}</div>
           ${i ? R`<p>${i}</p>` : B}
           ${this._config.popup_show_summary && t.summary ? R`<p class="details-summary ${this._config.popup_summary_lines === 0 ? "" : "compact"}" style=${`--summary-lines:${this._config.popup_summary_lines ?? 3}`}>${t.summary}</p>` : B}
           ${this._config.popup_show_progress ? R`<div class="details-progress"><span style=${`width:${n}%`}></span></div>

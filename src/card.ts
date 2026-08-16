@@ -726,9 +726,8 @@ export class TautulliMediaCard extends LitElement {
         <div class="details-primary">
           <div class="details-heading-line">
             <h2 id="details-title" class="details-inline-title">${title}</h2>
-            ${this._config.popup_summary_show_user && item.user?.display_name ? html`<span class="details-summary-user"><ha-icon icon="mdi:account"></ha-icon>${item.user.display_name}</span>` : nothing}
           </div>
-          <div class="details-chips">${["paused", "buffering"].includes(item.state) ? html`<span class="state ${item.state}">${item.state}</span>` : nothing}${media.type ? html`<span>${media.type}</span>` : nothing}${media.year ? html`<span>${media.year}</span>` : nothing}</div>
+          <div class="details-chips">${[ "paused", "buffering" ].includes(item.state) ? html`<span class="state ${item.state}">${item.state}</span>` : nothing}${media.type ? html`<span>${media.type}</span>` : nothing}${media.year ? html`<span>${media.year}</span>` : nothing}${this._config.popup_summary_show_user && item.user?.display_name ? html`<span class="chip-user"><ha-icon icon="mdi:account"></ha-icon>${item.user.display_name}</span>` : nothing}</div>
           ${subtitle ? html`<p>${subtitle}</p>` : nothing}
           ${this._config.popup_show_summary && media.summary ? html`<p class="details-summary ${this._config.popup_summary_lines === 0 ? "" : "compact"}" style=${`--summary-lines:${this._config.popup_summary_lines ?? 3}`}>${media.summary}</p>` : nothing}
           ${this._config.popup_show_progress ? html`<div class="details-progress"><span style=${`width:${progress}%`}></span></div>
