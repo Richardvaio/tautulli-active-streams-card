@@ -115,7 +115,7 @@ The optional popup can show artwork, summary, Plex user, progress, remaining tim
 
 ### Popup animation and background
 
-- **Open animation** — none, fade in, scale up, or rise from below (a bottom-sheet slide), with a configurable duration.
+- **Open animation** — none, fade in, scale up, or rise from below (a bottom-sheet slide), with an independent open duration. Closing plays the same animation in reverse, at its own configurable close duration (default 200ms).
 - **Dim background** — darkens the whole screen behind the popup.
 - **Blur background** — applies a frosted blur to the background behind the popup.
 - **Popup background** — overrides the popup surface colour with a theme variable, colour or `rgba()` value.

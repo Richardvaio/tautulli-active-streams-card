@@ -105,6 +105,7 @@ export interface CardConfig {
   popup_width?: "compact" | "standard" | "wide";
   popup_animation?: "none" | "fade" | "scale" | "rise";
   popup_animation_duration?: number;
+  popup_close_animation_duration?: number;
   popup_backdrop_dim?: number;
   popup_backdrop_blur?: number;
   popup_background?: string;

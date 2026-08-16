@@ -639,6 +639,7 @@ var J = [
 	popup_width: "standard",
 	popup_animation: "scale",
 	popup_animation_duration: 220,
+	popup_close_animation_duration: 200,
 	popup_backdrop_dim: 58,
 	popup_backdrop_blur: 0,
 	termination_popup_placement: "footer",
@@ -738,6 +739,11 @@ function Y(e) {
 			"popup_animation_duration",
 			0,
 			1500
+		],
+		[
+			"popup_close_animation_duration",
+			0,
+			1e3
 		],
 		[
 			"popup_cinematic_art",
@@ -879,6 +885,8 @@ var Ae = o`
   :host { display: block; container-type: inline-size; }
   ha-card { overflow: hidden; background:var(--tas-card-background, var(--ha-card-background, var(--card-background-color))); }
   :host([container-style="transparent"]) ha-card { border:0; background:transparent; box-shadow:none; }
+  :host([container-style="transparent"]) .content { padding:0; gap:6px; }
+  :host([container-style="transparent"]) .header { padding-left:6px; padding-right:6px; }
   .header { display:flex; align-items:center; justify-content:space-between; padding:16px 16px 8px; gap:12px; }
   .title { margin:0; font-size:var(--ha-card-header-font-size, 20px); font-weight:500; line-height:1.25; }
   .badge { font-size:12px; min-width:1.5rem; text-align:center; color:var(--secondary-text-color); background:color-mix(in srgb, var(--primary-text-color) 9%, transparent); border-radius:999px; padding:3px 8px; }
@@ -916,8 +924,8 @@ var Ae = o`
   .open-details:focus-visible { outline:2px solid var(--primary-color); outline-offset:-3px; }
   .terminate { z-index:4; }
   .art { width:calc(100% - var(--tas-art-inset, 0px) - var(--tas-art-inset, 0px)); height:calc(100% - var(--tas-art-inset, 0px) - var(--tas-art-inset, 0px)); min-height:128px; margin:var(--tas-art-inset, 0px); object-fit:var(--tas-art-fit, cover); object-position:var(--tas-art-position, center); border-radius:max(0px, calc(var(--tas-radius, 12px) - 2px)); background:var(--secondary-background-color); }
-  .body { min-width:0; padding:10px 10px 10px 0; display:flex; flex-direction:column; gap:5px; }
-  .no-art .body { padding:12px; }
+  .body { min-width:0; padding:10px 10px 14px 0; display:flex; flex-direction:column; gap:5px; }
+  .no-art .body { padding:12px 12px 16px; }
   .eyebrow,.meta,.details,.summary { color:var(--secondary-text-color); }
   .eyebrow { display:flex; gap:7px; align-items:center; font-size:12px; min-width:0; }
   .eyebrow span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -930,7 +938,7 @@ var Ae = o`
   .summary { font-size:12px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
   .progress { height:var(--tas-progress-height, 7px); border-radius:99px; overflow:hidden; background:color-mix(in srgb, var(--primary-text-color) 14%, transparent); margin-top:auto; }
   .progress::before { content:""; display:block; height:100%; width:var(--progress, 0%); background:var(--state-color, var(--primary-color)); transition:width .4s ease; }
-  .modern-progress-row { display:grid; grid-template-columns:minmax(64px,1fr) auto; align-items:center; gap:10px; margin-top:auto; }
+  .modern-progress-row { display:grid; grid-template-columns:minmax(64px,1fr) auto; align-items:center; gap:10px; margin-top:auto; padding-bottom:4px; }
   .modern-progress-row .progress { width:100%; margin-top:0; }
   .modern-progress-remaining { color:var(--secondary-text-color); font-size:11px; text-align:right; white-space:nowrap; }
   .terminate { position:absolute; right:6px; top:6px; display:grid; place-items:center; width:32px; height:32px; padding:0; border:1px solid color-mix(in srgb, var(--error-color) 28%, transparent); border-radius:50%; color:var(--error-color); background:color-mix(in srgb, var(--error-color) 16%, transparent); box-shadow:0 3px 10px rgb(0 0 0 / 14%); cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
@@ -943,7 +951,7 @@ var Ae = o`
   .classic-item.music .classic-art { height:auto; min-height:0; aspect-ratio:var(--tas-art-aspect, 1); align-self:center; }
   .classic-art.placeholder { display:grid; place-items:center; color:var(--secondary-text-color); }
   .classic-art.placeholder ha-icon { --mdc-icon-size:36px; }
-  .classic-body { min-width:0; display:grid; align-content:center; grid-template-rows:auto auto auto auto auto auto; gap:3px; padding:5px 7px 5px 0; }
+  .classic-body { min-width:0; display:grid; align-content:end; grid-template-rows:auto auto auto auto auto auto; gap:3px; padding:5px 7px 5px 0; }
   .classic-top,.classic-info,.classic-bottom { min-width:0; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; color:var(--secondary-text-color); font-size:11px; line-height:1.2; }
   .classic-top > span,.classic-bottom > span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .classic-top strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right; font:italic 700 12px Arial,sans-serif; letter-spacing:1.5px; color:var(--primary-text-color); }
@@ -957,7 +965,7 @@ var Ae = o`
   .classic-info > :last-child,.classic-bottom > :last-child { text-align:right; }
   .media-detail { display:flex; align-items:center; gap:4px; color:var(--primary-text-color); font-size:15px; font-weight:600; }
   .media-detail ha-icon { --mdc-icon-size:15px; }
-  .classic-progress { position:relative; min-width:0; height:var(--tas-progress-height, 20px); display:grid; grid-template-columns:1fr auto 1fr; align-items:center; overflow:hidden; border-radius:999px; color:#fff; background:rgba(0,0,0,.6); font-size:11px; font-weight:600; }
+  .classic-progress { position:relative; min-width:0; height:var(--tas-progress-height, 20px); display:grid; grid-template-columns:1fr auto 1fr; align-items:center; overflow:hidden; border-radius:999px; color:#fff; background:rgba(0,0,0,.6); font-size:11px; font-weight:600; margin-bottom:5px; margin-top:9px; }
   .classic-progress::before { content:""; position:absolute; inset:0 auto 0 0; width:var(--progress, 0%); background:var(--state-color); transition:width .4s ease; }
   .classic-progress span { position:relative; z-index:1; }
   .progress-state { grid-column:1; padding-left:8px; text-transform:capitalize; white-space:nowrap; }
@@ -966,17 +974,30 @@ var Ae = o`
   :host([animations]) .classic-item.paused .classic-progress::before { animation:pulse 1.5s ease-in-out infinite; }
   :host([animations]) .classic-item.buffering .classic-progress::before { animation:pulse .8s ease-in-out infinite; }
   .dialog-backdrop { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; }
-  .dialog-backdrop::before { content:""; position:absolute; inset:0; background:var(--scrim-color, rgb(0 0 0 / 58%)); }
+  .dialog-backdrop::before { content:""; position:absolute; inset:0; background:var(--scrim-color, rgb(0 0 0 / 58%)); backdrop-filter:var(--scrim-blur, none); -webkit-backdrop-filter:var(--scrim-blur, none); }
   .dialog-backdrop > * { position:relative; }
   .details-dialog.anim-fade { animation:dialog-fade var(--dialog-animation-duration, 220ms) ease-out; }
   .details-dialog.anim-scale { animation:dialog-scale var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
   .details-dialog.anim-rise { animation:dialog-rise var(--dialog-animation-duration, 220ms) cubic-bezier(.2,.8,.2,1); }
+  .details-dialog.anim-fade.closing { animation:dialog-fade-out var(--dialog-close-duration, 200ms) ease-in forwards; }
+  .details-dialog.anim-scale.closing { animation:dialog-scale-out var(--dialog-close-duration, 200ms) cubic-bezier(.4,0,1,1) forwards; }
+  .details-dialog.anim-rise.closing { animation:dialog-rise-out var(--dialog-close-duration, 200ms) cubic-bezier(.4,0,1,1) forwards; }
+  .dialog-backdrop.closing::before { animation:scrim-out var(--dialog-close-duration, 200ms) ease-in forwards; }
+  .details-dialog.popup-cinematic.closing { --cinematic-art-transition:none; }
+  .details-dialog.popup-cinematic.closing::before { animation:cinematic-art-out var(--dialog-close-duration, 200ms) ease-in forwards; }
   :host(:not([animations])) .details-dialog { animation:none !important; }
+  :host(:not([animations])) .dialog-backdrop.closing::before { animation:none !important; }
+  :host(:not([animations])) .details-dialog.popup-cinematic.closing::before { animation:none !important; }
   @keyframes dialog-fade { from { opacity:0; } }
+  @keyframes dialog-fade-out { to { opacity:0; } }
+  @keyframes scrim-out { to { opacity:0; } }
+  @keyframes cinematic-art-out { to { opacity:0; } }
   @keyframes backdrop-fade { from { opacity:0; } }
   @keyframes cinematic-art-in { from { opacity:0; } }
   @keyframes dialog-scale { from { transform:scale(.96) translateY(6px); } }
   @keyframes dialog-rise { from { transform:translateY(100vh); } }
+  @keyframes dialog-scale-out { to { transform:scale(.96) translateY(6px); opacity:0; } }
+  @keyframes dialog-rise-out { to { transform:translateY(100vh); } }
   :host(:not([animations])) .dialog-backdrop { animation:none !important; }
   .confirm-dialog { width:min(420px, 100%); overflow:hidden; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:var(--card-background-color); box-shadow:0 18px 54px rgb(0 0 0 / 42%); }
   .dialog-content { display:grid; gap:14px; padding:24px; }
@@ -1221,7 +1242,7 @@ var Ae = o`
 		this.styles = Ae;
 	}
 	constructor() {
-		super(), this._dialogOpenedAt = 0, this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._scrollLockCount = 0, this._visibilityChanged = () => {
+		super(), this._dialogOpenedAt = 0, this._dialogClosing = !1, this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._scrollLockCount = 0, this._visibilityChanged = () => {
 			document.visibilityState === "visible" && this._config.mode !== "active" && this._loadData();
 		}, this._delegatedItemClick = (e) => {
 			if (this._config.click_action !== "details") return;
@@ -1232,7 +1253,15 @@ var Ae = o`
 			let r = this._filteredItems().find((e) => this._itemId(e) === n.dataset.itemId);
 			r && this._openDetails(r);
 		}, this._closeDetails = () => {
-			this._selectedItem = void 0, this._unlockBodyScroll();
+			if (this._dialogClosing) return;
+			let e = this._config.popup_animation ?? "scale", t = this._config.animations === !1 || e === "none" ? 0 : this._config.popup_close_animation_duration ?? 200;
+			if (t <= 0) {
+				this._selectedItem = void 0, this._unlockBodyScroll(), this.requestUpdate();
+				return;
+			}
+			this._dialogClosing = !0, this.requestUpdate(), window.setTimeout(() => {
+				this._selectedItem = void 0, this._dialogClosing = !1, this._unlockBodyScroll(), this.requestUpdate();
+			}, t + 60);
 		}, this._backdropClickClose = (e) => {
 			e.target === e.currentTarget && (Date.now() - this._dialogOpenedAt < 350 || this._closeDetails());
 		}, this._backdropTerminationClose = (e) => {
@@ -1370,7 +1399,7 @@ var Ae = o`
 		}
 		this._data = e;
 		let t = this._config.mode === "active" ? this._selectedItem?.session_id : void 0;
-		t && !e.items.some((e) => e.session_id === t) && (this._selectedItem = void 0, this._pendingTermination?.session_id === t && (this._pendingTermination = void 0)), this._retryAttempt = 0, this._error = void 0, this._loading = !1;
+		t && !e.items.some((e) => e.session_id === t) && (this._dialogClosing &&= !1, this._selectedItem = void 0, this._pendingTermination?.session_id === t && (this._pendingTermination = void 0)), this._retryAttempt = 0, this._error = void 0, this._loading = !1;
 	}
 	_setError(e) {
 		let t = this._friendlyError(e instanceof Error ? e.message : String(e));
@@ -1632,7 +1661,7 @@ var Ae = o`
 	}
 	_openDetails(e) {
 		if (this._config.click_action === "details") {
-			if (this._selectedItem === e) return;
+			if (this._dialogClosing || this._selectedItem === e) return;
 			this._selectedItem = e, this._dialogOpenedAt = Date.now(), this._lockBodyScroll(), this.requestUpdate();
 		}
 	}
@@ -1678,9 +1707,9 @@ var Ae = o`
 		return this._config.mode === "active" ? this._renderActiveDetails(t) : this._config.mode === "users" ? this._renderUserDetails(t) : this._renderMediaDetails(t);
 	}
 	_renderDialogShell(e, t, n, r = !1) {
-		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}");` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `--scrim-color:rgb(0 0 0 / ${a}%);${o ? `backdrop-filter:blur(${o}px);` : ""}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;`, c = this._config.popup_background, l = `${i}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;--cinematic-art-opacity:${(this._config.popup_cinematic_art ?? 45) / 100};${c ? `background:${c};` : ""}`;
-		return F`<div class="dialog-backdrop" style=${s} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
-      <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${n ? "has-backdrop" : ""}" style=${l} role="dialog" aria-modal="true" aria-labelledby="details-title">
+		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}");` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `--scrim-color:rgb(0 0 0 / ${a}%);--scrim-blur:${o ? `blur(${o}px)` : "none"};--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;`, c = this._config.popup_background, l = `${i}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;--dialog-close-duration:${this._config.popup_close_animation_duration ?? 200}ms;--cinematic-art-opacity:${(this._config.popup_cinematic_art ?? 45) / 100};${c ? `background:${c};` : ""}`;
+		return F`<div class="dialog-backdrop ${this._dialogClosing ? "closing" : ""}" style=${s} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
+      <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} ${this._dialogClosing ? "closing" : ""} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${n ? "has-backdrop" : ""}" style=${l} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
         <div class="details-content">${r ? L : F`<h2 id="details-title">${e}</h2>`}${t}</div>
       </section>
@@ -2825,9 +2854,18 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Fe = (
 			{
 				kind: "number",
 				key: "popup_animation_duration",
-				label: "Animation duration",
+				label: "Open animation duration",
 				min: 0,
 				max: 1500,
+				suffix: "ms",
+				when: Ie
+			},
+			{
+				kind: "number",
+				key: "popup_close_animation_duration",
+				label: "Close animation duration",
+				min: 0,
+				max: 1e3,
 				suffix: "ms",
 				when: Ie
 			},
@@ -3158,6 +3196,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Fe = (
 				"progress_height",
 				"backdrop_opacity",
 				"popup_animation_duration",
+				"popup_close_animation_duration",
 				"popup_cinematic_art",
 				"popup_backdrop_dim",
 				"popup_backdrop_blur"
@@ -3570,7 +3609,7 @@ customElements.get("tautulli-media-card") || customElements.define("tautulli-med
 	name: "Tautulli Media Card",
 	description: "Active streams, recently added media, popular titles, and watch history from Tautulli.",
 	preview: !0
-}), console.info("%c TAUTULLI MEDIA CARD %c 0.1.0 ", "color:white;background:#e5a00d;font-weight:700", "color:#e5a00d;background:#1f2329");
+}), console.info("%c TAUTULLI MEDIA CARD %c 0.1.1 ", "color:white;background:#e5a00d;font-weight:700", "color:#e5a00d;background:#1f2329");
 //#endregion
 
 //# sourceMappingURL=tautulli-active-streams-card.js.map

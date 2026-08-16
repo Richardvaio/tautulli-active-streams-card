@@ -52,6 +52,7 @@ export class TautulliMediaCard extends LitElement {
   private _terminationTrigger?: HTMLElement;
   declare private _selectedItem?: UnknownItem;
   private _dialogOpenedAt = 0;
+  private _dialogClosing = false;
   private _unsubscribe?: () => void;
   private _refreshTimer?: number;
   private _retryTimer?: number;
@@ -166,6 +167,7 @@ export class TautulliMediaCard extends LitElement {
     }
   }
 
+
   private _visibilityChanged = (): void => {
     if (document.visibilityState === "visible" && this._config.mode !== "active") {
       void this._loadData();
@@ -264,6 +266,9 @@ export class TautulliMediaCard extends LitElement {
     this._data = data;
     const selectedSessionId = this._config.mode === "active" ? this._selectedItem?.session_id : undefined;
     if (selectedSessionId && !data.items.some((item) => item.session_id === selectedSessionId)) {
+      if (this._dialogClosing) {
+        this._dialogClosing = false;
+      }
       this._selectedItem = undefined;
       if (this._pendingTermination?.session_id === selectedSessionId) this._pendingTermination = undefined;
     }
@@ -596,7 +601,7 @@ export class TautulliMediaCard extends LitElement {
 
   private _openDetails(item: UnknownItem): void {
     if (this._config.click_action === "details") {
-      if (this._selectedItem === item) return;
+      if (this._dialogClosing || this._selectedItem === item) return;
       this._selectedItem = item;
       this._dialogOpenedAt = Date.now();
       this._lockBodyScroll();
@@ -624,8 +629,26 @@ export class TautulliMediaCard extends LitElement {
   };
 
   private _closeDetails = (): void => {
-    this._selectedItem = undefined;
-    this._unlockBodyScroll();
+    if (this._dialogClosing) return;
+    const style = this._config.popup_animation ?? "scale";
+    const duration = this._config.animations === false || style === "none" ? 0 : this._config.popup_close_animation_duration ?? 200;
+    if (duration <= 0) {
+      this._selectedItem = undefined;
+      this._unlockBodyScroll();
+      this.requestUpdate();
+      return;
+    }
+    // Timer-driven close: the CSS exit animation plays independently while
+    // _dialogClosing keeps the render applying the closing classes; unmount
+    // on a slightly padded timer so no animationend edge case can stall it.
+    this._dialogClosing = true;
+    this.requestUpdate();
+    window.setTimeout(() => {
+      this._selectedItem = undefined;
+      this._dialogClosing = false;
+      this._unlockBodyScroll();
+      this.requestUpdate();
+    }, duration + 60);
   };
 
   private _backdropClickClose = (event: Event): void => {
@@ -697,13 +720,15 @@ export class TautulliMediaCard extends LitElement {
     const style = backdrop ? `--details-backdrop:url("${backdrop.replaceAll('"', "")}");` : "";
     const dim = this._config.popup_backdrop_dim ?? 58;
     const blur = this._config.popup_backdrop_blur ?? 0;
-    const backdropStyle = `--scrim-color:rgb(0 0 0 / ${dim}%);${blur ? `backdrop-filter:blur(${blur}px);` : ""}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;`;
+    const backdropStyle = `--scrim-color:rgb(0 0 0 / ${dim}%);--scrim-blur:${blur ? `blur(${blur}px)` : "none"};--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;`;
     const popupBackground = this._config.popup_background;
     const animationDuration = this._config.popup_animation_duration ?? 220;
+    // Close speed is independently configurable (defaults to a snappy 200ms).
+    const closeDuration = this._config.popup_close_animation_duration ?? 200;
     const cinematicArt = (this._config.popup_cinematic_art ?? 45) / 100;
-    const dialogStyle = `${style}--dialog-animation-duration:${animationDuration}ms;--cinematic-art-opacity:${cinematicArt};${popupBackground ? `background:${popupBackground};` : ""}`;
-    return html`<div class="dialog-backdrop" style=${backdropStyle} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
-      <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${backdrop ? "has-backdrop" : ""}" style=${dialogStyle} role="dialog" aria-modal="true" aria-labelledby="details-title">
+    const dialogStyle = `${style}--dialog-animation-duration:${animationDuration}ms;--dialog-close-duration:${closeDuration}ms;--cinematic-art-opacity:${cinematicArt};${popupBackground ? `background:${popupBackground};` : ""}`;
+    return html`<div class="dialog-backdrop ${this._dialogClosing ? "closing" : ""}" style=${backdropStyle} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
+      <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} ${this._dialogClosing ? "closing" : ""} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${backdrop ? "has-backdrop" : ""}" style=${dialogStyle} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
         <div class="details-content">${titleInContent ? nothing : html`<h2 id="details-title">${title}</h2>`}${content}</div>
       </section>
