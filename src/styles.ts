@@ -99,6 +99,7 @@ export const cardStyles = css`
   :host(:not([animations])) .details-dialog { animation:none !important; }
   @keyframes dialog-fade { from { opacity:0; } }
   @keyframes backdrop-fade { from { opacity:0; } }
+  @keyframes cinematic-art-in { from { opacity:0; } }
   @keyframes dialog-scale { from { transform:scale(.96) translateY(6px); } }
   @keyframes dialog-rise { from { transform:translateY(100vh); } }
   :host(:not([animations])) .dialog-backdrop { animation:none !important; }
@@ -127,7 +128,7 @@ export const cardStyles = css`
   .details-hero { position:relative; display:grid; gap:16px; }
   .popup-summary { display:grid; gap:14px; padding:14px; border:1px solid color-mix(in srgb, var(--divider-color) 80%, transparent); border-radius:14px; background:color-mix(in srgb, var(--primary-text-color) 4%, transparent); backdrop-filter:blur(4px); }
   .popup-clean .popup-summary { padding:0; border:0; border-radius:0; background:transparent; backdrop-filter:none; }
-  .popup-cinematic.has-backdrop::before { inset:0; height:330px; opacity:.72; -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 100%); mask-image:linear-gradient(180deg,#000 0%,transparent 100%); }
+  .popup-cinematic.has-backdrop::before { inset:0; height:330px; opacity:calc(var(--cinematic-art-opacity, .45)); -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 100%); mask-image:linear-gradient(180deg,#000 0%,transparent 100%); animation:cinematic-art-in var(--dialog-animation-duration, 220ms) ease-out; }
   .popup-cinematic .popup-summary { min-height:190px; align-content:end; padding:22px; border:0; background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--card-background-color) 55%,transparent)); }
   .media-summary { justify-items:start; }
   .details-section-title { margin:2px 0 -8px; color:var(--secondary-text-color); font-size:12px; text-transform:uppercase; letter-spacing:.65px; }

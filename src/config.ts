@@ -63,6 +63,7 @@ export const DEFAULT_CONFIG: CardConfig = {
   termination_location: "popup",
   click_action: "none",
   popup_style: "clean",
+  popup_cinematic_art: 45,
   popup_content_style: "open",
   popup_detail_order: DEFAULT_POPUP_DETAIL_ORDER,
   popup_width: "standard",
@@ -143,6 +144,7 @@ export function normalizeConfig(config: Partial<CardConfig>): CardConfig {
     ["progress_height", 2, 24],
     ["backdrop_opacity", 0, 100],
     ["popup_animation_duration", 0, 1500],
+    ["popup_cinematic_art", 0, 100],
     ["popup_backdrop_dim", 0, 95],
     ["popup_backdrop_blur", 0, 24],
   ] as const) {

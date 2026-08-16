@@ -633,6 +633,7 @@ var Q = [
 	termination_location: "popup",
 	click_action: "none",
 	popup_style: "clean",
+	popup_cinematic_art: 45,
 	popup_content_style: "open",
 	popup_detail_order: Q,
 	popup_width: "standard",
@@ -737,6 +738,11 @@ function $(e) {
 			"popup_animation_duration",
 			0,
 			1500
+		],
+		[
+			"popup_cinematic_art",
+			0,
+			100
 		],
 		[
 			"popup_backdrop_dim",
@@ -968,6 +974,7 @@ var Ee = o`
   :host(:not([animations])) .details-dialog { animation:none !important; }
   @keyframes dialog-fade { from { opacity:0; } }
   @keyframes backdrop-fade { from { opacity:0; } }
+  @keyframes cinematic-art-in { from { opacity:0; } }
   @keyframes dialog-scale { from { transform:scale(.96) translateY(6px); } }
   @keyframes dialog-rise { from { transform:translateY(100vh); } }
   :host(:not([animations])) .dialog-backdrop { animation:none !important; }
@@ -996,7 +1003,7 @@ var Ee = o`
   .details-hero { position:relative; display:grid; gap:16px; }
   .popup-summary { display:grid; gap:14px; padding:14px; border:1px solid color-mix(in srgb, var(--divider-color) 80%, transparent); border-radius:14px; background:color-mix(in srgb, var(--primary-text-color) 4%, transparent); backdrop-filter:blur(4px); }
   .popup-clean .popup-summary { padding:0; border:0; border-radius:0; background:transparent; backdrop-filter:none; }
-  .popup-cinematic.has-backdrop::before { inset:0; height:330px; opacity:.72; -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 100%); mask-image:linear-gradient(180deg,#000 0%,transparent 100%); }
+  .popup-cinematic.has-backdrop::before { inset:0; height:330px; opacity:calc(var(--cinematic-art-opacity, .45)); -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 100%); mask-image:linear-gradient(180deg,#000 0%,transparent 100%); animation:cinematic-art-in var(--dialog-animation-duration, 220ms) ease-out; }
   .popup-cinematic .popup-summary { min-height:190px; align-content:end; padding:22px; border:0; background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--card-background-color) 55%,transparent)); }
   .media-summary { justify-items:start; }
   .details-section-title { margin:2px 0 -8px; color:var(--secondary-text-color); font-size:12px; text-transform:uppercase; letter-spacing:.65px; }
@@ -1674,7 +1681,7 @@ var Ee = o`
 		return this._config.mode === "active" ? this._renderActiveDetails(t) : this._config.mode === "users" ? this._renderUserDetails(t) : this._renderMediaDetails(t);
 	}
 	_renderDialogShell(e, t, n, r = !1) {
-		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}");` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `--scrim-color:rgb(0 0 0 / ${a}%);${o ? `backdrop-filter:blur(${o}px);` : ""}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;`, c = this._config.popup_background, l = `${i}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;${c ? `background:${c};` : ""}`;
+		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}");` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `--scrim-color:rgb(0 0 0 / ${a}%);${o ? `backdrop-filter:blur(${o}px);` : ""}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;`, c = this._config.popup_background, l = `${i}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;--cinematic-art-opacity:${(this._config.popup_cinematic_art ?? 45) / 100};${c ? `background:${c};` : ""}`;
 		return R`<div class="dialog-backdrop" style=${s} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
       <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${n ? "has-backdrop" : ""}" style=${l} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
@@ -2044,6 +2051,7 @@ var Ee = o`
 				"progress_height",
 				"backdrop_opacity",
 				"popup_animation_duration",
+				"popup_cinematic_art",
 				"popup_backdrop_dim",
 				"popup_backdrop_blur"
 			].includes(n) && (r = t.value === "" ? void 0 : Number(t.value)), n === "columns" && t.value !== "auto" && (r = Number(t.value)), n === "popup_summary_lines" && (r = Number(t.value)), [
@@ -2653,6 +2661,7 @@ var Ee = o`
 				label: "Cinematic backdrop"
 			}
 		], this._config.popup_style ?? "clean")}
+          ${(this._config.popup_style ?? "clean") === "cinematic" ? this._toggleNumber("popup_cinematic_art", "Backdrop art strength", 5, 100, "%") : B}
           ${this._select("popup_width", "Popup width", [
 			{
 				value: "compact",

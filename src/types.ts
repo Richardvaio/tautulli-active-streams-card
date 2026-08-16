@@ -95,6 +95,7 @@ export interface CardConfig {
   termination_location?: "popup" | "card" | "both";
   click_action?: "none" | "details";
   popup_style?: "clean" | "panel" | "cinematic";
+  popup_cinematic_art?: number;
   popup_content_style?: "open" | "panel";
   popup_detail_order?: PopupDetailField[];
   popup_show_artwork?: boolean;
