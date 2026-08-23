@@ -88,7 +88,7 @@ export interface HintField extends Applicability {
 export interface BlockField extends Applicability {
   kind: "block";
   /** Identifier of a composite block rendered by dedicated editor code. */
-  block: "recipes" | "streamDetailOrder" | "terminationUnavailableHint";
+  block: "recipes" | "streamDetailOrder" | "terminationUnavailableHint" | "episodeTextPreview";
 }
 
 export type Field =
@@ -142,6 +142,65 @@ const canTerminate = (ctx: FieldContext) => Boolean(ctx.data.capabilities?.strea
 const terminationArmed = (ctx: FieldContext) => canTerminate(ctx) && Boolean(ctx.config.allow_termination);
 const terminationInPopup = (ctx: FieldContext) =>
   terminationArmed(ctx) && popupEnabled(ctx) && ["popup", "both"].includes(ctx.config.termination_location ?? "popup");
+
+const episodeTextAvailable = (ctx: FieldContext) =>
+  (ctx.mode === "active" && ctx.config.media_type !== "music")
+  || (ctx.mode === "recently_added" && ["all", "show"].includes(ctx.config.media_type ?? "all"))
+  || ctx.mode === "history";
+
+const episodeNumberUsed = (ctx: FieldContext) =>
+  ctx.config.episode_layout !== "custom"
+  || ["show_and_number", "number_and_title", "show_number_and_title", "number_only"].includes(
+    ctx.config.episode_subtitle ?? "show_and_number",
+  );
+
+const TV_EPISODE_TEXT_SUBSECTION: SubSection = {
+  summary: "TV episode text",
+  className: "inline-advanced",
+  description: "Choose how episode names and numbers are arranged on dashboard items. Popup text is configured separately.",
+  applies: { when: episodeTextAvailable },
+  fields: [
+    {
+      kind: "select", key: "episode_layout", label: "Episode text layout",
+      options: [
+        { value: "current", label: "Current layout" },
+        { value: "show_first", label: "Show first" },
+        { value: "episode_first", label: "Episode first" },
+        { value: "custom", label: "Custom" },
+      ],
+    },
+    {
+      kind: "select", key: "episode_title", label: "Primary title",
+      when: (ctx) => ctx.config.episode_layout === "custom",
+      options: [
+        { value: "full_title", label: "Full title" },
+        { value: "show", label: "Show name" },
+        { value: "episode_title", label: "Episode title" },
+      ],
+    },
+    {
+      kind: "select", key: "episode_subtitle", label: "Subtitle content",
+      when: (ctx) => ctx.config.episode_layout === "custom",
+      options: [
+        { value: "show_and_number", label: "Show and episode number" },
+        { value: "number_and_title", label: "Episode number and title" },
+        { value: "show_number_and_title", label: "Show, number and title" },
+        { value: "number_only", label: "Episode number only" },
+        { value: "episode_title", label: "Episode title only" },
+        { value: "none", label: "Hidden" },
+      ],
+    },
+    {
+      kind: "select", key: "episode_number_style", label: "Episode numbering",
+      when: episodeNumberUsed,
+      options: [
+        { value: "compact", label: "Compact (S1 · E2)" },
+        { value: "padded", label: "Zero-padded (S01E02)" },
+      ],
+    },
+    { kind: "block", block: "episodeTextPreview" },
+  ],
+};
 
 export const EDITOR_SECTIONS: Section[] = [
   {
@@ -434,6 +493,7 @@ export const EDITOR_SECTIONS: Section[] = [
           { kind: "toggle", key: "show_audio_quality", label: "Music audio quality" },
         ],
       },
+      TV_EPISODE_TEXT_SUBSECTION,
       {
         summary: "Playback and progress", className: "inline-advanced",
         fields: [
@@ -463,6 +523,7 @@ export const EDITOR_SECTIONS: Section[] = [
     fields: [
       { kind: "toggle", key: "show_summary", label: "Summary" },
     ],
+    subsections: [TV_EPISODE_TEXT_SUBSECTION],
   },
   {
     id: "tap-behaviour",

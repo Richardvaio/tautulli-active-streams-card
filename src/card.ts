@@ -457,7 +457,8 @@ export class TautulliMediaCard extends LitElement {
     if (this._config.mode === "active") return this._renderActive(item as ActiveStream);
     if (this._config.mode === "users") return this._renderUser(item);
     const media: MediaItem = this._config.mode === "recently_added" ? item as MediaItem : item.media ?? {};
-    const subtitle = item._group_subtitle ?? this._mediaSubtitle(media);
+    const title = this._cardEpisodeTitle(media, "media");
+    const subtitle = item._group_subtitle ?? this._cardEpisodeSubtitle(media, "media");
     const image = this._image(media.images);
     const background = this._backgroundImage(media.images);
     const displayDuration = this._config.mode === "history"
@@ -465,11 +466,11 @@ export class TautulliMediaCard extends LitElement {
       : Number(media.duration_seconds) || 0;
     return html`
       <article data-item-id=${this._itemId(item)} class="item media-item ${media.type ?? "unknown"} ${this._artClass(image, background)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(background)}>
-        ${this._openDetailsButton(item, media.full_title || media.title || "media")}
+        ${this._openDetailsButton(item, title)}
         ${image ? html`<img class="art" src=${image} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
         <div class="body">
           <div class="eyebrow"><span>${this._itemEyebrow(item, media)}</span></div>
-          <h3 class="name">${media.title || media.full_title || "Untitled"}</h3>
+          <h3 class="name">${title}</h3>
           ${subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
           <div class="meta">
             ${media.year ? html`<span>${media.year}</span>` : nothing}
@@ -526,6 +527,8 @@ export class TautulliMediaCard extends LitElement {
       return this._renderClassicActive(item);
     }
     const media = item.media ?? {};
+    const title = this._cardEpisodeTitle(media, "active");
+    const subtitle = this._cardEpisodeSubtitle(media, "active");
     const image = this._image(item.images);
     const background = this._backgroundImage(item.images);
     const progress = Math.max(0, Math.min(100, Number(item.playback?.progress_percent) || 0));
@@ -536,15 +539,15 @@ export class TautulliMediaCard extends LitElement {
     );
     return html`
       <article data-item-id=${this._itemId(item)} class="item ${this._artClass(image, background)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(background, stateColor)}>
-        ${this._openDetailsButton(item, media.full_title || media.title || "stream")}
+        ${this._openDetailsButton(item, title)}
         ${image ? html`<img class="art" src=${image} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
         <div class="body">
           <div class="eyebrow">
             <span class="state ${item.state}">${item.state}${item.state === "paused" && this._config.show_pause_duration ? ` · ${this._elapsedDuration(this._pausedSeconds(item))}` : ""}</span>
             ${this._config.show_user && item.user?.display_name ? html`<span>${item.user.display_name}</span>` : nothing}
           </div>
-          <h3 class="name">${media.full_title || media.title || "Untitled"}</h3>
-          ${this._mediaSubtitle(media) ? html`<div class="subtitle">${this._mediaSubtitle(media)}</div>` : nothing}
+          <h3 class="name">${title}</h3>
+          ${subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
           ${this._config.show_device && item.client ? html`<div class="meta"><span>${item.client.player || item.client.product || item.client.device}</span></div>` : nothing}
           ${this._config.show_quality ? html`<div class="details optional">
             ${item.quality?.decision ? html`<span>${item.quality.decision}</span>` : nothing}
@@ -570,12 +573,12 @@ export class TautulliMediaCard extends LitElement {
     const hierarchy = media.hierarchy ?? {};
     const primaryTitle = music
       ? [hierarchy.artist, hierarchy.album].filter(Boolean).join(" — ")
-      : media.full_title || media.title || "Untitled";
+      : this._cardEpisodeTitle(media, "classic");
     const secondaryTitle = music ? media.title || media.full_title : "";
     const mediaDetail = music
       ? ""
       : media.type === "episode"
-        ? `S${hierarchy.season_number ?? "–"} · E${hierarchy.episode_number ?? hierarchy.episode ?? "–"}`
+        ? this._cardEpisodeSubtitle(media, "classic")
         : media.year ? `(${media.year})` : "";
     const client = [item.client?.product, item.client?.player].filter(Boolean).join(" — ") || item.client?.device;
     const videoQuality = [item.quality?.decision, item.quality?.video_resolution].filter(Boolean).join(" — ");
@@ -590,7 +593,7 @@ export class TautulliMediaCard extends LitElement {
     );
     return html`
       <article data-item-id=${this._itemId(item)} class="classic-item ${music ? "music" : "video"} ${item.state} ${this._artClass(image, background)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(background, stateColor)}>
-        ${this._openDetailsButton(item, media.full_title || media.title || "stream")}
+        ${this._openDetailsButton(item, primaryTitle)}
         ${image ? html`<img class="classic-art" src=${image} alt="" loading="lazy" referrerpolicy="no-referrer">` : !background ? html`<div class="classic-art placeholder"><ha-icon icon="${music ? "mdi:music" : "mdi:movie-open"}"></ha-icon></div>` : nothing}
         <div class="classic-body">
           <div class="classic-top">
@@ -603,7 +606,7 @@ export class TautulliMediaCard extends LitElement {
           </h3>
           ${music && secondaryTitle ? html`<div class="classic-track"><ha-icon icon="mdi:music-note"></ha-icon><span>${secondaryTitle}</span></div>` : nothing}
           <div class="classic-info">
-            ${this._config.show_media_details && mediaDetail ? html`<span class="media-detail"><ha-icon icon=${media.type === "episode" ? "mdi:television-classic" : "mdi:filmstrip"}></ha-icon>${mediaDetail}</span>` : html`<span></span>`}
+            ${this._config.show_media_details && mediaDetail ? html`<span class="media-detail"><ha-icon icon=${media.type === "episode" ? "mdi:television-classic" : "mdi:filmstrip"}></ha-icon><span>${mediaDetail}</span></span>` : html`<span></span>`}
             ${this._config.show_eta && this._eta(item) ? html`<span>ETA: ${this._eta(item)}</span>` : nothing}
           </div>
           ${this._config.show_progress ? html`
@@ -1148,6 +1151,75 @@ export class TautulliMediaCard extends LitElement {
       return [h.show, episode].filter(Boolean).join(" — ");
     }
     return "";
+  }
+
+  private _cardEpisodeTitle(media: MediaItem, context: "active" | "classic" | "media"): string {
+    const normalTitle = context === "media"
+      ? media.title || media.full_title
+      : media.full_title || media.title;
+    if (media.type !== "episode") return normalTitle || "Untitled";
+
+    const hierarchy = media.hierarchy ?? {};
+    const show = this._displayText(hierarchy.show);
+    const episodeTitle = media.title || "";
+    const fullTitle = media.full_title || episodeTitle || show;
+    const layout = this._config.episode_layout ?? "current";
+    if (layout === "show_first") return show || fullTitle || "Untitled";
+    if (layout === "episode_first") return episodeTitle || fullTitle || show || "Untitled";
+    if (layout !== "custom") return normalTitle || show || "Untitled";
+
+    switch (this._config.episode_title ?? "full_title") {
+      case "show": return show || fullTitle || episodeTitle || "Untitled";
+      case "episode_title": return episodeTitle || fullTitle || show || "Untitled";
+      default: return fullTitle || episodeTitle || show || "Untitled";
+    }
+  }
+
+  private _cardEpisodeSubtitle(media: MediaItem, context: "active" | "classic" | "media"): string {
+    if (media.type !== "episode") return this._mediaSubtitle(media);
+    const hierarchy = media.hierarchy ?? {};
+    const show = this._displayText(hierarchy.show);
+    const episodeTitle = media.title || "";
+    const number = this._episodeNumber(media);
+    const layout = this._config.episode_layout ?? "current";
+
+    if (layout === "show_first") return this._joinText(number, episodeTitle);
+    if (layout === "episode_first") return this._joinText(show, number);
+
+    let source = this._config.episode_subtitle ?? "show_and_number";
+    if (layout === "current") source = context === "classic" ? "number_only" : "show_and_number";
+    switch (source) {
+      case "number_and_title": return this._joinText(number, episodeTitle);
+      case "show_number_and_title": return this._joinText(show, number, episodeTitle);
+      case "number_only": return number;
+      case "episode_title": return episodeTitle;
+      case "none": return "";
+      default: return this._joinText(show, number);
+    }
+  }
+
+  private _episodeNumber(media: MediaItem): string {
+    const hierarchy = media.hierarchy ?? {};
+    const season = hierarchy.season_number ?? hierarchy.season;
+    const episode = hierarchy.episode_number ?? hierarchy.episode;
+    if (season === undefined || season === null || episode === undefined || episode === null) return "";
+    if (this._config.episode_number_style === "padded") {
+      return `S${this._paddedIndex(season)}E${this._paddedIndex(episode)}`;
+    }
+    return `S${this._displayText(season)} · E${this._displayText(episode)}`;
+  }
+
+  private _paddedIndex(value: string | number): string {
+    const text = this._displayText(value);
+    return /^\d+$/.test(text) ? text.padStart(2, "0") : text;
+  }
+
+  private _displayText(value: unknown): string {
+    return value === undefined || value === null ? "" : String(value).trim();
+  }
+
+  private _joinText(...values: Array<string | undefined>): string {
+    return values.filter(Boolean).join(" — ");
   }
 
   private _itemEyebrow(item: UnknownItem, media: MediaItem): string {

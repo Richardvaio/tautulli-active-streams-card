@@ -197,6 +197,54 @@ describe("visual editor", () => {
     expect(editor.renderRoot.querySelector('input[data-key="backdrop_opacity"]')).not.toBeNull();
   });
 
+  it("provides intuitive episode layouts with conditional custom controls and a live example", async () => {
+    const editor = document.createElement("tautulli-media-card-editor") as HTMLElement & {
+      hass: HomeAssistant;
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    editor.hass = {
+      callWS: vi.fn().mockResolvedValue({ entries: [], items: [] }),
+      connection: { subscribeMessage: vi.fn() },
+    } as unknown as HomeAssistant;
+    document.body.append(editor);
+
+    editor.setConfig({
+      type: "custom:tautulli-media-card",
+      mode: "active",
+      media_type: "video",
+      episode_layout: "show_first",
+      episode_number_style: "padded",
+    });
+    await editor.updateComplete;
+    expect(editor.renderRoot.textContent).toContain("TV episode text");
+    expect(editor.renderRoot.querySelector<HTMLSelectElement>('select[data-key="episode_layout"]')?.value).toBe("show_first");
+    expect(editor.renderRoot.querySelector(".episode-preview strong")?.textContent).toBe("Example Show");
+    expect(editor.renderRoot.querySelector(".episode-preview span")?.textContent).toBe("S01E02 — Episode Name");
+    expect(editor.renderRoot.querySelector('select[data-key="episode_title"]')).toBeNull();
+
+    editor.setConfig({
+      type: "custom:tautulli-media-card",
+      mode: "active",
+      media_type: "video",
+      episode_layout: "custom",
+      episode_title: "episode_title",
+      episode_subtitle: "none",
+      episode_number_style: "padded",
+    });
+    await editor.updateComplete;
+    expect(editor.renderRoot.querySelector('select[data-key="episode_title"]')).not.toBeNull();
+    expect(editor.renderRoot.querySelector('select[data-key="episode_subtitle"]')).not.toBeNull();
+    expect(editor.renderRoot.querySelector('select[data-key="episode_number_style"]')).toBeNull();
+    expect(editor.renderRoot.querySelector(".episode-preview strong")?.textContent).toBe("Episode Name");
+    expect(editor.renderRoot.querySelector(".episode-preview span")).toBeNull();
+
+    editor.setConfig({ type: "custom:tautulli-media-card", mode: "active", media_type: "music" });
+    await editor.updateComplete;
+    expect(editor.renderRoot.textContent).not.toContain("TV episode text");
+  });
+
   it("renders draggable stream fields and saves their reordered position", async () => {
     const callWS = vi.fn().mockImplementation(async (request: Record<string, unknown>) => request.type === "tautulli_active_streams/get_entries"
       ? { entries: [{ entry_id: "entry-1", name: "Plex", capabilities: { active_streams: true } }] }

@@ -246,6 +246,8 @@ export class TautulliMediaCardEditor extends LitElement {
         return this._renderOrderedStreamDetails();
       case "terminationUnavailableHint":
         return html`<p class="hint">Stream termination is disabled in the integration's Dashboard card access settings.</p>`;
+      case "episodeTextPreview":
+        return this._episodeTextPreview();
     }
   }
 
@@ -433,6 +435,42 @@ export class TautulliMediaCardEditor extends LitElement {
   private _presetValue(key: keyof CardConfig): unknown {
     const preset = STYLE_PRESETS[this._config.style_preset ?? "classic"] as Record<string, unknown>;
     return preset[key];
+  }
+
+  private _episodeTextPreview() {
+    const number = this._config.episode_number_style === "padded" ? "S01E02" : "S1 · E2";
+    const show = "Example Show";
+    const episode = "Episode Name";
+    const full = `${show} — ${episode}`;
+    let title = full;
+    let subtitle = `${show} — ${number}`;
+    switch (this._config.episode_layout ?? "current") {
+      case "show_first":
+        title = show;
+        subtitle = `${number} — ${episode}`;
+        break;
+      case "episode_first":
+        title = episode;
+        subtitle = `${show} — ${number}`;
+        break;
+      case "custom": {
+        title = {
+          full_title: full,
+          show,
+          episode_title: episode,
+        }[this._config.episode_title ?? "full_title"];
+        subtitle = {
+          show_and_number: `${show} — ${number}`,
+          number_and_title: `${number} — ${episode}`,
+          show_number_and_title: `${show} — ${number} — ${episode}`,
+          number_only: number,
+          episode_title: episode,
+          none: "",
+        }[this._config.episode_subtitle ?? "show_and_number"];
+        break;
+      }
+    }
+    return html`<div class="episode-preview" aria-live="polite"><small>Example</small><strong>${title}</strong>${subtitle ? html`<span>${subtitle}</span>` : nothing}</div>`;
   }
 
   private _toHexColour(value: string): string {

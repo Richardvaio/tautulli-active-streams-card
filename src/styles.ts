@@ -107,6 +107,7 @@ export const cardStyles = css`
   .classic-info > :last-child,.classic-bottom > :last-child { text-align:right; }
   .media-detail { display:flex; align-items:center; gap:4px; color:var(--primary-text-color); font-size:15px; font-weight:600; }
   .media-detail ha-icon { --mdc-icon-size:15px; }
+  .media-detail > span { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .classic-progress { position:relative; min-width:0; height:var(--tas-progress-height, 20px); display:grid; grid-template-columns:1fr auto 1fr; align-items:center; overflow:hidden; border-radius:999px; color:#fff; background:rgba(0,0,0,.6); font-size:11px; font-weight:600; margin-bottom:5px; margin-top:9px; }
   .classic-progress::before { content:""; position:absolute; inset:0 auto 0 0; width:var(--progress, 0%); background:var(--state-color); transition:width .4s ease; }
   .classic-progress span { position:relative; z-index:1; }
@@ -321,6 +322,10 @@ export const editorStyles = css`
   .hint { margin:0; font-size:12px; color:var(--secondary-text-color); line-height:1.4; }
   .reset-all { display:block; margin:12px 0 0; padding:8px 14px; border:1px solid var(--error-color, #db4437); border-radius:8px; color:var(--error-color, #db4437); background:transparent; font:600 12px inherit; cursor:pointer; }
   .reset-all:hover { background:color-mix(in srgb, var(--error-color, #db4437) 10%, transparent); }
+  .episode-preview { display:grid; gap:3px; padding:11px 12px; border:1px solid color-mix(in srgb, var(--primary-color) 22%, var(--divider-color)); border-radius:9px; background:color-mix(in srgb, var(--primary-color) 6%, transparent); }
+  .episode-preview small { color:var(--secondary-text-color); font-size:10px; text-transform:uppercase; letter-spacing:.45px; }
+  .episode-preview strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--primary-text-color); font-size:14px; }
+  .episode-preview span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--secondary-text-color); font-size:12px; }
   .error { color:var(--error-color); font-size:12px; }
   .section details { border-top:1px solid var(--divider-color); padding-top:10px; }
   .section details summary { cursor:pointer; color:var(--primary-text-color); font-size:13px; font-weight:600; }

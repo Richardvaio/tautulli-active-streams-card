@@ -6,6 +6,16 @@ export type ArtworkFit = "cover" | "contain";
 export type ArtworkAspect = "auto" | "poster" | "square" | "backdrop";
 export type ArtworkPlacement = "left" | "right" | "background";
 export type StylePreset = "classic" | "modern" | "minimal";
+export type EpisodeLayout = "current" | "show_first" | "episode_first" | "custom";
+export type EpisodeTitleSource = "full_title" | "show" | "episode_title";
+export type EpisodeSubtitleSource =
+  | "show_and_number"
+  | "number_and_title"
+  | "show_number_and_title"
+  | "number_only"
+  | "episode_title"
+  | "none";
+export type EpisodeNumberStyle = "compact" | "padded";
 export type PopupDetailField =
   | "user"
   | "player"
@@ -96,6 +106,10 @@ export interface CardConfig {
   show_bandwidth?: boolean;
   show_media_details?: boolean;
   show_audio_quality?: boolean;
+  episode_layout?: EpisodeLayout;
+  episode_title?: EpisodeTitleSource;
+  episode_subtitle?: EpisodeSubtitleSource;
+  episode_number_style?: EpisodeNumberStyle;
   show_summary?: boolean;
   show_empty?: boolean;
   demo_when_empty?: boolean;

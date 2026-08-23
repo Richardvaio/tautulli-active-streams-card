@@ -20,6 +20,22 @@ const STREAM: ActiveStream = {
   quality: { decision: "direct play", bandwidth_kbps: 8000 },
 };
 
+const EPISODE_STREAM: ActiveStream = {
+  ...STREAM,
+  id: "server:episode-session",
+  session_id: "episode-session",
+  media: {
+    type: "episode",
+    title: "Episode Name",
+    full_title: "Example Show — Episode Name",
+    hierarchy: {
+      show: "Example Show",
+      season_number: 1,
+      episode_number: 2,
+    },
+  },
+};
+
 const ENVELOPE: CardEnvelope<ActiveStream> = {
   schema_version: 1,
   entry_id: "entry-1",
@@ -516,5 +532,78 @@ describe("stream termination confirmation", () => {
     expect(item?.classList).toContain("art-left");
     expect(item?.querySelector<HTMLImageElement>("img.art")?.src).toContain("/api/tautulli/image/poster");
     expect(item?.getAttribute("style")).toContain("/api/tautulli/image/backdrop");
+  });
+
+  it("preserves the existing modern episode text by default", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({ type: "custom:tautulli-media-card", entry_id: "entry-1", mode: "active", style_preset: "modern" });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: [EPISODE_STREAM] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    expect(card.renderRoot.querySelector(".name")?.textContent).toBe("Example Show — Episode Name");
+    expect(card.renderRoot.querySelector(".subtitle")?.textContent).toBe("Example Show — S1 · E2");
+  });
+
+  it.each([
+    ["show_first", "Example Show", "S01E02 — Episode Name"],
+    ["episode_first", "Episode Name", "Example Show — S01E02"],
+  ])("renders the %s episode layout with padded numbering", async (episodeLayout, expectedTitle, expectedSubtitle) => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: "modern",
+      episode_layout: episodeLayout,
+      episode_number_style: "padded",
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: [EPISODE_STREAM] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    expect(card.renderRoot.querySelector(".name")?.textContent).toBe(expectedTitle);
+    expect(card.renderRoot.querySelector(".subtitle")?.textContent).toBe(expectedSubtitle);
+  });
+
+  it("supports custom episode text and applies it to the classic presentation", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: "classic",
+      episode_layout: "custom",
+      episode_title: "show",
+      episode_subtitle: "show_number_and_title",
+      episode_number_style: "padded",
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: [EPISODE_STREAM] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    expect(card.renderRoot.querySelector(".classic-title span")?.textContent).toBe("Example Show");
+    expect(card.renderRoot.querySelector(".media-detail span")?.textContent).toBe("Example Show — S01E02 — Episode Name");
   });
 });

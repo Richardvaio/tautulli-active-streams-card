@@ -80,6 +80,10 @@ describe("card configuration", () => {
       show_header: true,
       show_count: true,
       show_remaining: false,
+      episode_layout: "custom",
+      episode_title: "show",
+      episode_subtitle: "number_and_title",
+      episode_number_style: "padded",
     });
 
     expect(normalizeConfig(compactConfig(configured))).toEqual(configured);

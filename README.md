@@ -21,6 +21,7 @@ It requires **Tautulli Active Streams 2.7.0 or newer**.
 - Responsive grid, list, vertical stack, carousel, auto-scrolling marquee and showcase layouts.
 - Poster/cover, backdrop, combined poster-with-backdrop and artwork-free treatments.
 - Configurable headers, counts, fields, colours, spacing, progress bars and artwork sizing.
+- Configurable TV episode titles, subtitles and compact or zero-padded numbering.
 - Detailed popup with configurable summary and reorderable stream-detail fields.
 - Optional administrator-only stream termination with a separate confirmation dialog.
 - Graceful loading, empty, stale and unavailable states.
@@ -121,6 +122,26 @@ The editor separates dashboard-card settings from popup settings and keeps secti
 - **Reset all settings to defaults** restores the card configuration while keeping the selected server.
 
 Classic artwork defaults to 85px wide. Artwork retains its source aspect ratio and uses the selected crop or contain treatment without stretching.
+
+### TV episode text
+
+For cards that can display TV episodes, open **Stream information → TV episode text** for active streams or **Card information → TV episode text** for recently added and history views, then choose:
+
+- **Current layout** to preserve the original card presentation.
+- **Show first** for a show name followed by the episode number and title.
+- **Episode first** for an episode title followed by its show and episode number.
+- **Custom** to select the primary title and subtitle contents independently.
+
+Episode numbering can use compact `S1 · E2` or zero-padded `S01E02` formatting. The editor includes a live example and hides controls that do not affect the selected layout.
+
+The same options are available in YAML:
+
+```yaml
+episode_layout: show_first
+episode_number_style: padded
+```
+
+Custom layouts additionally support `episode_title` and `episode_subtitle`.
 
 ## Details popup
 

@@ -75,6 +75,41 @@ describe("editor settings registry", () => {
     }
   });
 
+  it("shows TV episode text controls only for views that can contain episodes", () => {
+    const activeVideo = fieldKeys(ctxFor({ media_type: "video" }, "active"));
+    const activeMusic = fieldKeys(ctxFor({ media_type: "music" }, "active"));
+    const recentTv = fieldKeys(ctxFor({ media_type: "show" }, "recently_added"));
+    const recentMovies = fieldKeys(ctxFor({ media_type: "movie" }, "recently_added"));
+    const history = fieldKeys(ctxFor({}, "history"));
+    const popular = fieldKeys(ctxFor({}, "popular"));
+
+    expect(activeVideo.has("episode_layout")).toBe(true);
+    expect(activeMusic.has("episode_layout")).toBe(false);
+    expect(recentTv.has("episode_layout")).toBe(true);
+    expect(recentMovies.has("episode_layout")).toBe(false);
+    expect(history.has("episode_layout")).toBe(true);
+    expect(popular.has("episode_layout")).toBe(false);
+  });
+
+  it("reveals custom episode fields and numbering only when they affect output", () => {
+    const preset = fieldKeys(ctxFor({ episode_layout: "show_first" }, "active"));
+    const customNumbered = fieldKeys(ctxFor({
+      episode_layout: "custom",
+      episode_subtitle: "number_and_title",
+    }, "active"));
+    const customWithoutNumber = fieldKeys(ctxFor({
+      episode_layout: "custom",
+      episode_subtitle: "episode_title",
+    }, "active"));
+
+    expect(preset.has("episode_title")).toBe(false);
+    expect(preset.has("episode_number_style")).toBe(true);
+    expect(customNumbered.has("episode_title")).toBe(true);
+    expect(customNumbered.has("episode_subtitle")).toBe(true);
+    expect(customNumbered.has("episode_number_style")).toBe(true);
+    expect(customWithoutNumber.has("episode_number_style")).toBe(false);
+  });
+
   it("gates popup sections behind click_action details", () => {
     const withPopup = fieldKeys(ctxFor({ click_action: "details" }));
     const withoutPopup = fieldKeys(ctxFor({ click_action: "none" }));
