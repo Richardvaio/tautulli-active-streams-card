@@ -1,5 +1,6 @@
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValues, TemplateResult } from "lit";
+import { keyed } from "lit/directives/keyed.js";
 import { getCardData, getEntries, subscribeActive, SUPPORTED_SCHEMA, terminateSession } from "./api";
 import { DEFAULT_POPUP_DETAIL_ORDER, modeTitle, normalizeConfig, STYLE_PRESETS } from "./config";
 import { cardStyles } from "./styles";
@@ -41,6 +42,7 @@ export class TautulliMediaCard extends LitElement {
     _selectedItem: { state: true },
     _pauseClock: { state: true },
     _showcaseIndex: { state: true },
+    _showcaseDirection: { state: true },
   };
 
   static override styles = cardStyles;
@@ -67,16 +69,18 @@ export class TautulliMediaCard extends LitElement {
   private _scrollLockCount = 0;
   private _marqueeVelocity = 0;
   private _showcaseTimer = 0;
-  private _showcaseReloopBound = (): void => this._showcaseReloop();
+  private _showcaseAnimationFrame = 0;
+  private _showcaseScrollEndBound = (): void => this._showcaseScrollEnd();
   private _marqueeSets = 2;
   private _suppressNextClick = false;
-  private _pointerDownAt: { x: number; y: number } | null = null;
+  private _pointerDownAt: { x: number; y: number; showcase: boolean } | null = null;
   private _marqueeSetWidth = 0;
   private _marqueeTouching = false;
   private _marqueeShiftTotal = 0;
   private _marqueeDurationS = 0;
   private _marqueeDrag: { pointerId: number; startX: number; p: number } | null = null;
   private _showcaseIndex = 0;
+  private _showcaseDirection: 1 | -1 = 1;
 
   constructor() {
     super();
@@ -108,7 +112,16 @@ export class TautulliMediaCard extends LitElement {
     if (next.mode !== "active") sourceKeys.push("media_type");
     const sourceChanged = sourceKeys.some((key) => previous[key] !== next[key]);
     const datasetChanged = previous.entry_id !== next.entry_id || previous.mode !== next.mode;
+    const showcasePresentationChanged = previous.layout !== next.layout
+      || previous.showcase_transition !== next.showcase_transition;
     this._config = next;
+    if (showcasePresentationChanged) {
+      window.cancelAnimationFrame(this._showcaseAnimationFrame);
+      this._showcaseAnimationFrame = 0;
+      this.renderRoot?.querySelector<HTMLElement>(".content.showcase")?.style.removeProperty("scroll-snap-type");
+      this._showcaseIndex = 0;
+      this._showcaseDirection = 1;
+    }
     this.setAttribute("density", this._config.density ?? "compact");
     this.setAttribute("layout", this._config.layout ?? "grid");
     const containerStyle = this._config.container_style === "auto"
@@ -138,6 +151,8 @@ export class TautulliMediaCard extends LitElement {
 
   override disconnectedCallback(): void {
     window.clearInterval(this._showcaseTimer);
+    window.cancelAnimationFrame(this._showcaseAnimationFrame);
+    this.renderRoot?.querySelector<HTMLElement>(".content.showcase")?.style.removeProperty("scroll-snap-type");
     if (this._scrollLockCount > 0) {
       document.body.style.overflow = "";
       document.body.style.paddingRight = "";
@@ -162,14 +177,22 @@ export class TautulliMediaCard extends LitElement {
     } else {
       this._stopMarquee();
     }
-    if (changed.has("_data") && this._config?.layout === "showcase") this._restartShowcase();
+    if (this._config?.layout === "showcase") {
+      if (changed.has("_data") || changed.has("_config")) this._restartShowcase();
+    } else {
+      window.clearInterval(this._showcaseTimer);
+      window.cancelAnimationFrame(this._showcaseAnimationFrame);
+      this.renderRoot?.querySelector<HTMLElement>(".content.showcase")?.style.removeProperty("scroll-snap-type");
+      this._showcaseTimer = 0;
+      this._showcaseAnimationFrame = 0;
+    }
     if (changed.has("_data") && this._config?.layout === "marquee") {
       // Re-measure + restart the compositor glide after DOM settles.
       window.setTimeout(() => this._startMarquee(), 150);
     }
-    if (this._config?.layout === "showcase") {
+    if (this._config?.layout === "showcase" && this._config.showcase_transition === "horizontal") {
       const track = this.renderRoot.querySelector<HTMLElement>(".content.showcase");
-      track?.addEventListener("scrollend", this._showcaseReloopBound);
+      track?.addEventListener("scrollend", this._showcaseScrollEndBound);
     }
     this.renderRoot.querySelectorAll<HTMLElement>("[data-item-id]").forEach((element) => {
       element.onclick = (event: MouseEvent): void => {
@@ -342,6 +365,7 @@ export class TautulliMediaCard extends LitElement {
     if (this._error && !this._data) return nothing;
     if (!this._loading && !this._error && !items.length && !this._config.show_empty) return nothing;
     const columns = this._config.columns === "auto" ? "auto" : String(this._config.columns ?? 1);
+    const showcaseTransition = this._config.showcase_transition ?? "fade";
     return html`
       <ha-card>
         ${this._config.show_header || this._config.show_count ? html`
@@ -352,13 +376,21 @@ export class TautulliMediaCard extends LitElement {
         ${this._data?.stale ? html`<p class="stale">Showing the last successful update</p>` : nothing}
         ${this._loading ? this._renderLoading()
           : !items.length ? html`<div class="empty">${this._config.mode === "active" ? "Nothing is playing" : "No matching media"}</div>`
-          : html`${(this._config.layout === "carousel" || (["marquee", "showcase"].includes(this._config.layout ?? "grid") && this._config.carousel_buttons !== false)) ? html`<div class="carousel-controls" aria-label="Carousel controls">
+          : html`${(this._config.layout === "carousel" || (["horizontal", "marquee", "showcase"].includes(this._config.layout ?? "grid") && this._config.carousel_buttons !== false)) ? html`<div class="carousel-controls" aria-label="Carousel controls">
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(-1) : this._scrollCarousel(-1)} aria-label="Previous items"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(1) : this._scrollCarousel(1)} aria-label="Next items"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
             </div>` : nothing}
-            <div class="content ${this._config.layout ?? "grid"} ${columns === "auto" ? "auto" : ""} ${["marquee", "showcase"].includes(this._config.layout ?? "") && this._filteredItems().length < 2 ? "single" : ""}" style=${`--columns:${columns};--scroll-gap:${this._config.scroll_gap ?? 8}px;--scroll-peek:${this._config.scroll_peek ?? 36}px;--marquee-speed:${this._config.autoscroll_speed ?? 40}px`}>
+            <div
+              class="content ${this._config.layout ?? "grid"} ${columns === "auto" ? "auto" : ""} ${["horizontal", "marquee", "showcase"].includes(this._config.layout ?? "") && this._filteredItems().length < 2 ? "single" : ""} ${this._config.layout === "showcase" ? `showcase-transition-${showcaseTransition}` : ""}"
+              style=${`--columns:${columns};--scroll-gap:${this._config.scroll_gap ?? 8}px;--scroll-peek:${this._config.scroll_peek ?? 36}px;--marquee-speed:${this._config.autoscroll_speed ?? 40}px;--showcase-transition-duration:${this._config.showcase_transition_duration ?? 400}ms`}
+              tabindex=${this._config.layout === "showcase" ? "0" : nothing}
+              role=${this._config.layout === "showcase" ? "region" : nothing}
+              aria-roledescription=${this._config.layout === "showcase" ? "carousel" : nothing}
+              aria-label=${this._config.layout === "showcase" ? "Media showcase" : nothing}
+              @keydown=${this._showcaseKeydown}
+            >
               ${this._config.layout === "showcase"
-                ? html`${items.map((item) => this._renderItem(item))}${items.length >= 2 ? items.map((item) => this._renderItem(item, undefined, true)) : nothing}`
+                ? this._renderShowcase(items)
                 : this._config.layout === "marquee"
                   ? html`<div class="marquee-track">${this._renderMarqueeStrip(items)}</div>`
                   : items.map((item) => this._renderItem(item))}
@@ -699,7 +731,14 @@ export class TautulliMediaCard extends LitElement {
 
   /** Records where a touch/press started so we can tell taps from scroll gestures. */
   private _pointerDownTracker = (event: PointerEvent): void => {
-    this._pointerDownAt = { x: event.clientX, y: event.clientY };
+    const showcase = this._config.layout === "showcase"
+      && event.composedPath().some((node) => node instanceof Element && node.matches(".content.showcase"));
+    if (showcase && this._config.showcase_transition === "horizontal") {
+      window.cancelAnimationFrame(this._showcaseAnimationFrame);
+      this._showcaseAnimationFrame = 0;
+      this.renderRoot?.querySelector<HTMLElement>(".content.showcase")?.style.removeProperty("scroll-snap-type");
+    }
+    this._pointerDownAt = { x: event.clientX, y: event.clientY, showcase };
     this._marqueeTouching = true;
     this._syncMarqueePause();
   };
@@ -711,8 +750,18 @@ export class TautulliMediaCard extends LitElement {
     const start = this._pointerDownAt;
     this._pointerDownAt = null;
     if (!start) return;
-    const drift = Math.hypot(event.clientX - start.x, event.clientY - start.y);
+    const deltaX = event.clientX - start.x;
+    const deltaY = event.clientY - start.y;
+    const drift = Math.hypot(deltaX, deltaY);
     if (drift > 12) this._suppressNextClick = true;
+    if (
+      start.showcase
+      && this._config.showcase_transition !== "horizontal"
+      && Math.abs(deltaX) >= 36
+      && Math.abs(deltaX) > Math.abs(deltaY) * 1.2
+    ) {
+      this._advanceShowcase(deltaX < 0 ? 1 : -1);
+    }
   };
 
   private _delegatedItemClick = (event: Event): void => {
@@ -940,41 +989,140 @@ export class TautulliMediaCard extends LitElement {
     return Boolean(this._selectedItem) || this._dialogClosing || Boolean(this._pendingTermination);
   }
 
-  /** Showcase: seamless infinite track. Items are rendered twice; when the
-   *  viewport drifts into the clone set the scroll silently jumps back by one
-   *  set width (identical pixels, no flicker), so auto-advance and swiping
-   *  loop forever. */
+  private _renderShowcase(items: UnknownItem[]): TemplateResult {
+    if (this._config.showcase_transition === "horizontal") {
+      return html`${items.map((item) => this._renderItem(item))}${items.length >= 2
+        ? items.map((item) => this._renderItem(item, undefined, true))
+        : nothing}`;
+    }
+    const index = this._normalizedShowcaseIndex(items.length);
+    const item = items[index];
+    if (!item) return html``;
+    const transition = this._config.showcase_transition ?? "fade";
+    const direction = this._showcaseDirection === -1 ? "previous" : "next";
+    const key = `${transition}:${index}:${this._itemId(item)}`;
+    return html`${keyed(key, html`
+      <div class="showcase-slide ${transition} ${direction}" aria-label=${`Item ${index + 1} of ${items.length}`}>
+        ${this._renderItem(item)}
+      </div>
+    `)}`;
+  }
+
+  private _normalizedShowcaseIndex(itemCount: number): number {
+    if (itemCount <= 0) return 0;
+    return ((this._showcaseIndex % itemCount) + itemCount) % itemCount;
+  }
+
+  /** Showcase auto-advance pauses while a popup or confirmation is open. */
   private _restartShowcase(): void {
-    if (this._config.layout !== "showcase") return;
     window.clearInterval(this._showcaseTimer);
+    this._showcaseTimer = 0;
+    if (this._config.layout !== "showcase") return;
     const seconds = this._config.showcase_advance ?? 6;
     if ((this._filteredItems().length || 0) < 2) return; // one slide: nothing to advance to
     this._showcaseTimer = window.setInterval(() => {
       if (this._marqueePaused() || !this._data?.items.length) return;
-      const track = this.renderRoot.querySelector<HTMLElement>(".content.showcase");
-      track?.scrollBy({ left: track.clientWidth, behavior: "smooth" });
+      this._advanceShowcase(this._config.showcase_direction === "right" ? -1 : 1);
     }, seconds * 1000);
   }
 
-  /** After scrolling settles, jump back a full set when we crossed into the clones. */
+  /** Horizontal showcase uses two identical sets for seamless native swiping. */
   private _showcaseReloop(): void {
     const track = this.renderRoot.querySelector<HTMLElement>(".content.showcase");
     if (!track) return;
-    if (track.scrollWidth <= track.clientWidth * 1.05) return; // not enough unique cards to loop
-    const setWidth = track.scrollWidth / 2;
+    const slideWidth = this._showcaseSlideStep(track);
+    const itemCount = this._filteredItems().length;
+    if (itemCount < 2 || slideWidth <= 0) return;
+    const setWidth = slideWidth * itemCount;
     if (setWidth <= 0) return;
-    if (track.scrollLeft >= setWidth * 1.5) track.scrollLeft -= setWidth;
-    else if (track.scrollLeft < setWidth * 0.25) track.scrollLeft += setWidth;
+    if (track.scrollLeft >= setWidth) track.scrollLeft -= setWidth;
+  }
+
+  /** Use the rendered snap interval so padding, gaps and fractional columns cannot offset a slide. */
+  private _showcaseSlideStep(track: HTMLElement): number {
+    const firstSlide = track.firstElementChild;
+    const secondSlide = firstSlide?.nextElementSibling;
+    const firstBounds = firstSlide?.getBoundingClientRect();
+    const secondBounds = secondSlide?.getBoundingClientRect();
+    const renderedStep = firstBounds && secondBounds ? Math.abs(secondBounds.left - firstBounds.left) : 0;
+    if (renderedStep > 0) return renderedStep;
+    const renderedWidth = firstBounds?.width ?? 0;
+    return renderedWidth > 0 ? renderedWidth : track.clientWidth;
+  }
+
+  private _showcaseScrollEnd(): void {
+    const track = this.renderRoot.querySelector<HTMLElement>(".content.showcase");
+    const itemCount = this._filteredItems().length;
+    if (!track || itemCount <= 0) return;
+    const slideWidth = this._showcaseSlideStep(track);
+    if (slideWidth <= 0) return;
+    this._showcaseIndex = Math.round(track.scrollLeft / slideWidth) % itemCount;
+    this._showcaseReloop();
   }
 
   private _advanceShowcase(step: 1 | -1): void {
+    const itemCount = this._filteredItems().length;
+    if (itemCount < 2) return;
+    this._showcaseDirection = step;
+    if (this._config.showcase_transition !== "horizontal") {
+      this._showcaseIndex = (this._normalizedShowcaseIndex(itemCount) + step + itemCount) % itemCount;
+      return;
+    }
     const track = this.renderRoot.querySelector<HTMLElement>(".content.showcase");
     if (!track) return;
-    track.scrollBy({ left: step * track.clientWidth, behavior: "smooth" });
+    const slideWidth = this._showcaseSlideStep(track);
+    const setWidth = slideWidth * itemCount;
+    if (step === -1 && setWidth > 0 && track.scrollLeft < slideWidth * 0.5) {
+      track.scrollLeft += setWidth;
+    } else if (step === 1 && setWidth > 0 && track.scrollLeft + slideWidth >= track.scrollWidth - slideWidth * 0.5) {
+      track.scrollLeft -= setWidth;
+    }
+    this._animateShowcaseHorizontal(track, track.scrollLeft + step * slideWidth);
+  }
+
+  private _animateShowcaseHorizontal(track: HTMLElement, targetScrollLeft: number): void {
+    window.cancelAnimationFrame(this._showcaseAnimationFrame);
+    this._showcaseAnimationFrame = 0;
+    if (!this._showcaseMotionAllowed()) {
+      track.scrollLeft = targetScrollLeft;
+      this._showcaseScrollEnd();
+      return;
+    }
+    const startScrollLeft = track.scrollLeft;
+    const distance = targetScrollLeft - startScrollLeft;
+    const duration = this._config.showcase_transition_duration ?? 400;
+    const startedAt = performance.now();
+    track.style.scrollSnapType = "none";
+    const animate = (now: number): void => {
+      const progress = Math.min(1, Math.max(0, (now - startedAt) / duration));
+      const eased = 1 - ((1 - progress) ** 3);
+      track.scrollLeft = startScrollLeft + (distance * eased);
+      if (progress < 1) {
+        this._showcaseAnimationFrame = window.requestAnimationFrame(animate);
+      } else {
+        this._showcaseAnimationFrame = 0;
+        track.style.removeProperty("scroll-snap-type");
+        this._showcaseScrollEnd();
+      }
+    };
+    this._showcaseAnimationFrame = window.requestAnimationFrame(animate);
+  }
+
+  private _showcaseMotionAllowed(): boolean {
+    return this._config.animations !== false
+      && !(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
+  }
+
+  private _showcaseKeydown = (event: KeyboardEvent): void => {
+    if (this._config.layout !== "showcase" || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+    event.preventDefault();
+    this._advanceShowcase(event.key === "ArrowLeft" ? -1 : 1);
   }
 
   private _scrollCarousel(direction: -1 | 1): void {
-    const carousel = this.renderRoot.querySelector<HTMLElement>(".content.carousel");
+    const carousel = this.renderRoot.querySelector<HTMLElement>(
+      this._config.layout === "horizontal" ? ".content.horizontal" : ".content.carousel",
+    );
     if (!carousel) return;
     carousel.scrollBy({
       left: direction * Math.max(240, carousel.clientWidth * 0.82),

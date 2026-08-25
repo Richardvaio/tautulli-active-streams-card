@@ -1046,3 +1046,235 @@ describe("stream termination confirmation", () => {
     expect(card.renderRoot.querySelector(".media-detail span")?.textContent).toBe("Example Show — S01E02 — Episode Name");
   });
 });
+
+describe("showcase transitions", () => {
+  const SECOND_STREAM: ActiveStream = {
+    ...STREAM,
+    id: "server:session-2",
+    session_id: "session-2",
+    media: { ...STREAM.media, title: "Second Movie", full_title: "Second Movie" },
+  };
+
+  async function createShowcase(
+    transition: "fade" | "slide" | "horizontal",
+    animations = true,
+    transitionDuration = 400,
+    direction: "left" | "right" = "left",
+  ) {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: "modern",
+      layout: "showcase",
+      showcase_transition: transition,
+      showcase_direction: direction,
+      showcase_transition_duration: transitionDuration,
+      carousel_buttons: true,
+      animations,
+    });
+    document.body.append(card);
+    const internal = card as unknown as {
+      _data: CardEnvelope<ActiveStream>;
+      _loading: boolean;
+      _advanceShowcase(step: 1 | -1): void;
+      requestUpdate(): void;
+    };
+    internal._data = { ...ENVELOPE, items: [STREAM, SECOND_STREAM] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+    return { card, internal };
+  }
+
+  it.each([
+    ["fade", "showcase-transition-fade"],
+    ["slide", "showcase-transition-slide"],
+  ] as const)("renders and advances the %s transition as a single animated item", async (transition, className) => {
+    const { card, internal } = await createShowcase(transition);
+    const track = card.renderRoot.querySelector<HTMLElement>(".content.showcase");
+    expect(track?.classList.contains(className)).toBe(true);
+    expect(track?.querySelectorAll(".showcase-slide")).toHaveLength(1);
+    expect(track?.querySelector(".name")?.textContent).toBe("Example Movie");
+    expect(track?.style.getPropertyValue("--showcase-transition-duration")).toBe("400ms");
+
+    internal._advanceShowcase(1);
+    await card.updateComplete;
+    expect(track?.querySelector(".name")?.textContent).toBe("Second Movie");
+    expect(track?.querySelector(".showcase-slide")?.classList.contains("next")).toBe(true);
+
+    internal._advanceShowcase(-1);
+    await card.updateComplete;
+    expect(track?.querySelector(".name")?.textContent).toBe("Example Movie");
+    expect(track?.querySelector(".showcase-slide")?.classList.contains("previous")).toBe(true);
+  });
+
+  it("uses the configured timing and loops the horizontal track backwards from the first item", async () => {
+    const { card, internal } = await createShowcase("horizontal", true, 800);
+    const track = card.renderRoot.querySelector<HTMLElement>(".content.showcase");
+    expect(track?.classList.contains("showcase-transition-horizontal")).toBe(true);
+    expect(track?.children).toHaveLength(4);
+    expect(track?.querySelector(".showcase-slide")).toBeNull();
+    if (!track) return;
+
+    Object.defineProperty(track, "clientWidth", { configurable: true, value: 500 });
+    Object.defineProperty(track, "scrollWidth", { configurable: true, value: 2000 });
+    track.scrollLeft = 0;
+    vi.spyOn(window, "matchMedia").mockReturnValue({ matches: false } as MediaQueryList);
+    vi.spyOn(performance, "now").mockReturnValue(1000);
+    let nextFrame: FrameRequestCallback | undefined;
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      nextFrame = callback;
+      return 7;
+    });
+
+    internal._advanceShowcase(-1);
+    expect(track.scrollLeft).toBe(1000);
+    expect(track.style.getPropertyValue("--showcase-transition-duration")).toBe("800ms");
+    expect(track.style.scrollSnapType).toBe("none");
+    expect(nextFrame).toBeTypeOf("function");
+    nextFrame?.(1400);
+    expect(track.scrollLeft).toBeCloseTo(562.5);
+    nextFrame?.(1800);
+    expect(track.scrollLeft).toBe(500);
+    expect(track.style.scrollSnapType).toBe("");
+  });
+
+  it("disables horizontal motion when card animations are disabled", async () => {
+    const { card, internal } = await createShowcase("horizontal", false);
+    const track = card.renderRoot.querySelector<HTMLElement>(".content.showcase");
+    if (!track) return;
+    Object.defineProperty(track, "clientWidth", { configurable: true, value: 500 });
+    Object.defineProperty(track, "scrollWidth", { configurable: true, value: 2000 });
+    const requestFrame = vi.spyOn(window, "requestAnimationFrame");
+
+    internal._advanceShowcase(1);
+    expect(track.scrollLeft).toBe(500);
+    expect(requestFrame).not.toHaveBeenCalled();
+    expect(card.hasAttribute("animations")).toBe(false);
+  });
+
+  it("uses the rendered slide width when container padding and fractional columns differ", async () => {
+    const { card, internal } = await createShowcase("horizontal", false);
+    const track = card.renderRoot.querySelector<HTMLElement>(".content.showcase");
+    const firstSlide = track?.firstElementChild as HTMLElement | null;
+    const secondSlide = firstSlide?.nextElementSibling as HTMLElement | null;
+    if (!track || !firstSlide || !secondSlide) return;
+    Object.defineProperty(track, "clientWidth", { configurable: true, value: 500 });
+    Object.defineProperty(track, "scrollWidth", { configurable: true, value: 1940 });
+    vi.spyOn(firstSlide, "getBoundingClientRect").mockReturnValue({ left: 1, width: 484.5 } as DOMRect);
+    vi.spyOn(secondSlide, "getBoundingClientRect").mockReturnValue({ left: 493.5, width: 484.5 } as DOMRect);
+
+    internal._advanceShowcase(1);
+
+    expect(track.scrollLeft).toBe(492.5);
+  });
+
+  it("uses the selected direction for automatic horizontal movement", async () => {
+    vi.useFakeTimers();
+    const { internal } = await createShowcase("horizontal", false, 400, "right");
+    const advance = vi.spyOn(internal, "_advanceShowcase");
+
+    vi.advanceTimersByTime(6000);
+
+    expect(advance).toHaveBeenCalledWith(-1);
+  });
+
+  it("uses automatic horizontal movement when reduced motion is requested", async () => {
+    const { card, internal } = await createShowcase("horizontal");
+    const track = card.renderRoot.querySelector<HTMLElement>(".content.showcase");
+    if (!track) return;
+    Object.defineProperty(track, "clientWidth", { configurable: true, value: 500 });
+    Object.defineProperty(track, "scrollWidth", { configurable: true, value: 2000 });
+    const requestFrame = vi.spyOn(window, "requestAnimationFrame");
+    vi.spyOn(window, "matchMedia").mockReturnValue({ matches: true } as MediaQueryList);
+
+    internal._advanceShowcase(1);
+    expect(track.scrollLeft).toBe(500);
+    expect(requestFrame).not.toHaveBeenCalled();
+    expect(cardStyles.cssText).toContain("@media (prefers-reduced-motion: reduce)");
+  });
+
+  it("supports swipe release and keyboard arrows for non-horizontal transitions", async () => {
+    const { card, internal } = await createShowcase("fade");
+    const track = card.renderRoot.querySelector<HTMLElement>(".content.showcase");
+    expect(track?.getAttribute("aria-roledescription")).toBe("carousel");
+    if (!track) return;
+
+    const gestures = internal as typeof internal & {
+      _pointerDownTracker(event: PointerEvent): void;
+      _pointerUpClassifier(event: PointerEvent): void;
+    };
+    gestures._pointerDownTracker({
+      clientX: 180,
+      clientY: 50,
+      composedPath: () => [track],
+    } as unknown as PointerEvent);
+    gestures._pointerUpClassifier({ clientX: 80, clientY: 54 } as PointerEvent);
+
+    await card.updateComplete;
+    expect(track.querySelector(".name")?.textContent).toBe("Second Movie");
+
+    track.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowLeft" }));
+    await card.updateComplete;
+    expect(track.querySelector(".name")?.textContent).toBe("Example Movie");
+  });
+});
+
+describe("horizontal row layout", () => {
+  it("renders full horizontal cards with snap controls", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: "modern",
+      layout: "horizontal",
+      scroll_gap: 12,
+      scroll_peek: 48,
+    });
+    document.body.append(card);
+    const internal = card as unknown as {
+      _data: CardEnvelope<ActiveStream>;
+      _loading: boolean;
+      _scrollCarousel(direction: -1 | 1): void;
+      requestUpdate(): void;
+    };
+    internal._data = {
+      ...ENVELOPE,
+      items: [STREAM, { ...STREAM, id: "server:session-2", session_id: "session-2" }],
+    };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    const row = card.renderRoot.querySelector<HTMLElement>(".content.horizontal");
+    expect(row?.children).toHaveLength(2);
+    expect(row?.style.getPropertyValue("--scroll-gap")).toBe("12px");
+    expect(row?.style.getPropertyValue("--scroll-peek")).toBe("48px");
+    expect(card.renderRoot.querySelectorAll(".carousel-controls button")).toHaveLength(2);
+    expect(cardStyles.cssText).toContain(".content.horizontal");
+    expect(cardStyles.cssText).toContain("padding-inline:1px");
+    expect(cardStyles.cssText).toContain("scroll-padding-inline:1px");
+    expect(cardStyles.cssText).toContain("scroll-padding-inline:var(--tas-gap, 8px)");
+    if (!row) return;
+
+    Object.defineProperty(row, "clientWidth", { configurable: true, value: 600 });
+    const scrollBy = vi.fn();
+    row.scrollBy = scrollBy;
+    vi.spyOn(window, "matchMedia").mockReturnValue({ matches: false } as MediaQueryList);
+    internal._scrollCarousel(1);
+    const scrollOptions = scrollBy.mock.calls[0]?.[0] as ScrollToOptions;
+    expect(scrollOptions.left).toBeCloseTo(492);
+    expect(scrollOptions.behavior).toBe("smooth");
+  });
+});

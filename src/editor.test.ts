@@ -199,6 +199,61 @@ describe("visual editor", () => {
     expect(editor.renderRoot.querySelector<HTMLSelectElement>('select[data-key="layout"]')?.value).toBe("carousel");
   });
 
+  it("saves and restores every showcase transition and its timing", async () => {
+    const editor = document.createElement("tautulli-media-card-editor") as HTMLElement & {
+      hass: HomeAssistant;
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    editor.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      layout: "showcase",
+      showcase_transition: "horizontal",
+      showcase_direction: "right",
+      showcase_transition_duration: 725,
+    });
+    editor.hass = {
+      callWS: vi.fn().mockResolvedValue({ entries: [], items: [] }),
+      connection: { subscribeMessage: vi.fn() },
+    } as unknown as HomeAssistant;
+    document.body.append(editor);
+    await editor.updateComplete;
+
+    const select = editor.renderRoot.querySelector<HTMLSelectElement>('select[data-key="showcase_transition"]');
+    const direction = editor.renderRoot.querySelector<HTMLSelectElement>('select[data-key="showcase_direction"]');
+    const duration = editor.renderRoot.querySelector<HTMLInputElement>('input[data-key="showcase_transition_duration"]');
+    expect(select?.value).toBe("horizontal");
+    expect(direction?.value).toBe("right");
+    expect([...select?.options ?? []].map((option) => option.value)).toEqual(["fade", "slide", "horizontal"]);
+    expect(duration?.type).toBe("range");
+    expect(duration?.value).toBe("725");
+
+    const changes: Array<Record<string, unknown>> = [];
+    editor.addEventListener("config-changed", (event) => changes.push((event as CustomEvent).detail.config));
+    if (direction) {
+      direction.value = "left";
+      direction.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    expect(changes.at(-1)?.showcase_direction).toBeUndefined();
+    if (duration) {
+      duration.value = "900";
+      duration.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    expect(changes.at(-1)?.showcase_transition_duration).toBe(900);
+    if (select) {
+      select.value = "slide";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    expect(changes.at(-1)?.showcase_transition).toBe("slide");
+    editor.setConfig(changes.at(-1) ?? {});
+    await editor.updateComplete;
+    expect(editor.renderRoot.querySelector<HTMLSelectElement>('select[data-key="showcase_transition"]')?.value).toBe("slide");
+    expect(editor.renderRoot.querySelector<HTMLInputElement>('input[data-key="showcase_transition_duration"]')?.value).toBe("900");
+  });
+
   it("shows only artwork controls relevant to the selected display", async () => {
     const editor = document.createElement("tautulli-media-card-editor") as HTMLElement & {
       hass: HomeAssistant;

@@ -85,6 +85,8 @@ export const DEFAULT_CONFIG: CardConfig = {
   autoscroll_animation: "smooth",
   showcase_advance: 6,
   showcase_transition: "fade",
+  showcase_direction: "left",
+  showcase_transition_duration: 400,
   animations: true,
   allow_termination: false,
   termination_location: "popup",
@@ -151,6 +153,12 @@ export function normalizeConfig(config: Partial<CardConfig>): CardConfig {
   merged.time_range = Math.min(3650, Math.max(1, Number(merged.time_range) || 30));
   const summaryLines = Number(merged.popup_summary_lines);
   merged.popup_summary_lines = ([0, 2, 3, 5].includes(summaryLines) ? summaryLines : 3) as CardConfig["popup_summary_lines"];
+  if (!["fade", "slide", "horizontal"].includes(merged.showcase_transition ?? "")) {
+    merged.showcase_transition = DEFAULT_CONFIG.showcase_transition;
+  }
+  if (!["left", "right"].includes(merged.showcase_direction ?? "")) {
+    merged.showcase_direction = DEFAULT_CONFIG.showcase_direction;
+  }
   const requestedDetailOrder = Array.isArray(merged.popup_detail_order) ? merged.popup_detail_order : [];
   const validDetailOrder = requestedDetailOrder.filter(
     (field, index): field is PopupDetailField => DEFAULT_POPUP_DETAIL_ORDER.includes(field as PopupDetailField)
@@ -176,6 +184,7 @@ export function normalizeConfig(config: Partial<CardConfig>): CardConfig {
     ["scroll_peek", 0, 200],
     ["autoscroll_speed", 5, 200],
     ["showcase_advance", 2, 60],
+    ["showcase_transition_duration", 100, 1500],
     ["popup_close_animation_duration", 0, 1000],
     ["popup_cinematic_art", 0, 100],
     ["popup_backdrop_dim", 0, 95],

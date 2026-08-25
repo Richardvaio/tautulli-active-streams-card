@@ -76,6 +76,39 @@ describe("editor settings registry", () => {
     expect(active.has("demo_when_empty")).toBe(false);
   });
 
+  it("shows all showcase controls only for the showcase layout", () => {
+    const showcase = fieldKeys(ctxFor({ layout: "showcase" }));
+    const horizontallySlidingShowcase = fieldKeys(ctxFor({ layout: "showcase", showcase_transition: "horizontal" }));
+    const showcaseWithoutAnimations = fieldKeys(ctxFor({ layout: "showcase", animations: false }));
+    const horizontal = fieldKeys(ctxFor({ layout: "horizontal" }));
+    const grid = fieldKeys(ctxFor({ layout: "grid" }));
+    expect(showcase.has("showcase_advance")).toBe(true);
+    expect(showcase.has("showcase_transition")).toBe(true);
+    expect(showcase.has("showcase_direction")).toBe(false);
+    expect(horizontallySlidingShowcase.has("showcase_direction")).toBe(true);
+    expect(showcase.has("showcase_transition_duration")).toBe(true);
+    expect(showcaseWithoutAnimations.has("showcase_transition_duration")).toBe(false);
+    expect(horizontal.has("scroll_gap")).toBe(true);
+    expect(horizontal.has("scroll_peek")).toBe(true);
+    expect(horizontal.has("carousel_buttons")).toBe(true);
+    expect(horizontal.has("showcase_transition")).toBe(false);
+    expect(grid.has("showcase_advance")).toBe(false);
+    expect(grid.has("showcase_transition")).toBe(false);
+    expect(grid.has("showcase_transition_duration")).toBe(false);
+
+    const section = EDITOR_SECTIONS.find((candidate) => candidate.id === "card-appearance");
+    const field = section?.fields?.find((candidate) => "key" in candidate && candidate.key === "showcase_transition");
+    const options = field && "options" in field
+      ? typeof field.options === "function" ? field.options(ctxFor({ layout: "showcase" })) : field.options
+      : [];
+    expect(options.map((option) => option.value)).toEqual(["fade", "slide", "horizontal"]);
+    const layout = section?.fields?.find((candidate) => "key" in candidate && candidate.key === "layout");
+    const layoutOptions = layout && "options" in layout
+      ? typeof layout.options === "function" ? layout.options(ctxFor()) : layout.options
+      : [];
+    expect(layoutOptions.map((option) => option.value)).toContain("horizontal");
+  });
+
   it("shows TV episode text controls only for views that can contain episodes", () => {
     const activeVideo = fieldKeys(ctxFor({ media_type: "video" }, "active"));
     const activeMusic = fieldKeys(ctxFor({ media_type: "music" }, "active"));

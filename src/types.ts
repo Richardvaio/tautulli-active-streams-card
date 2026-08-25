@@ -1,7 +1,7 @@
 export type CardMode = "active" | "recently_added" | "popular" | "users" | "history";
 export type Density = "compact" | "comfortable" | "detailed";
 export type ArtworkMode = "poster" | "backdrop" | "both" | "none";
-export type LayoutMode = "grid" | "list" | "stack" | "carousel" | "marquee" | "showcase";
+export type LayoutMode = "grid" | "list" | "stack" | "horizontal" | "carousel" | "marquee" | "showcase";
 export type ArtworkFit = "cover" | "contain";
 export type ArtworkAspect = "auto" | "poster" | "square" | "backdrop";
 export type ArtworkPlacement = "left" | "right" | "background";
@@ -78,7 +78,9 @@ export interface CardConfig {
   autoscroll_animation?: "linear" | "smooth";
   carousel_buttons?: boolean;
   showcase_advance?: number;
-  showcase_transition?: "fade" | "slide";
+  showcase_transition?: "fade" | "slide" | "horizontal";
+  showcase_direction?: "left" | "right";
+  showcase_transition_duration?: number;
   sort_by?: "server" | "user" | "title" | "state" | "progress";
   sort_direction?: "ascending" | "descending";
   density?: Density;

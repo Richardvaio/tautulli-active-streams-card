@@ -18,7 +18,7 @@ It requires **Tautulli Active Streams 2.7.0 or newer**.
 - Privacy-safe Plex user activity summaries.
 - Administrator-only, paginated watch history when enabled in the integration.
 - Classic, modern, minimal and cinematic presentation options.
-- Responsive grid, list, vertical stack, carousel, auto-scrolling marquee and showcase layouts.
+- Responsive grid, list, vertical stack, horizontal row, carousel, auto-scrolling marquee and showcase layouts.
 - Poster/cover, backdrop, combined poster-with-backdrop and artwork-free treatments.
 - Configurable headers, counts, fields, colours, spacing, progress bars and artwork sizing.
 - Configurable TV episode titles, subtitles and compact or zero-padded numbering.
@@ -102,9 +102,10 @@ Every content view (active streams, recently added, popular and top media, user 
 - **Responsive grid** — columns with per-mode density.
 - **Single-column list** — full-width rows.
 - **Vertical stack** — compact, tight-spacing rows for media views.
+- **Horizontal row** — full horizontal cards in a manually scrollable, snap-aligned row with next-item peek and optional arrows.
 - **Poster shelf / carousel** — horizontal shelf with scroll snap and optional arrows.
 - **Auto-scrolling shelf (marquee)** — a GPU-composited infinite glide. Configure speed (slider), direction, item spacing and how much of the next item peeks in. Touching or dragging the strip stops the glide and tracks your finger 1:1; releasing resumes scrolling from the exact position. Opening a popup pauses it; closing resumes.
-- **Showcase** — one item at a time with scroll-snap, swipe gestures, auto-advance every few seconds (also paused while a popup is open) and optional previous/next buttons. Loops seamlessly.
+- **Showcase** — one item at a time with fade-in, slide-up or seamless horizontal-slide transitions, configurable transition time and left/right auto-slide direction, swipe gestures, auto-advance every few seconds (also paused while a popup is open) and optional previous/next buttons.
 
 With fewer than two unique items the marquee and showcase render a single static card — no scrolling, no duplicated slides.
 

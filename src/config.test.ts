@@ -18,6 +18,29 @@ describe("card configuration", () => {
     expect(normalizeConfig({ columns: 9 }).columns).toBe(4);
   });
 
+  it("defaults, validates and round-trips showcase transitions", () => {
+    expect(normalizeConfig({}).showcase_transition).toBe("fade");
+    expect(normalizeConfig({}).showcase_direction).toBe("left");
+    expect(normalizeConfig({}).showcase_transition_duration).toBe(400);
+    expect(normalizeConfig({ showcase_transition: "invalid" } as never).showcase_transition).toBe("fade");
+    expect(normalizeConfig({ showcase_direction: "invalid" } as never).showcase_direction).toBe("left");
+    expect(normalizeConfig({ showcase_transition_duration: 1 }).showcase_transition_duration).toBe(100);
+    expect(normalizeConfig({ showcase_transition_duration: 9999 }).showcase_transition_duration).toBe(1500);
+
+    for (const transition of ["fade", "slide", "horizontal"] as const) {
+      const configured = normalizeConfig({
+        layout: "showcase",
+        showcase_transition: transition,
+        showcase_direction: "right",
+        showcase_transition_duration: 725,
+      });
+      expect(configured.showcase_transition).toBe(transition);
+      expect(configured.showcase_direction).toBe("right");
+      expect(configured.showcase_transition_duration).toBe(725);
+      expect(normalizeConfig(compactConfig(configured))).toEqual(configured);
+    }
+  });
+
   it("uses a custom title without losing mode defaults", () => {
     const config = normalizeConfig({ mode: "recently_added", title: "New on Plex" });
     expect(modeTitle(config)).toBe("New on Plex");
