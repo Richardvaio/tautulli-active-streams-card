@@ -457,6 +457,8 @@ export class TautulliMediaCard extends LitElement {
     const media: MediaItem = this._config.mode === "recently_added" ? item as MediaItem : item.media ?? {};
     const title = this._cardEpisodeTitle(media, "media");
     const subtitle = item._group_subtitle ?? this._cardEpisodeSubtitle(media, "media");
+    const showYearInMeta = Boolean(media.year)
+      && !(media.type === "movie" && this._config.movie_subtitle === "year");
     const image = this._image(media.images);
     const background = this._backgroundImage(media.images);
     const displayDuration = this._config.mode === "history"
@@ -471,7 +473,7 @@ export class TautulliMediaCard extends LitElement {
           <h3 class="name">${title}</h3>
           ${subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
           <div class="meta">
-            ${media.year ? html`<span>${media.year}</span>` : nothing}
+            ${showYearInMeta ? html`<span>${media.year}</span>` : nothing}
             ${displayDuration ? html`<span>${this._duration(displayDuration)}${this._config.mode === "history" ? " watched" : ""}</span>` : nothing}
             ${media.library?.name ? html`<span>${media.library.name}</span>` : nothing}
           </div>
@@ -528,7 +530,11 @@ export class TautulliMediaCard extends LitElement {
     const music = ["track", "album", "artist"].includes(media.type ?? "");
     const title = this._cardEpisodeTitle(media, "active");
     const subtitle = this._cardEpisodeSubtitle(media, "active");
-    const mediaDetail = music ? subtitle : subtitle || (media.year ? String(media.year) : "");
+    const mediaDetail = music
+      ? subtitle
+      : media.type === "movie"
+        ? subtitle
+        : subtitle || (media.year ? String(media.year) : "");
     const showVideoQuality = !music && Boolean(this._config.show_quality);
     const showAudioQuality = music && Boolean(this._config.show_audio_quality);
     const showBandwidth = Boolean(this._config.show_bandwidth && item.quality?.bandwidth_kbps);
@@ -1185,6 +1191,22 @@ export class TautulliMediaCard extends LitElement {
     return "";
   }
 
+  private _movieSubtitle(media: MediaItem, context: "active" | "classic" | "media"): string {
+    const source = this._config.movie_subtitle ?? "automatic";
+    if (source === "automatic") {
+      return context === "active" && media.year ? String(media.year) : "";
+    }
+    switch (source) {
+      case "year": return media.year ? String(media.year) : "";
+      case "content_rating": return media.content_rating ?? "";
+      case "rating": return media.rating !== null && media.rating !== undefined ? `Critic ★ ${media.rating}` : "";
+      case "audience_rating": return media.audience_rating !== null && media.audience_rating !== undefined ? `Audience ★ ${media.audience_rating}` : "";
+      case "genres": return media.genres?.filter(Boolean).join(" · ") ?? "";
+      case "studio": return media.studio ?? "";
+      default: return "";
+    }
+  }
+
   private _cardEpisodeTitle(media: MediaItem, context: "active" | "classic" | "media"): string {
     const normalTitle = context === "media"
       ? media.title || media.full_title
@@ -1214,6 +1236,7 @@ export class TautulliMediaCard extends LitElement {
       const title = this._seasonShowTitle(media) || this._displayText(media.title || media.full_title);
       return label === title ? "" : label;
     }
+    if (media.type === "movie") return this._movieSubtitle(media, context);
     if (media.type !== "episode") return this._mediaSubtitle(media);
     const hierarchy = media.hierarchy ?? {};
     const show = this._displayText(hierarchy.show);

@@ -494,6 +494,108 @@ describe("stream termination confirmation", () => {
     expect(hiddenMusicQuality.renderRoot.querySelector(".details.optional")).toBeNull();
   });
 
+  it.each([
+    ["year", "2026"],
+    ["content_rating", "PG-13"],
+    ["rating", "Critic ★ 8.2"],
+    ["audience_rating", "Audience ★ 8.8"],
+    ["genres", "Drama · Mystery"],
+    ["studio", "Example Studio"],
+    ["none", null],
+  ])("renders the selected %s movie subtitle on modern media cards", async (movieSubtitle, expected) => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "recently_added",
+      style_preset: "modern",
+      movie_subtitle: movieSubtitle,
+    });
+    document.body.append(card);
+    const internal = card as unknown as {
+      _data: CardEnvelope<typeof DETAILED_STREAM.media>;
+      _loading: boolean;
+      requestUpdate(): void;
+    };
+    internal._data = { ...ENVELOPE, items: [DETAILED_STREAM.media] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    const subtitle = card.renderRoot.querySelector(".subtitle");
+    if (expected === null) expect(subtitle).toBeNull();
+    else expect(subtitle?.textContent).toBe(expected);
+  });
+
+  it("keeps automatic movie subtitles backward compatible and avoids a duplicate selected year", async () => {
+    const renderMovie = async (movieSubtitle?: string) => {
+      const card = document.createElement("tautulli-media-card") as HTMLElement & {
+        setConfig(config: Record<string, unknown>): void;
+        updateComplete: Promise<boolean>;
+        renderRoot: ShadowRoot;
+      };
+      card.setConfig({
+        type: "custom:tautulli-media-card",
+        entry_id: "entry-1",
+        mode: "recently_added",
+        style_preset: "modern",
+        ...(movieSubtitle ? { movie_subtitle: movieSubtitle } : {}),
+      });
+      document.body.append(card);
+      const internal = card as unknown as {
+        _data: CardEnvelope<typeof DETAILED_STREAM.media>;
+        _loading: boolean;
+        requestUpdate(): void;
+      };
+      internal._data = { ...ENVELOPE, items: [DETAILED_STREAM.media] };
+      internal._loading = false;
+      internal.requestUpdate();
+      await card.updateComplete;
+      return card;
+    };
+
+    const automatic = await renderMovie();
+    expect(automatic.renderRoot.querySelector(".subtitle")).toBeNull();
+    expect(automatic.renderRoot.querySelector(".meta")?.textContent).toContain("2026");
+
+    const year = await renderMovie("year");
+    expect(year.renderRoot.querySelector(".subtitle")?.textContent).toBe("2026");
+    expect(year.renderRoot.querySelector(".meta")?.textContent).not.toContain("2026");
+  });
+
+  it.each([
+    ["rating", "Critic ★ 8.2"],
+    ["none", null],
+  ])("applies the %s movie subtitle to modern active streams", async (movieSubtitle, expected) => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: "modern",
+      show_media_details: true,
+      movie_subtitle: movieSubtitle,
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: [DETAILED_STREAM] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    const subtitle = card.renderRoot.querySelector(".subtitle");
+    if (expected === null) expect(subtitle).toBeNull();
+    else expect(subtitle?.textContent).toBe(expected);
+  });
+
   it("places media-popup text beside artwork in the responsive hero layout", async () => {
     const card = document.createElement("tautulli-media-card") as HTMLElement & {
       setConfig(config: Record<string, unknown>): void;

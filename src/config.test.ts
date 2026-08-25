@@ -56,6 +56,17 @@ describe("card configuration", () => {
     expect(compactConfig(config)).not.toHaveProperty("demo_when_empty");
   });
 
+  it("preserves the existing movie subtitle layout unless a source is selected", () => {
+    const automatic = normalizeConfig({});
+    expect(automatic.movie_subtitle).toBe("automatic");
+    expect(compactConfig(automatic)).not.toHaveProperty("movie_subtitle");
+
+    const configured = normalizeConfig({ movie_subtitle: "studio" } as never);
+    expect(configured.movie_subtitle).toBe("studio");
+    expect(compactConfig(configured)).toHaveProperty("movie_subtitle", "studio");
+    expect(normalizeConfig(compactConfig(configured))).toEqual(configured);
+  });
+
   it("round-trips advanced card and popup settings without losing values", () => {
     const configured = normalizeConfig({
       entry_id: "entry-1",

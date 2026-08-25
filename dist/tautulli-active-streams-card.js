@@ -58,13 +58,13 @@ var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nat
 		}
 		return n;
 	}
-}, re = (e, t) => !l(e, t), v = {
+}, v = (e, t) => !l(e, t), re = {
 	attribute: !0,
 	type: String,
 	converter: _,
 	reflect: !1,
 	useDefault: !1,
-	hasChanged: re
+	hasChanged: v
 };
 Symbol.metadata ??= Symbol("metadata"), m.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 var y = class extends HTMLElement {
@@ -74,7 +74,7 @@ var y = class extends HTMLElement {
 	static get observedAttributes() {
 		return this.finalize(), this._$Eh && [...this._$Eh.keys()];
 	}
-	static createProperty(e, t = v) {
+	static createProperty(e, t = re) {
 		if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
 			let n = Symbol(), r = this.getPropertyDescriptor(e, n, t);
 			r !== void 0 && u(this.prototype, e, r);
@@ -100,7 +100,7 @@ var y = class extends HTMLElement {
 		};
 	}
 	static getPropertyOptions(e) {
-		return this.elementProperties.get(e) ?? v;
+		return this.elementProperties.get(e) ?? re;
 	}
 	static _$Ei() {
 		if (this.hasOwnProperty(g("elementProperties"))) return;
@@ -187,7 +187,7 @@ var y = class extends HTMLElement {
 	requestUpdate(e, t, n, r = !1, i) {
 		if (e !== void 0) {
 			let a = this.constructor;
-			if (!1 === r && (i = this[e]), n ??= a.getPropertyOptions(e), !((n.hasChanged ?? re)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, n)))) return;
+			if (!1 === r && (i = this[e]), n ??= a.getPropertyOptions(e), !((n.hasChanged ?? v)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, n)))) return;
 			this.C(e, t, n);
 		}
 		!1 === this.isUpdatePending && (this._$ES = this._$EP());
@@ -643,6 +643,7 @@ var q = [
 	episode_title: "full_title",
 	episode_subtitle: "show_and_number",
 	episode_number_style: "compact",
+	movie_subtitle: "automatic",
 	show_summary: !1,
 	show_empty: !1,
 	scroll_gap: 8,
@@ -1609,18 +1610,18 @@ var Me = o`
 		if (n) return P`<div class="strip-clone" aria-hidden="true" data-item-id=${this._itemId(e)}>${this._renderItem(e, void 0, !1)}</div>`;
 		if (this._config.mode === "active") return this._renderActive(e);
 		if (this._config.mode === "users") return this._renderUser(e);
-		let r = this._config.mode === "recently_added" ? e : e.media ?? {}, i = this._cardEpisodeTitle(r, "media"), a = e._group_subtitle ?? this._cardEpisodeSubtitle(r, "media"), o = this._image(r.images), s = this._backgroundImage(r.images), c = this._config.mode === "history" ? Number(e.play_duration_seconds) || 0 : Number(r.duration_seconds) || 0;
+		let r = this._config.mode === "recently_added" ? e : e.media ?? {}, i = this._cardEpisodeTitle(r, "media"), a = e._group_subtitle ?? this._cardEpisodeSubtitle(r, "media"), o = !!r.year && (r.type !== "movie" || this._config.movie_subtitle !== "year"), s = this._image(r.images), c = this._backgroundImage(r.images), l = this._config.mode === "history" ? Number(e.play_duration_seconds) || 0 : Number(r.duration_seconds) || 0;
 		return P`
-      <article data-item-id=${this._itemId(e)} class="item media-item ${r.type ?? "unknown"} ${this._artClass(o, s)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(s)}>
+      <article data-item-id=${this._itemId(e)} class="item media-item ${r.type ?? "unknown"} ${this._artClass(s, c)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(c)}>
         ${this._openDetailsButton(e, i)}
-        ${o ? P`<img class="art" src=${o} alt="" loading="lazy" referrerpolicy="no-referrer">` : I}
+        ${s ? P`<img class="art" src=${s} alt="" loading="lazy" referrerpolicy="no-referrer">` : I}
         <div class="body">
           <div class="eyebrow"><span>${this._itemEyebrow(e, r)}</span></div>
           <h3 class="name">${i}</h3>
           ${a ? P`<div class="subtitle">${a}</div>` : I}
           <div class="meta">
-            ${r.year ? P`<span>${r.year}</span>` : I}
-            ${c ? P`<span>${this._duration(c)}${this._config.mode === "history" ? " watched" : ""}</span>` : I}
+            ${o ? P`<span>${r.year}</span>` : I}
+            ${l ? P`<span>${this._duration(l)}${this._config.mode === "history" ? " watched" : ""}</span>` : I}
             ${r.library?.name ? P`<span>${r.library.name}</span>` : I}
           </div>
           ${this._config.show_summary && r.summary ? P`<div class="summary">${r.summary}</div>` : I}
@@ -1669,7 +1670,7 @@ var Me = o`
 			"track",
 			"album",
 			"artist"
-		].includes(t.type ?? ""), r = this._cardEpisodeTitle(t, "active"), i = this._cardEpisodeSubtitle(t, "active"), a = n ? i : i || (t.year ? String(t.year) : ""), o = !n && !!this._config.show_quality, s = n && !!this._config.show_audio_quality, c = !!(this._config.show_bandwidth && e.quality?.bandwidth_kbps), l = this._image(e.images), u = this._backgroundImage(e.images), d = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), f = e.state === "paused" ? "var(--tas-paused-color)" : e.state === "buffering" ? "var(--tas-buffering-color)" : n ? "#1db954" : "var(--tas-playing-color)", p = this._canTerminate(e) && (this._config.click_action !== "details" || ["card", "both"].includes(this._config.termination_location ?? "popup"));
+		].includes(t.type ?? ""), r = this._cardEpisodeTitle(t, "active"), i = this._cardEpisodeSubtitle(t, "active"), a = n || t.type === "movie" ? i : i || (t.year ? String(t.year) : ""), o = !n && !!this._config.show_quality, s = n && !!this._config.show_audio_quality, c = !!(this._config.show_bandwidth && e.quality?.bandwidth_kbps), l = this._image(e.images), u = this._backgroundImage(e.images), d = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), f = e.state === "paused" ? "var(--tas-paused-color)" : e.state === "buffering" ? "var(--tas-buffering-color)" : n ? "#1db954" : "var(--tas-playing-color)", p = this._canTerminate(e) && (this._config.click_action !== "details" || ["card", "both"].includes(this._config.termination_location ?? "popup"));
 		return P`
       <article data-item-id=${this._itemId(e)} class="item ${this._artClass(l, u)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(u, f)}>
         ${this._openDetailsButton(e, r)}
@@ -2050,6 +2051,19 @@ var Me = o`
 		}
 		return "";
 	}
+	_movieSubtitle(e, t) {
+		let n = this._config.movie_subtitle ?? "automatic";
+		if (n === "automatic") return t === "active" && e.year ? String(e.year) : "";
+		switch (n) {
+			case "year": return e.year ? String(e.year) : "";
+			case "content_rating": return e.content_rating ?? "";
+			case "rating": return e.rating !== null && e.rating !== void 0 ? `Critic ★ ${e.rating}` : "";
+			case "audience_rating": return e.audience_rating !== null && e.audience_rating !== void 0 ? `Audience ★ ${e.audience_rating}` : "";
+			case "genres": return e.genres?.filter(Boolean).join(" · ") ?? "";
+			case "studio": return e.studio ?? "";
+			default: return "";
+		}
+	}
 	_cardEpisodeTitle(e, t) {
 		let n = t === "media" ? e.title || e.full_title : e.full_title || e.title;
 		if (e.type === "season") return this._seasonShowTitle(e) || n || "Untitled";
@@ -2069,6 +2083,7 @@ var Me = o`
 			let t = this._seasonLabel(e);
 			return t === (this._seasonShowTitle(e) || this._displayText(e.title || e.full_title)) ? "" : t;
 		}
+		if (e.type === "movie") return this._movieSubtitle(e, t);
 		if (e.type !== "episode") return this._mediaSubtitle(e);
 		let n = e.hierarchy ?? {}, r = this._displayText(n.show), i = e.title || "", a = this._episodeNumber(e), o = this._config.episode_layout ?? "current";
 		if (o === "show_first") return this._joinText(a, i);
@@ -2228,11 +2243,65 @@ var Me = o`
 function Y(e, t) {
 	return !(e?.modes && !e.modes.includes(t.mode) || e?.when && !e.when(t));
 }
-var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Le = (e) => ["backdrop", "both"].includes(e.config.artwork ?? "poster"), Z = (e) => e.config.click_action === "details", Re = (e) => (e.config.popup_animation ?? "scale") !== "none", ze = (e) => !!e.config.popup_show_summary, Q = (e) => !!e.data.capabilities?.stream_termination, Be = (e) => Q(e) && !!e.config.allow_termination, Ve = (e) => Be(e) && Z(e) && ["popup", "both"].includes(e.config.termination_location ?? "popup"), He = {
+var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Le = (e) => ["backdrop", "both"].includes(e.config.artwork ?? "poster"), Z = (e) => e.config.click_action === "details", Re = (e) => (e.config.popup_animation ?? "scale") !== "none", ze = (e) => !!e.config.popup_show_summary, Q = (e) => !!e.data.capabilities?.stream_termination, Be = (e) => Q(e) && !!e.config.allow_termination, Ve = (e) => Be(e) && Z(e) && ["popup", "both"].includes(e.config.termination_location ?? "popup"), He = (e) => e.mode === "active" && e.config.media_type !== "music" || e.mode === "recently_added" && ["all", "show"].includes(e.config.media_type ?? "all") || e.mode === "history", Ue = (e) => e.config.episode_layout !== "custom" || [
+	"show_and_number",
+	"number_and_title",
+	"show_number_and_title",
+	"number_only"
+].includes(e.config.episode_subtitle ?? "show_and_number"), We = {
+	summary: "Movie text",
+	className: "inline-advanced",
+	description: "Choose the subtitle shown directly below movie titles. It is hidden when the selected metadata is unavailable.",
+	applies: { when: (e) => e.mode === "active" ? e.config.media_type !== "music" && e.config.show_media_details !== !1 : e.mode === "recently_added" ? ["all", "movie"].includes(e.config.media_type ?? "all") : e.mode === "popular" ? [
+		"popular_movies",
+		"top_movies",
+		"last_watched",
+		"most_concurrent"
+	].includes(e.config.stat_id ?? "popular_movies") : e.mode === "history" },
+	fields: [{
+		kind: "select",
+		key: "movie_subtitle",
+		label: "Movie subtitle",
+		options: [
+			{
+				value: "automatic",
+				label: "Automatic (current layout)"
+			},
+			{
+				value: "year",
+				label: "Release year"
+			},
+			{
+				value: "content_rating",
+				label: "Content rating"
+			},
+			{
+				value: "rating",
+				label: "Critic rating"
+			},
+			{
+				value: "audience_rating",
+				label: "Audience rating"
+			},
+			{
+				value: "genres",
+				label: "Genres"
+			},
+			{
+				value: "studio",
+				label: "Studio"
+			},
+			{
+				value: "none",
+				label: "Hidden"
+			}
+		]
+	}]
+}, Ge = {
 	summary: "TV episode text",
 	className: "inline-advanced",
 	description: "Choose how episode names and numbers are arranged on dashboard items. Popup text is configured separately.",
-	applies: { when: (e) => e.mode === "active" && e.config.media_type !== "music" || e.mode === "recently_added" && ["all", "show"].includes(e.config.media_type ?? "all") || e.mode === "history" },
+	applies: { when: He },
 	fields: [
 		{
 			kind: "select",
@@ -2313,12 +2382,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Le = (
 			kind: "select",
 			key: "episode_number_style",
 			label: "Episode numbering",
-			when: (e) => e.config.episode_layout !== "custom" || [
-				"show_and_number",
-				"number_and_title",
-				"show_number_and_title",
-				"number_only"
-			].includes(e.config.episode_subtitle ?? "show_and_number"),
+			when: Ue,
 			options: [{
 				value: "compact",
 				label: "Compact (S1 · E2)"
@@ -2332,7 +2396,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Le = (
 			block: "episodeTextPreview"
 		}
 	]
-}, Ue = [
+}, Ke = [
 	{
 		id: "content-source",
 		summary: "Content and source",
@@ -3081,14 +3145,15 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Le = (
 				fields: [{
 					kind: "toggle",
 					key: "show_media_details",
-					label: "Year / episode"
+					label: "Movie / episode subtitle"
 				}, {
 					kind: "toggle",
 					key: "show_audio_quality",
 					label: "Music audio quality"
 				}]
 			},
-			He,
+			We,
+			Ge,
 			{
 				summary: "Playback and progress",
 				className: "inline-advanced",
@@ -3155,7 +3220,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Le = (
 			key: "show_summary",
 			label: "Summary"
 		}],
-		subsections: [He]
+		subsections: [We, Ge]
 	},
 	{
 		id: "tap-behaviour",
@@ -3579,7 +3644,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Le = (
 		key: "popup_show_studio",
 		label: "Studio"
 	}
-], We = class extends G {
+], qe = class extends G {
 	static {
 		this.properties = {
 			hass: { attribute: !1 },
@@ -3761,7 +3826,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Le = (
 		return P`<div class="editor">
       ${this._error ? P`<div class="error" role="alert">${this._error}</div>` : I}
       ${this._config.entry_id && t ? P`<div class="compatibility ${r ? "multiple-servers" : "single-server"}"><span></span><div>${r ? P`<strong>${n?.name ?? "Tautulli"}</strong>` : I}<small>${this._connectionMessage(e.mode)}</small></div></div>` : I}
-      ${Ue.map((t) => this._renderSection(t, e))}
+      ${Ke.map((t) => this._renderSection(t, e))}
       <p class="hint">Privacy and destructive permissions are enforced by the Tautulli Active Streams integration. Tokens and upstream image paths are never sent to this card.</p>
       <button class="reset-all" type="button" @click=${this._resetAllDefaults}>Reset all settings to defaults</button>
     </div>`;
@@ -4081,7 +4146,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Le = (
 		}));
 	}
 };
-customElements.get("tautulli-media-card") || customElements.define("tautulli-media-card", Fe), customElements.get("tautulli-media-card-editor") || customElements.define("tautulli-media-card-editor", We), window.customCards = window.customCards || [], window.customCards.some((e) => e.type === "tautulli-media-card") || window.customCards.push({
+customElements.get("tautulli-media-card") || customElements.define("tautulli-media-card", Fe), customElements.get("tautulli-media-card-editor") || customElements.define("tautulli-media-card-editor", qe), window.customCards = window.customCards || [], window.customCards.some((e) => e.type === "tautulli-media-card") || window.customCards.push({
 	type: "tautulli-media-card",
 	name: "Tautulli Media Card",
 	description: "Active streams, recently added media, popular titles, and watch history from Tautulli.",

@@ -16,6 +16,15 @@ export type EpisodeSubtitleSource =
   | "episode_title"
   | "none";
 export type EpisodeNumberStyle = "compact" | "padded";
+export type MovieSubtitleSource =
+  | "automatic"
+  | "year"
+  | "content_rating"
+  | "rating"
+  | "audience_rating"
+  | "genres"
+  | "studio"
+  | "none";
 export type PopupDetailField =
   | "user"
   | "player"
@@ -113,6 +122,7 @@ export interface CardConfig {
   episode_title?: EpisodeTitleSource;
   episode_subtitle?: EpisodeSubtitleSource;
   episode_number_style?: EpisodeNumberStyle;
+  movie_subtitle?: MovieSubtitleSource;
   show_summary?: boolean;
   show_empty?: boolean;
   animations?: boolean;

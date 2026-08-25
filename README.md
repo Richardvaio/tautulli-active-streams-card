@@ -22,6 +22,7 @@ It requires **Tautulli Active Streams 2.7.0 or newer**.
 - Poster/cover, backdrop, combined poster-with-backdrop and artwork-free treatments.
 - Configurable headers, counts, fields, colours, spacing, progress bars and artwork sizing.
 - Configurable TV episode titles, subtitles and compact or zero-padded numbering.
+- Configurable movie subtitles using release year, content rating, critic or audience rating, genres or studio.
 - Detailed popup with configurable summary and reorderable stream-detail fields.
 - Optional administrator-only stream termination with a separate confirmation dialog.
 - Graceful loading, empty, stale and unavailable states.
@@ -142,6 +143,18 @@ episode_number_style: padded
 ```
 
 Custom layouts additionally support `episode_title` and `episode_subtitle`.
+
+### Movie subtitle
+
+For views that can display movies, open **Card information → Movie text**. For active streams, use **Stream information → Movie text** and keep **Movie / episode subtitle** enabled.
+
+Choose the existing automatic layout, release year, content rating, critic rating, audience rating, genres, studio or a hidden subtitle. The subtitle appears only when the selected metadata is available. Choosing release year moves it beneath the movie title without repeating it in the metadata row.
+
+The same selection is available in YAML:
+
+```yaml
+movie_subtitle: studio
+```
 
 ## Details popup
 

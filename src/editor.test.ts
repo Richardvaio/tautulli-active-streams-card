@@ -276,6 +276,51 @@ describe("visual editor", () => {
     expect(editor.renderRoot.textContent).not.toContain("TV episode text");
   });
 
+  it("restores and saves the selected movie subtitle source", async () => {
+    const editor = document.createElement("tautulli-media-card-editor") as HTMLElement & {
+      hass: HomeAssistant;
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    editor.hass = {
+      callWS: vi.fn().mockResolvedValue({ entries: [], items: [] }),
+      connection: { subscribeMessage: vi.fn() },
+    } as unknown as HomeAssistant;
+    editor.setConfig({
+      type: "custom:tautulli-media-card",
+      mode: "recently_added",
+      media_type: "movie",
+      movie_subtitle: "studio",
+    });
+    document.body.append(editor);
+    await editor.updateComplete;
+
+    const select = editor.renderRoot.querySelector<HTMLSelectElement>('select[data-key="movie_subtitle"]');
+    expect(editor.renderRoot.textContent).toContain("Movie text");
+    expect(select?.value).toBe("studio");
+    expect([...select?.options ?? []].map((option) => option.textContent)).toEqual(expect.arrayContaining([
+      "Release year",
+      "Critic rating",
+      "Audience rating",
+      "Genres",
+      "Studio",
+      "Hidden",
+    ]));
+
+    const changes: Array<{ movie_subtitle?: string }> = [];
+    editor.addEventListener("config-changed", (event) => changes.push((event as CustomEvent).detail.config));
+    if (select) {
+      select.value = "genres";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    expect(changes.at(-1)?.movie_subtitle).toBe("genres");
+
+    editor.setConfig(changes.at(-1) ?? {});
+    await editor.updateComplete;
+    expect(editor.renderRoot.querySelector<HTMLSelectElement>('select[data-key="movie_subtitle"]')?.value).toBe("genres");
+  });
+
   it("renders draggable stream fields and saves their reordered position", async () => {
     const callWS = vi.fn().mockImplementation(async (request: Record<string, unknown>) => request.type === "tautulli_active_streams/get_entries"
       ? { entries: [{ entry_id: "entry-1", name: "Plex", capabilities: { active_streams: true } }] }

@@ -92,6 +92,28 @@ describe("editor settings registry", () => {
     expect(popular.has("episode_layout")).toBe(false);
   });
 
+  it("shows movie subtitle controls only where movie cards can use them", () => {
+    const activeVideo = fieldKeys(ctxFor({ media_type: "video", show_media_details: true }, "active"));
+    const activeDetailsHidden = fieldKeys(ctxFor({ media_type: "video", show_media_details: false }, "active"));
+    const activeMusic = fieldKeys(ctxFor({ media_type: "music" }, "active"));
+    const recentMovies = fieldKeys(ctxFor({ media_type: "movie" }, "recently_added"));
+    const recentTv = fieldKeys(ctxFor({ media_type: "show" }, "recently_added"));
+    const popularMovies = fieldKeys(ctxFor({ stat_id: "popular_movies" }, "popular"));
+    const popularTv = fieldKeys(ctxFor({ stat_id: "popular_tv" }, "popular"));
+    const history = fieldKeys(ctxFor({}, "history"));
+    const users = fieldKeys(ctxFor({}, "users"));
+
+    expect(activeVideo.has("movie_subtitle")).toBe(true);
+    expect(activeDetailsHidden.has("movie_subtitle")).toBe(false);
+    expect(activeMusic.has("movie_subtitle")).toBe(false);
+    expect(recentMovies.has("movie_subtitle")).toBe(true);
+    expect(recentTv.has("movie_subtitle")).toBe(false);
+    expect(popularMovies.has("movie_subtitle")).toBe(true);
+    expect(popularTv.has("movie_subtitle")).toBe(false);
+    expect(history.has("movie_subtitle")).toBe(true);
+    expect(users.has("movie_subtitle")).toBe(false);
+  });
+
   it("explains that disabling card grouping cannot split a Tautulli season item", () => {
     const content = EDITOR_SECTIONS.find((section) => section.id === "content-source");
     const grouping = content?.fields?.find((field) => "key" in field && field.key === "recent_grouping");

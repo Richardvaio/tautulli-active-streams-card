@@ -154,6 +154,43 @@ const episodeNumberUsed = (ctx: FieldContext) =>
     ctx.config.episode_subtitle ?? "show_and_number",
   );
 
+const movieTextAvailable = (ctx: FieldContext) => {
+  if (ctx.mode === "active") {
+    return ctx.config.media_type !== "music" && ctx.config.show_media_details !== false;
+  }
+  if (ctx.mode === "recently_added") {
+    return ["all", "movie"].includes(ctx.config.media_type ?? "all");
+  }
+  if (ctx.mode === "popular") {
+    return ["popular_movies", "top_movies", "last_watched", "most_concurrent"].includes(
+      ctx.config.stat_id ?? "popular_movies",
+    );
+  }
+  return ctx.mode === "history";
+};
+
+const MOVIE_TEXT_SUBSECTION: SubSection = {
+  summary: "Movie text",
+  className: "inline-advanced",
+  description: "Choose the subtitle shown directly below movie titles. It is hidden when the selected metadata is unavailable.",
+  applies: { when: movieTextAvailable },
+  fields: [
+    {
+      kind: "select", key: "movie_subtitle", label: "Movie subtitle",
+      options: [
+        { value: "automatic", label: "Automatic (current layout)" },
+        { value: "year", label: "Release year" },
+        { value: "content_rating", label: "Content rating" },
+        { value: "rating", label: "Critic rating" },
+        { value: "audience_rating", label: "Audience rating" },
+        { value: "genres", label: "Genres" },
+        { value: "studio", label: "Studio" },
+        { value: "none", label: "Hidden" },
+      ],
+    },
+  ],
+};
+
 const TV_EPISODE_TEXT_SUBSECTION: SubSection = {
   summary: "TV episode text",
   className: "inline-advanced",
@@ -492,10 +529,11 @@ export const EDITOR_SECTIONS: Section[] = [
       {
         summary: "Media details", className: "inline-advanced",
         fields: [
-          { kind: "toggle", key: "show_media_details", label: "Year / episode" },
+          { kind: "toggle", key: "show_media_details", label: "Movie / episode subtitle" },
           { kind: "toggle", key: "show_audio_quality", label: "Music audio quality" },
         ],
       },
+      MOVIE_TEXT_SUBSECTION,
       TV_EPISODE_TEXT_SUBSECTION,
       {
         summary: "Playback and progress", className: "inline-advanced",
@@ -526,7 +564,7 @@ export const EDITOR_SECTIONS: Section[] = [
     fields: [
       { kind: "toggle", key: "show_summary", label: "Summary" },
     ],
-    subsections: [TV_EPISODE_TEXT_SUBSECTION],
+    subsections: [MOVIE_TEXT_SUBSECTION, TV_EPISODE_TEXT_SUBSECTION],
   },
   {
     id: "tap-behaviour",

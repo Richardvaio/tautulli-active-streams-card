@@ -75,6 +75,7 @@ export const DEFAULT_CONFIG: CardConfig = {
   episode_title: "full_title",
   episode_subtitle: "show_and_number",
   episode_number_style: "compact",
+  movie_subtitle: "automatic",
   show_summary: false,
   show_empty: false,
   scroll_gap: 8,
