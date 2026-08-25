@@ -911,6 +911,68 @@ describe("stream termination confirmation", () => {
     expect(item?.getAttribute("style")).toContain("/api/tautulli/image/backdrop");
   });
 
+  it.each(["modern", "classic"])("applies custom playback colours directly to %s stream accents", async (stylePreset) => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: stylePreset,
+      playing_color: "#123456",
+      paused_color: "#2468ac",
+      buffering_color: "#bada55",
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = ENVELOPE;
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    const selector = stylePreset === "classic" ? "article.classic-item" : "article.item";
+    expect(card.style.getPropertyValue("--tas-playing-color")).toBe("#123456");
+    expect(card.renderRoot.querySelector<HTMLElement>(selector)?.style.getPropertyValue("--state-color")).toBe("#123456");
+
+    internal._data = { ...ENVELOPE, items: [{ ...STREAM, state: "paused" }] };
+    internal.requestUpdate();
+    await card.updateComplete;
+    expect(card.renderRoot.querySelector<HTMLElement>(selector)?.style.getPropertyValue("--state-color")).toBe("#2468ac");
+
+    internal._data = { ...ENVELOPE, items: [{ ...STREAM, state: "buffering" }] };
+    internal.requestUpdate();
+    await card.updateComplete;
+    expect(card.renderRoot.querySelector<HTMLElement>(selector)?.style.getPropertyValue("--state-color")).toBe("#bada55");
+  });
+
+  it("uses the configured state accent in the active-stream popup", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      click_action: "details",
+      paused_color: "#2468ac",
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: [{ ...STREAM, state: "paused" }] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+    card.renderRoot.querySelector<HTMLElement>(".open-details")?.click();
+    await card.updateComplete;
+
+    expect(card.renderRoot.querySelector<HTMLElement>(".popup-summary")?.style.getPropertyValue("--state-color")).toBe("#2468ac");
+  });
+
   it("preserves the existing modern episode text by default", async () => {
     const card = document.createElement("tautulli-media-card") as HTMLElement & {
       setConfig(config: Record<string, unknown>): void;

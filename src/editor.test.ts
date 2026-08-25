@@ -228,6 +228,37 @@ describe("visual editor", () => {
     expect(editor.renderRoot.querySelector('input[data-key="backdrop_opacity"]')).not.toBeNull();
   });
 
+  it("saves and restores custom playback colours from the visual editor", async () => {
+    const editor = document.createElement("tautulli-media-card-editor") as HTMLElement & {
+      hass: HomeAssistant;
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    editor.setConfig({ type: "custom:tautulli-media-card", entry_id: "entry-1", mode: "active" });
+    editor.hass = {
+      callWS: vi.fn().mockResolvedValue({ entries: [], items: [] }),
+      connection: { subscribeMessage: vi.fn() },
+    } as unknown as HomeAssistant;
+    document.body.append(editor);
+    await editor.updateComplete;
+
+    const changes: Array<Record<string, unknown>> = [];
+    editor.addEventListener("config-changed", (event) => changes.push((event as CustomEvent).detail.config));
+    const picker = editor.renderRoot.querySelector<HTMLInputElement>('input[title="Choose paused colour"]');
+    expect(picker).not.toBeNull();
+    if (picker) {
+      picker.value = "#2468ac";
+      picker.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    await editor.updateComplete;
+
+    expect(changes.at(-1)?.paused_color).toBe("#2468ac");
+    editor.setConfig(changes.at(-1) ?? {});
+    await editor.updateComplete;
+    expect(editor.renderRoot.querySelector<HTMLInputElement>('input[data-key="paused_color"]')?.value).toBe("#2468ac");
+  });
+
   it("provides intuitive episode layouts with conditional custom controls and a live example", async () => {
     const editor = document.createElement("tautulli-media-card-editor") as HTMLElement & {
       hass: HomeAssistant;

@@ -541,7 +541,7 @@ export class TautulliMediaCard extends LitElement {
     const image = this._image(item.images);
     const background = this._backgroundImage(item.images);
     const progress = Math.max(0, Math.min(100, Number(item.playback?.progress_percent) || 0));
-    const stateColor = item.state === "paused" ? "var(--tas-paused-color)" : item.state === "buffering" ? "var(--tas-buffering-color)" : music ? "#1db954" : "var(--tas-playing-color)";
+    const stateColor = this._playbackStateColor(item, music);
     const canTerminate = this._canTerminate(item) && (
       this._config.click_action !== "details"
       || ["card", "both"].includes(this._config.termination_location ?? "popup")
@@ -581,7 +581,7 @@ export class TautulliMediaCard extends LitElement {
     const image = this._image(item.images);
     const background = this._backgroundImage(item.images);
     const progress = Math.max(0, Math.min(100, Number(item.playback?.progress_percent) || 0));
-    const stateColor = item.state === "paused" ? "var(--tas-paused-color)" : item.state === "buffering" ? "var(--tas-buffering-color)" : music ? "#1db954" : "var(--tas-playing-color)";
+    const stateColor = this._playbackStateColor(item, music);
     const hierarchy = media.hierarchy ?? {};
     const primaryTitle = music
       ? [hierarchy.artist, hierarchy.album].filter(Boolean).join(" — ")
@@ -642,6 +642,13 @@ export class TautulliMediaCard extends LitElement {
     if (state === "paused") return "mdi:pause";
     if (state === "buffering") return "mdi:loading";
     return music ? "mdi:music-circle" : "mdi:play";
+  }
+
+  private _playbackStateColor(item: ActiveStream, music = false): string {
+    const preset = STYLE_PRESETS[this._config.style_preset ?? "classic"];
+    if (item.state === "paused") return this._config.paused_color ?? preset.paused_color;
+    if (item.state === "buffering") return this._config.buffering_color ?? preset.buffering_color;
+    return this._config.playing_color ?? (music ? "#1db954" : preset.playing_color);
   }
 
   private _stateText(item: ActiveStream, music: boolean): string {
@@ -1017,8 +1024,9 @@ export class TautulliMediaCard extends LitElement {
     const allowPopupTermination = this._canTerminate(item) && ["popup", "both"].includes(this._config.termination_location ?? "popup");
     const terminationAtTop = allowPopupTermination && (this._config.termination_popup_placement ?? "footer") === "top";
     const title = media.full_title || media.title || "Stream details";
+    const stateColor = this._playbackStateColor(item, ["track", "album", "artist"].includes(media.type ?? ""));
     const body = html`
-      <section class="popup-summary"><div class="details-hero ${poster ? "with-poster" : ""}">
+      <section class="popup-summary" style=${this._backgroundStyle(undefined, stateColor)}><div class="details-hero ${poster ? "with-poster" : ""}">
         ${poster ? html`<img src=${poster} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
         ${terminationAtTop ? html`<div class="details-top-action">${this._popupTerminationButton(item)}</div>` : nothing}
         <div class="details-primary">
