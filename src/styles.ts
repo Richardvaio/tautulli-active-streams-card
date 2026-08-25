@@ -157,7 +157,7 @@ export const cardStyles = css`
   .dialog-confirm { color:#fff; background:var(--error-color, #db4437); }
   .dialog-actions button:focus-visible,.terminate:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }
   .dialog-actions button:disabled { opacity:.55; cursor:wait; }
-  .details-dialog { position:relative; width:min(720px, 100%); max-height:min(86vh, 780px); overflow-x:hidden; overflow-y:auto; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:linear-gradient(var(--card-background-color), var(--card-background-color)), linear-gradient(var(--primary-background-color, #fff), var(--primary-background-color, #fff)); box-shadow:0 18px 54px rgb(0 0 0 / 45%); isolation:isolate; min-width:0; }
+  .details-dialog { position:relative; width:min(720px, 100%); max-height:min(86vh, 780px); overflow-x:hidden; overflow-y:auto; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:linear-gradient(var(--card-background-color), var(--card-background-color)), linear-gradient(var(--primary-background-color, #fff), var(--primary-background-color, #fff)); box-shadow:0 18px 54px rgb(0 0 0 / 45%); isolation:isolate; min-width:0; container-type:inline-size; }
   .details-dialog.popup-width-compact { width:min(520px, 100%); }
   .details-dialog.popup-width-wide { width:min(940px, 100%); }
   .details-dialog.has-backdrop::before { content:""; position:absolute; z-index:-1; inset:0 0 auto 28%; height:270px; background-image:linear-gradient(180deg, rgb(0 0 0 / 10%), var(--card-background-color) 96%), linear-gradient(90deg, transparent, rgb(0 0 0 / 20%)), var(--details-backdrop); background-size:cover; background-position:center; opacity:.5; -webkit-mask-image:linear-gradient(90deg, transparent, #000 35%); mask-image:linear-gradient(90deg, transparent, #000 35%); }
@@ -169,7 +169,7 @@ export const cardStyles = css`
   .popup-clean .popup-summary { padding:0; border:0; border-radius:0; background:transparent; backdrop-filter:none; }
   .popup-cinematic.has-backdrop::before { inset:0; height:330px; opacity:calc(var(--cinematic-art-opacity, .45)); -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 100%); mask-image:linear-gradient(180deg,#000 0%,transparent 100%); animation:cinematic-art-in var(--dialog-animation-duration, 220ms) ease-out; }
   .popup-cinematic .popup-summary { min-height:190px; align-content:end; padding:22px; border:0; background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--card-background-color) 55%,transparent)); }
-  .media-summary { justify-items:start; }
+  .media-summary { justify-items:stretch; }
   .details-section-title { margin:2px 0 -8px; color:var(--secondary-text-color); font-size:12px; text-transform:uppercase; letter-spacing:.65px; }
   .details-hero.with-poster { grid-template-columns:minmax(90px, 150px) minmax(0,1fr); }
   .details-hero > img { width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:10px; box-shadow:0 8px 24px rgb(0 0 0 / 35%); }
@@ -246,8 +246,8 @@ export const cardStyles = css`
     .remaining-label { display:none; }
     .progress-state { padding-left:5px; }
     .progress-remaining { padding-right:5px; }
-    .details-hero.with-poster { grid-template-columns:72px minmax(0,1fr); gap:12px; }
-    .details-hero > img { border-radius:8px; }
+    .details-hero.with-poster { grid-template-columns:1fr; gap:12px; }
+    .details-hero > img { width:min(140px, 48%); justify-self:start; border-radius:8px; }
     .details-heading-line { align-items:flex-start; flex-direction:column; gap:7px; }
     .details-summary-user { max-width:100%; }
     .details-content { padding:14px; gap:14px; }
@@ -278,6 +278,7 @@ export const editorStyles = css`
   .compatibility > div { min-width:0; display:grid; gap:2px; }
   .compatibility strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
   .compatibility small { color:var(--secondary-text-color); font-size:11px; }
+  .compatibility.single-server small { color:var(--primary-text-color); font-size:12px; font-weight:600; }
   .section { overflow:hidden; border:1px solid var(--divider-color); border-radius:12px; padding:14px; background:color-mix(in srgb, var(--card-background-color) 96%, var(--primary-color) 4%); transition:border-color .18s ease, box-shadow .18s ease; }
   .section[open] { border-color:color-mix(in srgb, var(--primary-color) 32%, var(--divider-color)); box-shadow:0 3px 12px rgb(0 0 0 / 7%); }
   .section[open] { display:grid; gap:12px; }

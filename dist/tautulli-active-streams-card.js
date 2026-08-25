@@ -29,11 +29,11 @@ var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nat
 	let t = "";
 	for (let n of e.cssRules) t += n.cssText;
 	return a(t);
-})(e) : e, { is: l, defineProperty: u, getOwnPropertyDescriptor: d, getOwnPropertyNames: f, getOwnPropertySymbols: p, getPrototypeOf: ee } = Object, m = globalThis, te = m.trustedTypes, ne = te ? te.emptyScript : "", re = m.reactiveElementPolyfillSupport, h = (e, t) => e, g = {
+})(e) : e, { is: l, defineProperty: u, getOwnPropertyDescriptor: d, getOwnPropertyNames: f, getOwnPropertySymbols: p, getPrototypeOf: ee } = Object, m = globalThis, h = m.trustedTypes, te = h ? h.emptyScript : "", ne = m.reactiveElementPolyfillSupport, g = (e, t) => e, _ = {
 	toAttribute(e, t) {
 		switch (t) {
 			case Boolean:
-				e = e ? ne : null;
+				e = e ? te : null;
 				break;
 			case Object:
 			case Array: e = e == null ? e : JSON.stringify(e);
@@ -58,23 +58,23 @@ var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nat
 		}
 		return n;
 	}
-}, _ = (e, t) => !l(e, t), ie = {
+}, re = (e, t) => !l(e, t), v = {
 	attribute: !0,
 	type: String,
-	converter: g,
+	converter: _,
 	reflect: !1,
 	useDefault: !1,
-	hasChanged: _
+	hasChanged: re
 };
 Symbol.metadata ??= Symbol("metadata"), m.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-var v = class extends HTMLElement {
+var y = class extends HTMLElement {
 	static addInitializer(e) {
 		this._$Ei(), (this.l ??= []).push(e);
 	}
 	static get observedAttributes() {
 		return this.finalize(), this._$Eh && [...this._$Eh.keys()];
 	}
-	static createProperty(e, t = ie) {
+	static createProperty(e, t = v) {
 		if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
 			let n = Symbol(), r = this.getPropertyDescriptor(e, n, t);
 			r !== void 0 && u(this.prototype, e, r);
@@ -100,16 +100,16 @@ var v = class extends HTMLElement {
 		};
 	}
 	static getPropertyOptions(e) {
-		return this.elementProperties.get(e) ?? ie;
+		return this.elementProperties.get(e) ?? v;
 	}
 	static _$Ei() {
-		if (this.hasOwnProperty(h("elementProperties"))) return;
+		if (this.hasOwnProperty(g("elementProperties"))) return;
 		let e = ee(this);
 		e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
 	}
 	static finalize() {
-		if (this.hasOwnProperty(h("finalized"))) return;
-		if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(h("properties"))) {
+		if (this.hasOwnProperty(g("finalized"))) return;
+		if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(g("properties"))) {
 			let e = this.properties, t = [...f(e), ...p(e)];
 			for (let n of t) this.createProperty(n, e[n]);
 		}
@@ -171,14 +171,14 @@ var v = class extends HTMLElement {
 	_$ET(e, t) {
 		let n = this.constructor.elementProperties.get(e), r = this.constructor._$Eu(e, n);
 		if (r !== void 0 && !0 === n.reflect) {
-			let i = (n.converter?.toAttribute === void 0 ? g : n.converter).toAttribute(t, n.type);
+			let i = (n.converter?.toAttribute === void 0 ? _ : n.converter).toAttribute(t, n.type);
 			this._$Em = e, i == null ? this.removeAttribute(r) : this.setAttribute(r, i), this._$Em = null;
 		}
 	}
 	_$AK(e, t) {
 		let n = this.constructor, r = n._$Eh.get(e);
 		if (r !== void 0 && this._$Em !== r) {
-			let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? g : e.converter;
+			let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? _ : e.converter;
 			this._$Em = r;
 			let a = i.fromAttribute(t, e.type);
 			this[r] = a ?? this._$Ej?.get(r) ?? a, this._$Em = null;
@@ -187,7 +187,7 @@ var v = class extends HTMLElement {
 	requestUpdate(e, t, n, r = !1, i) {
 		if (e !== void 0) {
 			let a = this.constructor;
-			if (!1 === r && (i = this[e]), n ??= a.getPropertyOptions(e), !((n.hasChanged ?? _)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, n)))) return;
+			if (!1 === r && (i = this[e]), n ??= a.getPropertyOptions(e), !((n.hasChanged ?? re)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, n)))) return;
 			this.C(e, t, n);
 		}
 		!1 === this.isUpdatePending && (this._$ES = this._$EP());
@@ -251,25 +251,25 @@ var v = class extends HTMLElement {
 	updated(e) {}
 	firstUpdated(e) {}
 };
-v.elementStyles = [], v.shadowRootOptions = { mode: "open" }, v[h("elementProperties")] = /* @__PURE__ */ new Map(), v[h("finalized")] = /* @__PURE__ */ new Map(), re?.({ ReactiveElement: v }), (m.reactiveElementVersions ??= []).push("2.1.2");
+y.elementStyles = [], y.shadowRootOptions = { mode: "open" }, y[g("elementProperties")] = /* @__PURE__ */ new Map(), y[g("finalized")] = /* @__PURE__ */ new Map(), ne?.({ ReactiveElement: y }), (m.reactiveElementVersions ??= []).push("2.1.2");
 //#endregion
 //#region node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/lit-html.js
-var y = globalThis, b = (e) => e, x = y.trustedTypes, S = x ? x.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, ae = "$lit$", C = `lit$${Math.random().toFixed(9).slice(2)}$`, oe = "?" + C, se = `<${oe}>`, w = document, T = () => w.createComment(""), E = (e) => e === null || typeof e != "object" && typeof e != "function", D = Array.isArray, ce = (e) => D(e) || typeof e?.[Symbol.iterator] == "function", O = "[ 	\n\f\r]", k = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, A = /-->/g, j = />/g, M = RegExp(`>|${O}(?:([^\\s"'>=/]+)(${O}*=${O}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), N = /'/g, le = /"/g, ue = /^(?:script|style|textarea|title)$/i, P = ((e) => (t, ...n) => ({
+var b = globalThis, ie = (e) => e, x = b.trustedTypes, S = x ? x.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, C = "$lit$", w = `lit$${Math.random().toFixed(9).slice(2)}$`, T = "?" + w, ae = `<${T}>`, E = document, D = () => E.createComment(""), O = (e) => e === null || typeof e != "object" && typeof e != "function", k = Array.isArray, oe = (e) => k(e) || typeof e?.[Symbol.iterator] == "function", A = "[ 	\n\f\r]", j = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, se = /-->/g, M = />/g, N = RegExp(`>|${A}(?:([^\\s"'>=/]+)(${A}*=${A}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), ce = /'/g, le = /"/g, ue = /^(?:script|style|textarea|title)$/i, P = ((e) => (t, ...n) => ({
 	_$litType$: e,
 	strings: t,
 	values: n
-}))(1), F = Symbol.for("lit-noChange"), I = Symbol.for("lit-nothing"), L = /* @__PURE__ */ new WeakMap(), R = w.createTreeWalker(w, 129);
+}))(1), F = Symbol.for("lit-noChange"), I = Symbol.for("lit-nothing"), L = /* @__PURE__ */ new WeakMap(), R = E.createTreeWalker(E, 129);
 function z(e, t) {
-	if (!D(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
+	if (!k(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
 	return S === void 0 ? t : S.createHTML(t);
 }
 var de = (e, t) => {
-	let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = k;
+	let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = j;
 	for (let t = 0; t < n; t++) {
 		let n = e[t], s, c, l = -1, u = 0;
-		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === k ? c[1] === "!--" ? o = A : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = M) : (ue.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = M) : o = j : o === M ? c[0] === ">" ? (o = i ?? k, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? M : c[3] === "\"" ? le : N) : o === le || o === N ? o = M : o === A || o === j ? o = k : (o = M, i = void 0);
-		let d = o === M && e[t + 1].startsWith("/>") ? " " : "";
-		a += o === k ? n + se : l >= 0 ? (r.push(s), n.slice(0, l) + ae + n.slice(l) + C + d) : n + C + (l === -2 ? t : d);
+		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === j ? c[1] === "!--" ? o = se : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = N) : (ue.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = N) : o = M : o === N ? c[0] === ">" ? (o = i ?? j, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? N : c[3] === "\"" ? le : ce) : o === le || o === ce ? o = N : o === se || o === M ? o = j : (o = N, i = void 0);
+		let d = o === N && e[t + 1].startsWith("/>") ? " " : "";
+		a += o === j ? n + ae : l >= 0 ? (r.push(s), n.slice(0, l) + C + n.slice(l) + w + d) : n + w + (l === -2 ? t : d);
 	}
 	return [z(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
 }, B = class e {
@@ -283,8 +283,8 @@ var de = (e, t) => {
 		}
 		for (; (i = R.nextNode()) !== null && c.length < s;) {
 			if (i.nodeType === 1) {
-				if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(ae)) {
-					let t = u[o++], n = i.getAttribute(e).split(C), r = /([.?@])?(.*)/.exec(t);
+				if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(C)) {
+					let t = u[o++], n = i.getAttribute(e).split(w), r = /([.?@])?(.*)/.exec(t);
 					c.push({
 						type: 1,
 						index: a,
@@ -292,45 +292,45 @@ var de = (e, t) => {
 						strings: n,
 						ctor: r[1] === "." ? pe : r[1] === "?" ? me : r[1] === "@" ? he : U
 					}), i.removeAttribute(e);
-				} else e.startsWith(C) && (c.push({
+				} else e.startsWith(w) && (c.push({
 					type: 6,
 					index: a
 				}), i.removeAttribute(e));
 				if (ue.test(i.tagName)) {
-					let e = i.textContent.split(C), t = e.length - 1;
+					let e = i.textContent.split(w), t = e.length - 1;
 					if (t > 0) {
 						i.textContent = x ? x.emptyScript : "";
-						for (let n = 0; n < t; n++) i.append(e[n], T()), R.nextNode(), c.push({
+						for (let n = 0; n < t; n++) i.append(e[n], D()), R.nextNode(), c.push({
 							type: 2,
 							index: ++a
 						});
-						i.append(e[t], T());
+						i.append(e[t], D());
 					}
 				}
 			} else if (i.nodeType === 8) {
-				if (i.data === oe) c.push({
+				if (i.data === T) c.push({
 					type: 2,
 					index: a
 				});
 				else {
 					let e = -1;
-					for (; (e = i.data.indexOf(C, e + 1)) !== -1;) c.push({
+					for (; (e = i.data.indexOf(w, e + 1)) !== -1;) c.push({
 						type: 7,
 						index: a
-					}), e += C.length - 1;
+					}), e += w.length - 1;
 				}
 			}
 			a++;
 		}
 	}
 	static createElement(e, t) {
-		let n = w.createElement("template");
+		let n = E.createElement("template");
 		return n.innerHTML = e, n;
 	}
 };
 function V(e, t, n = e, r) {
 	if (t === F) return t;
-	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = E(t) ? void 0 : t._$litDirective$;
+	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = O(t) ? void 0 : t._$litDirective$;
 	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ??= [])[r] = i), i !== void 0 && (t = V(e, i._$AS(e, t.values), i, r)), t;
 }
 var fe = class {
@@ -344,7 +344,7 @@ var fe = class {
 		return this._$AM._$AU;
 	}
 	u(e) {
-		let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? w).importNode(t, !0);
+		let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? E).importNode(t, !0);
 		R.currentNode = r;
 		let i = R.nextNode(), a = 0, o = 0, s = n[0];
 		for (; s !== void 0;) {
@@ -354,7 +354,7 @@ var fe = class {
 			}
 			a !== s?.index && (i = R.nextNode(), a++);
 		}
-		return R.currentNode = w, r;
+		return R.currentNode = E, r;
 	}
 	p(e) {
 		let t = 0;
@@ -378,7 +378,7 @@ var fe = class {
 		return this._$AB;
 	}
 	_$AI(e, t = this) {
-		e = V(this, e, t), E(e) ? e === I || e == null || e === "" ? (this._$AH !== I && this._$AR(), this._$AH = I) : e !== this._$AH && e !== F && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? ce(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
+		e = V(this, e, t), O(e) ? e === I || e == null || e === "" ? (this._$AH !== I && this._$AR(), this._$AH = I) : e !== this._$AH && e !== F && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? oe(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
 	}
 	O(e) {
 		return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -387,7 +387,7 @@ var fe = class {
 		this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
 	}
 	_(e) {
-		this._$AH !== I && E(this._$AH) ? this._$AA.nextSibling.data = e : this.T(w.createTextNode(e)), this._$AH = e;
+		this._$AH !== I && O(this._$AH) ? this._$AA.nextSibling.data = e : this.T(E.createTextNode(e)), this._$AH = e;
 	}
 	$(e) {
 		let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = B.createElement(z(n.h, n.h[0]), this.options)), n);
@@ -402,15 +402,15 @@ var fe = class {
 		return t === void 0 && L.set(e.strings, t = new B(e)), t;
 	}
 	k(t) {
-		D(this._$AH) || (this._$AH = [], this._$AR());
+		k(this._$AH) || (this._$AH = [], this._$AR());
 		let n = this._$AH, r, i = 0;
-		for (let a of t) i === n.length ? n.push(r = new e(this.O(T()), this.O(T()), this, this.options)) : r = n[i], r._$AI(a), i++;
+		for (let a of t) i === n.length ? n.push(r = new e(this.O(D()), this.O(D()), this, this.options)) : r = n[i], r._$AI(a), i++;
 		i < n.length && (this._$AR(r && r._$AB.nextSibling, i), n.length = i);
 	}
 	_$AR(e = this._$AA.nextSibling, t) {
 		for (this._$AP?.(!1, !0, t); e !== this._$AB;) {
-			let t = b(e).nextSibling;
-			b(e).remove(), e = t;
+			let t = ie(e).nextSibling;
+			ie(e).remove(), e = t;
 		}
 	}
 	setConnected(e) {
@@ -428,10 +428,10 @@ var fe = class {
 	}
 	_$AI(e, t = this, n, r) {
 		let i = this.strings, a = !1;
-		if (i === void 0) e = V(this, e, t, 0), a = !E(e) || e !== this._$AH && e !== F, a && (this._$AH = e);
+		if (i === void 0) e = V(this, e, t, 0), a = !O(e) || e !== this._$AH && e !== F, a && (this._$AH = e);
 		else {
 			let r = e, o, s;
-			for (e = i[0], o = 0; o < i.length - 1; o++) s = V(this, r[n + o], t, o), s === F && (s = this._$AH[o]), a ||= !E(s) || s !== this._$AH[o], s === I ? e = I : e !== I && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
+			for (e = i[0], o = 0; o < i.length - 1; o++) s = V(this, r[n + o], t, o), s === F && (s = this._$AH[o]), a ||= !O(s) || s !== this._$AH[o], s === I ? e = I : e !== I && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
 		}
 		a && !r && this.j(e);
 	}
@@ -474,16 +474,16 @@ var fe = class {
 	_$AI(e) {
 		V(this, e);
 	}
-}, _e = y.litHtmlPolyfillSupport;
-_e?.(B, H), (y.litHtmlVersions ??= []).push("3.3.3");
+}, _e = b.litHtmlPolyfillSupport;
+_e?.(B, H), (b.litHtmlVersions ??= []).push("3.3.3");
 var ve = (e, t, n) => {
 	let r = n?.renderBefore ?? t, i = r._$litPart$;
 	if (i === void 0) {
 		let e = n?.renderBefore ?? null;
-		r._$litPart$ = i = new H(t.insertBefore(T(), e), e, void 0, n ?? {});
+		r._$litPart$ = i = new H(t.insertBefore(D(), e), e, void 0, n ?? {});
 	}
 	return i._$AI(e), i;
-}, W = globalThis, G = class extends v {
+}, W = globalThis, G = class extends y {
 	constructor() {
 		super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
 	}
@@ -511,16 +511,16 @@ ye?.({ LitElement: G }), (W.litElementVersions ??= []).push("4.2.2");
 //#endregion
 //#region src/api.ts
 var K = "tautulli_active_streams";
-async function q(e) {
+async function be(e) {
 	return (await e.callWS({ type: `${K}/get_entries` })).entries ?? [];
 }
-async function be(e, t, n) {
+async function xe(e, t, n) {
 	return e.connection.subscribeMessage(n, {
 		type: `${K}/subscribe_active_streams`,
 		entry_id: t
 	});
 }
-async function xe(e, t) {
+async function Se(e, t) {
 	let n = {
 		entry_id: t.entry_id,
 		limit: t.mode === "recently_added" && t.recent_grouping !== "none" ? Math.min(50, (t.max_items ?? 12) * 4) : t.max_items
@@ -555,26 +555,26 @@ async function xe(e, t) {
 		...t.user_id ? { user_id: t.user_id } : {}
 	});
 }
-async function Se(e, t) {
+async function Ce(e, t) {
 	return e.callWS({
 		type: `${K}/get_libraries`,
 		entry_id: t
 	});
 }
-async function Ce(e, t) {
+async function we(e, t) {
 	return e.callWS({
 		type: `${K}/get_users`,
 		entry_id: t
 	});
 }
-async function we(e, t, n) {
+async function Te(e, t, n) {
 	return e.callWS({
 		type: `${K}/terminate_session`,
 		entry_id: t,
 		session_id: n
 	});
 }
-var J = [
+var q = [
 	"user",
 	"player",
 	"device",
@@ -585,13 +585,26 @@ var J = [
 	"audio_quality",
 	"bandwidth",
 	"episode",
+	"media_type",
 	"year",
+	"duration",
+	"library",
 	"content_rating",
 	"rating",
 	"audience_rating",
 	"genres",
 	"studio"
-], Te = {
+], Ee = [
+	"media_type",
+	"year",
+	"duration",
+	"library",
+	"content_rating",
+	"rating",
+	"audience_rating",
+	"genres",
+	"studio"
+], De = {
 	type: "custom:tautulli-media-card",
 	config_version: 1,
 	mode: "active",
@@ -639,7 +652,6 @@ var J = [
 	autoscroll_animation: "smooth",
 	showcase_advance: 6,
 	showcase_transition: "fade",
-	demo_when_empty: !0,
 	animations: !0,
 	allow_termination: !1,
 	termination_location: "popup",
@@ -647,7 +659,7 @@ var J = [
 	popup_style: "clean",
 	popup_cinematic_art: 45,
 	popup_content_style: "open",
-	popup_detail_order: J,
+	popup_detail_order: q,
 	popup_width: "standard",
 	popup_animation: "scale",
 	popup_animation_duration: 220,
@@ -694,10 +706,10 @@ var J = [
 	time_range: 30,
 	metric: "plays"
 };
-function Y(e) {
+function J(e) {
 	if (!e || typeof e != "object") throw Error("Invalid Tautulli Media Card configuration");
-	let t = Ee(e), n = {
-		...Te,
+	let t = Oe(e), n = {
+		...De,
 		...t,
 		config_version: 1
 	};
@@ -709,8 +721,8 @@ function Y(e) {
 		3,
 		5
 	].includes(r) ? r : 3;
-	let i = Array.isArray(n.popup_detail_order) ? n.popup_detail_order : [], a = i.filter((e, t) => J.includes(e) && i.indexOf(e) === t);
-	n.popup_detail_order = [...a, ...J.filter((e) => !a.includes(e))], typeof n.columns == "number" && (n.columns = Math.min(4, Math.max(1, n.columns)));
+	let i = Array.isArray(n.popup_detail_order) ? n.popup_detail_order : [], a = i.filter((e, t) => q.includes(e) && i.indexOf(e) === t);
+	n.popup_detail_order = [...a, ...q.filter((e) => !a.includes(e))], typeof n.columns == "number" && (n.columns = Math.min(4, Math.max(1, n.columns)));
 	for (let [e, t, r] of [
 		[
 			"border_radius",
@@ -798,7 +810,7 @@ function Y(e) {
 	}
 	return n;
 }
-function Ee(e) {
+function Oe(e) {
 	let t = { ...e };
 	if (typeof t.view == "string" && [
 		"active",
@@ -842,23 +854,24 @@ function Ee(e) {
 		"view",
 		"preset",
 		"show_title",
-		"show_badge"
+		"show_badge",
+		"demo_when_empty"
 	]) delete t[e];
 	return t;
 }
-function De(e) {
+function ke(e) {
 	let t = {
 		type: e.type,
 		config_version: 1
 	};
 	for (let [n, r] of Object.entries(e)) {
 		if (["type", "config_version"].includes(n) || r === void 0) continue;
-		let e = Te[n];
+		let e = De[n];
 		Array.isArray(r) && Array.isArray(e) ? JSON.stringify(r) !== JSON.stringify(e) && (t[n] = r) : r !== e && (t[n] = r);
 	}
 	return e.popup_summary_show_user !== e.popup_show_user && t.popup_summary_show_user === void 0 && (t.popup_summary_show_user = e.popup_summary_show_user), t;
 }
-var Oe = {
+var Ae = {
 	classic: {
 		card_background: "rgba(3, 18, 32, 0.82)",
 		item_background: "rgba(0, 0, 0, 0.42)",
@@ -902,7 +915,7 @@ var Oe = {
 		buffering_color: "var(--error-color, #db4437)"
 	}
 };
-function ke(e) {
+function je(e) {
 	return e.title ? e.title : {
 		active: "Active streams",
 		recently_added: "Recently added",
@@ -912,73 +925,8 @@ function ke(e) {
 	}[e.mode];
 }
 //#endregion
-//#region src/demo.ts
-var Ae = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22600%22%20viewBox%3D%220%200%20400%20600%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231a1a2e%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%230f0f1a%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22web%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23b11313%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%237a0c0c%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%22400%22%20height%3D%22600%22%20fill%3D%22url(%23bg)%22%2F%3E%0A%20%20%3Cg%20stroke%3D%22url(%23web)%22%20stroke-width%3D%226%22%20fill%3D%22none%22%20opacity%3D%220.85%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%2240%22%2F%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%2280%22%2F%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%22120%22%2F%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%22160%22%2F%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22200%22%20cy%3D%22250%22%20r%3D%22200%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%22200%22%20y1%3D%2250%22%20x2%3D%22200%22%20y2%3D%22450%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%220%22%20y1%3D%22250%22%20x2%3D%22400%22%20y2%3D%22250%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%2260%22%20y1%3D%22110%22%20x2%3D%22340%22%20y2%3D%22390%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%22340%22%20y1%3D%22110%22%20x2%3D%2260%22%20y2%3D%22390%22%2F%3E%0A%20%20%3C%2Fg%3E%0A%20%20%3Ctext%20x%3D%22200%22%20y%3D%22500%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2234%22%20font-weight%3D%22700%22%20fill%3D%22%23e5a00d%22%20text-anchor%3D%22middle%22%3ESPIDER-MAN%3C%2Ftext%3E%0A%20%20%3Ctext%20x%3D%22200%22%20y%3D%22530%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2218%22%20fill%3D%22%239aa0a6%22%20text-anchor%3D%22middle%22%3E2002%20%C2%B7%20Demo%20stream%3C%2Ftext%3E%0A%3C%2Fsvg%3E", je = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221280%22%20height%3D%22720%22%20viewBox%3D%220%200%201280%20720%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22bg%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23141426%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%232b0d0d%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20width%3D%221280%22%20height%3D%22720%22%20fill%3D%22url(%23bg)%22%2F%3E%0A%20%20%3Cg%20stroke%3D%22%23b11313%22%20stroke-width%3D%224%22%20fill%3D%22none%22%20opacity%3D%220.35%22%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22640%22%20cy%3D%22360%22%20r%3D%2290%22%2F%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22640%22%20cy%3D%22360%22%20r%3D%22180%22%2F%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22640%22%20cy%3D%22360%22%20r%3D%22270%22%2F%3E%0A%20%20%20%20%3Ccircle%20cx%3D%22640%22%20cy%3D%22360%22%20r%3D%22360%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%22640%22%20y1%3D%220%22%20x2%3D%22640%22%20y2%3D%22720%22%2F%3E%0A%20%20%20%20%3Cline%20x1%3D%22280%22%20y1%3D%22360%22%20x2%3D%221000%22%20y2%3D%22360%22%2F%3E%0A%20%20%3C%2Fg%3E%0A%3C%2Fsvg%3E";
-function Me() {
-	return {
-		id: "demo-stream",
-		state: "playing",
-		user: {
-			id: "demo",
-			user_id: "demo",
-			display_name: "Tautulli"
-		},
-		media: {
-			id: "demo-media",
-			rating_key: "demo",
-			type: "movie",
-			title: "Spider-Man",
-			full_title: "Spider-Man (2002)",
-			year: 2002,
-			duration_seconds: 7200,
-			summary: "A shy teenager is bitten by a genetically modified spider and uses his new spider-like abilities to fight injustice as a masked superhero.",
-			content_rating: "PG-13",
-			rating: 9,
-			audience_rating: 8.9,
-			genres: [
-				"Action",
-				"Adventure",
-				"Science Fiction"
-			],
-			studio: "Marvel Enterprises",
-			hierarchy: {},
-			library: {
-				id: "demo",
-				name: "Movies"
-			},
-			images: {
-				poster_url: Ae,
-				backdrop_url: je
-			}
-		},
-		playback: {
-			progress_percent: 36,
-			duration_ms: 72e5,
-			remaining_ms: 4608e3,
-			paused_seconds: 0
-		},
-		client: {
-			product: "Plex Web",
-			player: "Chrome",
-			device: "Windows"
-		},
-		quality: {
-			decision: "transcode",
-			bandwidth_kbps: 21300,
-			video_resolution: "1080",
-			audio_codec: "eac3",
-			audio_channel_layout: "5.1",
-			audio_bitrate_kbps: 640
-		},
-		images: {
-			poster_url: Ae,
-			backdrop_url: je
-		}
-	};
-}
-//#endregion
 //#region src/styles.ts
-var Ne = o`
+var Me = o`
   :host { display: block; container-type: inline-size; }
   ha-card { overflow: hidden; background:var(--tas-card-background, var(--ha-card-background, var(--card-background-color))); }
   :host([container-style="transparent"]) ha-card { border:0; background:transparent; box-shadow:none; overflow:visible; border-radius:0; }
@@ -1135,7 +1083,7 @@ var Ne = o`
   .dialog-confirm { color:#fff; background:var(--error-color, #db4437); }
   .dialog-actions button:focus-visible,.terminate:focus-visible { outline:2px solid var(--primary-color); outline-offset:2px; }
   .dialog-actions button:disabled { opacity:.55; cursor:wait; }
-  .details-dialog { position:relative; width:min(720px, 100%); max-height:min(86vh, 780px); overflow-x:hidden; overflow-y:auto; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:linear-gradient(var(--card-background-color), var(--card-background-color)), linear-gradient(var(--primary-background-color, #fff), var(--primary-background-color, #fff)); box-shadow:0 18px 54px rgb(0 0 0 / 45%); isolation:isolate; min-width:0; }
+  .details-dialog { position:relative; width:min(720px, 100%); max-height:min(86vh, 780px); overflow-x:hidden; overflow-y:auto; border:1px solid var(--divider-color); border-radius:var(--ha-dialog-border-radius, 18px); color:var(--primary-text-color); background:linear-gradient(var(--card-background-color), var(--card-background-color)), linear-gradient(var(--primary-background-color, #fff), var(--primary-background-color, #fff)); box-shadow:0 18px 54px rgb(0 0 0 / 45%); isolation:isolate; min-width:0; container-type:inline-size; }
   .details-dialog.popup-width-compact { width:min(520px, 100%); }
   .details-dialog.popup-width-wide { width:min(940px, 100%); }
   .details-dialog.has-backdrop::before { content:""; position:absolute; z-index:-1; inset:0 0 auto 28%; height:270px; background-image:linear-gradient(180deg, rgb(0 0 0 / 10%), var(--card-background-color) 96%), linear-gradient(90deg, transparent, rgb(0 0 0 / 20%)), var(--details-backdrop); background-size:cover; background-position:center; opacity:.5; -webkit-mask-image:linear-gradient(90deg, transparent, #000 35%); mask-image:linear-gradient(90deg, transparent, #000 35%); }
@@ -1147,7 +1095,7 @@ var Ne = o`
   .popup-clean .popup-summary { padding:0; border:0; border-radius:0; background:transparent; backdrop-filter:none; }
   .popup-cinematic.has-backdrop::before { inset:0; height:330px; opacity:calc(var(--cinematic-art-opacity, .45)); -webkit-mask-image:linear-gradient(180deg,#000 0%,transparent 100%); mask-image:linear-gradient(180deg,#000 0%,transparent 100%); animation:cinematic-art-in var(--dialog-animation-duration, 220ms) ease-out; }
   .popup-cinematic .popup-summary { min-height:190px; align-content:end; padding:22px; border:0; background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--card-background-color) 55%,transparent)); }
-  .media-summary { justify-items:start; }
+  .media-summary { justify-items:stretch; }
   .details-section-title { margin:2px 0 -8px; color:var(--secondary-text-color); font-size:12px; text-transform:uppercase; letter-spacing:.65px; }
   .details-hero.with-poster { grid-template-columns:minmax(90px, 150px) minmax(0,1fr); }
   .details-hero > img { width:100%; aspect-ratio:2/3; object-fit:cover; border-radius:10px; box-shadow:0 8px 24px rgb(0 0 0 / 35%); }
@@ -1224,8 +1172,8 @@ var Ne = o`
     .remaining-label { display:none; }
     .progress-state { padding-left:5px; }
     .progress-remaining { padding-right:5px; }
-    .details-hero.with-poster { grid-template-columns:72px minmax(0,1fr); gap:12px; }
-    .details-hero > img { border-radius:8px; }
+    .details-hero.with-poster { grid-template-columns:1fr; gap:12px; }
+    .details-hero > img { width:min(140px, 48%); justify-self:start; border-radius:8px; }
     .details-heading-line { align-items:flex-start; flex-direction:column; gap:7px; }
     .details-summary-user { max-width:100%; }
     .details-content { padding:14px; gap:14px; }
@@ -1245,7 +1193,7 @@ var Ne = o`
     .progress::before { transition:none; }
     * { animation:none !important; }
   }
-`, Pe = o`
+`, Ne = o`
   .editor-group-title { margin:10px 2px -2px; color:var(--primary-text-color); font-size:13px; font-weight:700; letter-spacing:.35px; text-transform:uppercase; }
   :host { display:block; }
   .editor { display:grid; gap:16px; padding:8px 0; }
@@ -1254,6 +1202,7 @@ var Ne = o`
   .compatibility > div { min-width:0; display:grid; gap:2px; }
   .compatibility strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
   .compatibility small { color:var(--secondary-text-color); font-size:11px; }
+  .compatibility.single-server small { color:var(--primary-text-color); font-size:12px; font-weight:600; }
   .section { overflow:hidden; border:1px solid var(--divider-color); border-radius:12px; padding:14px; background:color-mix(in srgb, var(--card-background-color) 96%, var(--primary-color) 4%); transition:border-color .18s ease, box-shadow .18s ease; }
   .section[open] { border-color:color-mix(in srgb, var(--primary-color) 32%, var(--divider-color)); box-shadow:0 3px 12px rgb(0 0 0 / 7%); }
   .section[open] { display:grid; gap:12px; }
@@ -1332,7 +1281,7 @@ var Ne = o`
     .detail-order-toolbar { align-items:flex-start; flex-direction:column; }
     .detail-order-toolbar > div { justify-content:flex-start; }
   }
-`, Fe = {
+`, Pe = {
 	user: "popup_show_user",
 	player: "popup_show_player",
 	device: "popup_show_device",
@@ -1343,13 +1292,16 @@ var Ne = o`
 	audio_quality: "popup_show_audio_quality",
 	bandwidth: "popup_show_bandwidth",
 	episode: "popup_show_episode",
+	media_type: "popup_show_media_type",
 	year: "popup_show_year",
+	duration: "popup_show_duration",
+	library: "popup_show_library",
 	content_rating: "popup_show_content_rating",
 	rating: "popup_show_rating",
 	audience_rating: "popup_show_audience_rating",
 	genres: "popup_show_genres",
 	studio: "popup_show_studio"
-}, Ie = class extends G {
+}, Fe = class extends G {
 	static {
 		this.properties = {
 			hass: { attribute: !1 },
@@ -1365,7 +1317,7 @@ var Ne = o`
 		};
 	}
 	static {
-		this.styles = Ne;
+		this.styles = Me;
 	}
 	constructor() {
 		super(), this._dialogOpenedAt = 0, this._dialogClosing = !1, this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._scrollLockCount = 0, this._marqueeVelocity = 0, this._showcaseTimer = 0, this._showcaseReloopBound = () => this._showcaseReloop(), this._marqueeSets = 2, this._suppressNextClick = !1, this._pointerDownAt = null, this._marqueeSetWidth = 0, this._marqueeTouching = !1, this._marqueeShiftTotal = 0, this._marqueeDurationS = 0, this._marqueeDrag = null, this._showcaseIndex = 0, this._visibilityChanged = () => {
@@ -1405,21 +1357,14 @@ var Ne = o`
 			e.target === e.currentTarget && (Date.now() - this._dialogOpenedAt < 350 || this._closeDetails());
 		}, this._backdropTerminationClose = (e) => {
 			e.target === e.currentTarget && (Date.now() - this._dialogOpenedAt < 350 || this._closeTerminationDialog());
-		}, this._config = Y({}), this._loading = !0, this._terminating = !1, this._pauseClock = Date.now();
+		}, this._config = J({}), this._loading = !0, this._terminating = !1, this._pauseClock = Date.now();
 	}
 	static getStubConfig() {
-		let e = { ...Y({}) };
+		let e = { ...J({}) };
 		return delete e.type, e;
 	}
 	static getConfigElement() {
 		return document.createElement("tautulli-media-card-editor");
-	}
-	get _inEditorPreview() {
-		for (let e = this.parentElement; e;) {
-			if (e.matches(".card-preview, .element-preview, hui-card-preview")) return !0;
-			e = e.parentElement ?? (e.getRootNode() instanceof ShadowRoot ? e.getRootNode().host : null);
-		}
-		return !1;
 	}
 	getGridOptions() {
 		return {
@@ -1430,7 +1375,7 @@ var Ne = o`
 		};
 	}
 	setConfig(e) {
-		let t = this._config, n = Y(e), r = [
+		let t = this._config, n = J(e), r = [
 			"entry_id",
 			"mode",
 			"max_items",
@@ -1482,7 +1427,7 @@ var Ne = o`
 		this._loadVersion += 1, this._unsubscribe?.(), this._unsubscribe = void 0, this._refreshTimer && window.clearInterval(this._refreshTimer), this._refreshTimer = void 0, this._retryTimer && window.clearTimeout(this._retryTimer), this._retryTimer = void 0, this._pauseTimer && window.clearInterval(this._pauseTimer), this._pauseTimer = void 0, this._pauseAnchors.clear();
 	}
 	_applyAppearance() {
-		let e = Oe[this._config.style_preset ?? "classic"], t = {
+		let e = Ae[this._config.style_preset ?? "classic"], t = {
 			"--tas-card-background": this._config.card_background ?? e.card_background,
 			"--tas-item-background": this._config.item_background ?? e.item_background,
 			"--tas-border-color": this._config.border_color ?? e.border_color,
@@ -1509,7 +1454,7 @@ var Ne = o`
 		this._loading = !this._data, this._error = void 0;
 		try {
 			if (!this._config.entry_id) {
-				let e = await q(this.hass);
+				let e = await be(this.hass);
 				if (!e.length) throw Error("No loaded Tautulli Active Streams integration was found");
 				this._config = {
 					...this._config,
@@ -1517,7 +1462,7 @@ var Ne = o`
 				};
 			}
 			if (e !== this._loadVersion) return;
-			if (this._config.mode === "active") this._unsubscribe = await be(this.hass, this._config.entry_id, (e) => this._receive(e));
+			if (this._config.mode === "active") this._unsubscribe = await xe(this.hass, this._config.entry_id, (e) => this._receive(e));
 			else {
 				await this._loadData(e);
 				let t = ["popular", "users"].includes(this._config.mode) ? 9e5 : this._config.mode === "history" ? 6e4 : 3e5;
@@ -1529,7 +1474,7 @@ var Ne = o`
 	}
 	async _loadData(e = this._loadVersion) {
 		if (!(!this.hass || !this._config.entry_id)) try {
-			let t = await xe(this.hass, this._config);
+			let t = await Se(this.hass, this._config);
 			e === this._loadVersion && this._receive(t);
 		} catch (t) {
 			e === this._loadVersion && this._setError(t);
@@ -1563,24 +1508,22 @@ var Ne = o`
 	}
 	render() {
 		let e = this._filteredItems();
-		if (this._error && !this._data) return I;
-		let t = !this._loading && !this._error && this._config.mode === "active" && !e.length && this._config.demo_when_empty !== !1 && this._data && this._inEditorPreview, n = !t && !this._config.show_empty;
-		if (!this._loading && !this._error && !e.length && n) return I;
-		let r = this._config.columns === "auto" ? "auto" : String(this._config.columns ?? 1), i = t ? [Me()] : e;
+		if (this._error && !this._data || !this._loading && !this._error && !e.length && !this._config.show_empty) return I;
+		let t = this._config.columns === "auto" ? "auto" : String(this._config.columns ?? 1);
 		return P`
       <ha-card>
         ${this._config.show_header || this._config.show_count ? P`
           <div class="header">
-            ${this._config.show_header ? P`<h2 class="title">${ke(this._config)}</h2>` : P`<span></span>`}
+            ${this._config.show_header ? P`<h2 class="title">${je(this._config)}</h2>` : P`<span></span>`}
             ${this._config.show_count && this._data ? P`<span class="badge" aria-label="${e.length} items">${e.length}</span>` : I}
           </div>` : I}
         ${this._data?.stale ? P`<p class="stale">Showing the last successful update</p>` : I}
-        ${this._loading ? this._renderLoading() : i.length ? P`${this._config.layout === "carousel" || ["marquee", "showcase"].includes(this._config.layout ?? "grid") && this._config.carousel_buttons !== !1 ? P`<div class="carousel-controls" aria-label="Carousel controls">
+        ${this._loading ? this._renderLoading() : e.length ? P`${this._config.layout === "carousel" || ["marquee", "showcase"].includes(this._config.layout ?? "grid") && this._config.carousel_buttons !== !1 ? P`<div class="carousel-controls" aria-label="Carousel controls">
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(-1) : this._scrollCarousel(-1)} aria-label="Previous items"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(1) : this._scrollCarousel(1)} aria-label="Next items"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
             </div>` : I}
-            <div class="content ${this._config.layout ?? "grid"} ${r === "auto" ? "auto" : ""} ${["marquee", "showcase"].includes(this._config.layout ?? "") && this._filteredItems().length < 2 ? "single" : ""}" style=${`--columns:${r};--scroll-gap:${this._config.scroll_gap ?? 8}px;--scroll-peek:${this._config.scroll_peek ?? 36}px;--marquee-speed:${this._config.autoscroll_speed ?? 40}px`}>
-              ${this._config.layout === "showcase" ? P`${i.map((e) => this._renderItem(e))}${i.length >= 2 ? i.map((e) => this._renderItem(e, void 0, !0)) : I}` : this._config.layout === "marquee" ? P`<div class="marquee-track">${this._renderMarqueeStrip(i)}</div>` : i.map((e) => this._renderItem(e))}
+            <div class="content ${this._config.layout ?? "grid"} ${t === "auto" ? "auto" : ""} ${["marquee", "showcase"].includes(this._config.layout ?? "") && this._filteredItems().length < 2 ? "single" : ""}" style=${`--columns:${t};--scroll-gap:${this._config.scroll_gap ?? 8}px;--scroll-peek:${this._config.scroll_peek ?? 36}px;--marquee-speed:${this._config.autoscroll_speed ?? 40}px`}>
+              ${this._config.layout === "showcase" ? P`${e.map((e) => this._renderItem(e))}${e.length >= 2 ? e.map((e) => this._renderItem(e, void 0, !0)) : I}` : this._config.layout === "marquee" ? P`<div class="marquee-track">${this._renderMarqueeStrip(e)}</div>` : e.map((e) => this._renderItem(e))}
             </div>` : P`<div class="empty">${this._config.mode === "active" ? "Nothing is playing" : "No matching media"}</div>`}
       </ha-card>
       ${this._renderDetailsDialog()}
@@ -1629,8 +1572,8 @@ var Ne = o`
 				"show",
 				"season"
 			].includes(t)) {
-				let n = i.grandparent_id ?? i.show ?? e.title;
-				o = t === "season" ? `tv:${n}:${i.season_number ?? i.season}` : `tv:${n}`;
+				let n = i.grandparent_id ?? i.show ?? (a === "season" ? i.parent_id ?? this._seasonShowTitle(e) : e.title), r = a === "season" ? this._seasonLabel(e) : i.season_number ?? i.season;
+				o = t === "season" ? `tv:${n}:${r}` : `tv:${n}`;
 			} else [
 				"track",
 				"album",
@@ -1645,7 +1588,7 @@ var Ne = o`
 				"episode",
 				"show",
 				"season"
-			].includes(n.type ?? ""), a = i ? r.show ?? n.title : r.album ?? r.artist ?? n.title, o = r.season_number ? `Season ${r.season_number}` : r.season;
+			].includes(n.type ?? ""), a = i ? n.type === "season" ? this._seasonShowTitle(n) || n.title : r.show ?? n.title : r.album ?? r.artist ?? n.title, o = n.type === "season" ? this._seasonLabel(n) : r.season_number ? `Season ${r.season_number}` : r.season;
 			return {
 				...n,
 				type: i ? "show" : "album",
@@ -1722,30 +1665,37 @@ var Ne = o`
 	}
 	_renderActive(e) {
 		if (this._config.style_preset === "classic") return this._renderClassicActive(e);
-		let t = e.media ?? {}, n = this._cardEpisodeTitle(t, "active"), r = this._cardEpisodeSubtitle(t, "active"), i = this._image(e.images), a = this._backgroundImage(e.images), o = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), s = e.state === "paused" ? "var(--tas-paused-color)" : e.state === "buffering" ? "var(--tas-buffering-color)" : t.type === "track" ? "#1db954" : "var(--tas-playing-color)", c = this._canTerminate(e) && (this._config.click_action !== "details" || ["card", "both"].includes(this._config.termination_location ?? "popup"));
+		let t = e.media ?? {}, n = [
+			"track",
+			"album",
+			"artist"
+		].includes(t.type ?? ""), r = this._cardEpisodeTitle(t, "active"), i = this._cardEpisodeSubtitle(t, "active"), a = n ? i : i || (t.year ? String(t.year) : ""), o = !n && !!this._config.show_quality, s = n && !!this._config.show_audio_quality, c = !!(this._config.show_bandwidth && e.quality?.bandwidth_kbps), l = this._image(e.images), u = this._backgroundImage(e.images), d = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), f = e.state === "paused" ? "var(--tas-paused-color)" : e.state === "buffering" ? "var(--tas-buffering-color)" : n ? "#1db954" : "var(--tas-playing-color)", p = this._canTerminate(e) && (this._config.click_action !== "details" || ["card", "both"].includes(this._config.termination_location ?? "popup"));
 		return P`
-      <article data-item-id=${this._itemId(e)} class="item ${this._artClass(i, a)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(a, s)}>
-        ${this._openDetailsButton(e, n)}
-        ${i ? P`<img class="art" src=${i} alt="" loading="lazy" referrerpolicy="no-referrer">` : I}
+      <article data-item-id=${this._itemId(e)} class="item ${this._artClass(l, u)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(u, f)}>
+        ${this._openDetailsButton(e, r)}
+        ${l ? P`<img class="art" src=${l} alt="" loading="lazy" referrerpolicy="no-referrer">` : I}
         <div class="body">
           <div class="eyebrow">
             <span class="state ${e.state}">${e.state}${e.state === "paused" && this._config.show_pause_duration ? ` · ${this._elapsedDuration(this._pausedSeconds(e))}` : ""}</span>
             ${this._config.show_user && e.user?.display_name ? P`<span>${e.user.display_name}</span>` : I}
           </div>
-          <h3 class="name">${n}</h3>
-          ${r ? P`<div class="subtitle">${r}</div>` : I}
+          <h3 class="name">${r}</h3>
+          ${a && (n || this._config.show_media_details) ? P`<div class="subtitle">${a}</div>` : I}
           ${this._config.show_device && e.client ? P`<div class="meta"><span>${e.client.player || e.client.product || e.client.device}</span></div>` : I}
-          ${this._config.show_quality ? P`<div class="details optional">
-            ${e.quality?.decision ? P`<span>${e.quality.decision}</span>` : I}
-            ${e.quality?.video_resolution ? P`<span>${e.quality.video_resolution}</span>` : I}
-            ${e.quality?.bandwidth_kbps ? P`<span>${this._bandwidth(e.quality.bandwidth_kbps)}</span>` : I}
+          ${o || s || c ? P`<div class="details optional">
+            ${o && e.quality?.decision ? P`<span>${e.quality.decision}</span>` : I}
+            ${o && e.quality?.video_resolution ? P`<span>${e.quality.video_resolution}</span>` : I}
+            ${s && e.quality?.audio_codec ? P`<span>${e.quality.audio_codec}</span>` : I}
+            ${s && e.quality?.audio_channel_layout ? P`<span>${e.quality.audio_channel_layout}</span>` : I}
+            ${s && e.quality?.audio_bitrate_kbps ? P`<span>${e.quality.audio_bitrate_kbps} Kbps</span>` : I}
+            ${c && e.quality?.bandwidth_kbps ? P`<span>${this._bandwidth(e.quality.bandwidth_kbps)}</span>` : I}
           </div>` : I}
           ${this._config.show_progress ? P`<div class="modern-progress-row">
-            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(o)} style=${`--progress:${o}%`}></div>
+            <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(d)} style=${`--progress:${d}%`}></div>
             ${this._config.show_remaining && e.playback?.remaining_ms ? P`<span class="modern-progress-remaining">${this._duration(Math.ceil(e.playback.remaining_ms / 1e3))} remaining</span>` : I}
           </div>` : I}
         </div>
-        ${c ? P`<button class="terminate" @click=${(t) => this._openTerminationDialog(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>` : I}
+        ${p ? P`<button class="terminate" @click=${(t) => this._openTerminationDialog(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>` : I}
       </article>`;
 	}
 	_renderClassicActive(e) {
@@ -1987,7 +1937,7 @@ var Ne = o`
       </div></section>
       <h3 class="details-section-title">Stream details</h3>
       <div class="details-grid">
-        ${(this._config.popup_detail_order ?? J).map((n) => this._config[Fe[n]] ? this._renderActiveDetailField(n, e, t, r) : I)}
+        ${(this._config.popup_detail_order ?? q).map((n) => this._config[Pe[n]] ? this._renderActiveDetailField(n, e, t, r) : I)}
       </div>
       ${s && !c ? P`<div class="details-actions">${this._popupTerminationButton(e)}</div>` : I}`;
 		return this._renderDialogShell(l, u, o, !0);
@@ -2004,7 +1954,10 @@ var Ne = o`
 			case "audio_quality": return this._detailValue("Audio", [t.quality?.audio_codec, t.quality?.audio_channel_layout].filter(Boolean).join(" · "));
 			case "bandwidth": return this._detailValue("Bandwidth", t.quality?.bandwidth_kbps ? this._bandwidth(t.quality.bandwidth_kbps) : void 0);
 			case "episode": return this._detailValue("Season / episode", n.type === "episode" ? `S${r.season_number ?? "–"} · E${r.episode_number ?? r.episode ?? "–"}` : void 0);
+			case "media_type": return this._detailValue("Media type", n.type);
 			case "year": return this._detailValue("Year", n.year);
+			case "duration": return this._detailValue("Duration", n.duration_seconds ? this._duration(n.duration_seconds) : t.playback?.duration_ms ? this._duration(Math.ceil(t.playback.duration_ms / 1e3)) : void 0);
+			case "library": return this._detailValue("Library", n.library?.name);
 			case "content_rating": return this._detailValue("Content rating", n.content_rating);
 			case "rating": return this._detailValue("Rating", n.rating);
 			case "audience_rating": return this._detailValue("Audience rating", n.audience_rating);
@@ -2040,27 +1993,38 @@ var Ne = o`
 		return this._renderDialogShell(e.display_name || "Private user", t);
 	}
 	_renderMediaDetails(e) {
-		let t = this._config.mode === "recently_added" ? e : e.media ?? {}, n = this._config.popup_show_artwork ? t.images?.poster_url ?? void 0 : void 0, r = this._config.popup_show_artwork ? t.images?.backdrop_url ?? void 0 : void 0, i = P`
-      <section class="popup-summary media-summary">${n ? P`<img class="details-media-poster" src=${n} alt="" loading="lazy" referrerpolicy="no-referrer">` : I}
-      ${this._mediaSubtitle(t) ? P`<p class="details-subtitle">${this._mediaSubtitle(t)}</p>` : I}
-      ${this._config.popup_show_summary && t.summary ? P`<p class="details-summary">${t.summary}</p>` : I}</section>
+		let t = this._config.mode === "recently_added" ? e : e.media ?? {}, n = this._config.popup_show_artwork ? t.images?.poster_url ?? void 0 : void 0, r = this._config.popup_show_artwork ? t.images?.backdrop_url ?? void 0 : void 0, i = t.type === "season" ? this._cardEpisodeTitle(t, "media") : t.full_title || t.title || "Media details", a = t.type === "season" ? this._cardEpisodeSubtitle(t, "media") : this._mediaSubtitle(t), o = P`
+      <section class="popup-summary media-summary"><div class="details-hero ${n ? "with-poster" : ""}">
+        ${n ? P`<img class="details-media-poster" src=${n} alt="" loading="lazy" referrerpolicy="no-referrer">` : I}
+        <div class="details-primary">
+          <h2 id="details-title" class="details-inline-title">${i}</h2>
+          ${a ? P`<p class="details-subtitle">${a}</p>` : I}
+          ${this._config.popup_show_summary && t.summary ? P`<p class="details-summary">${t.summary}</p>` : I}
+        </div>
+      </div></section>
       <h3 class="details-section-title">Media details</h3>
       <div class="details-grid">
-        ${this._config.popup_show_media_type ? this._detailValue("Media type", t.type) : I}
-        ${this._config.popup_show_year ? this._detailValue("Year", t.year) : I}
-        ${this._config.popup_show_duration ? this._detailValue("Duration", t.duration_seconds ? this._duration(t.duration_seconds) : void 0) : I}
-        ${this._config.popup_show_library ? this._detailValue("Library", t.library?.name) : I}
-        ${this._config.popup_show_content_rating ? this._detailValue("Content rating", t.content_rating) : I}
-        ${this._config.popup_show_rating ? this._detailValue("Rating", t.rating) : I}
-        ${this._config.popup_show_audience_rating ? this._detailValue("Audience rating", t.audience_rating) : I}
-        ${this._config.popup_show_genres ? this._detailValue("Genres", t.genres?.join(" · ")) : I}
-        ${this._config.popup_show_studio ? this._detailValue("Studio", t.studio) : I}
+        ${(this._config.popup_detail_order ?? q).map((e) => this._config[Pe[e]] ? this._renderMediaDetailField(e, t) : I)}
         ${this._config.mode === "popular" ? this._detailValue("Rank", e.rank ? `#${e.rank}` : void 0) : I}
         ${this._config.mode === "popular" ? this._detailValue("Plays", e.total_plays) : I}
         ${this._config.mode === "history" && this._config.popup_show_user ? this._detailValue("Plex user", e.user?.display_name) : I}
         ${this._config.mode === "history" ? this._detailValue("Played", e.started_at ? this._date(e.started_at) : void 0) : I}
       </div>`;
-		return this._renderDialogShell(t.full_title || t.title || "Media details", i, r);
+		return this._renderDialogShell(i, o, r, !0);
+	}
+	_renderMediaDetailField(e, t) {
+		switch (e) {
+			case "media_type": return this._detailValue("Media type", t.type);
+			case "year": return this._detailValue("Year", t.year);
+			case "duration": return this._detailValue("Duration", t.duration_seconds ? this._duration(t.duration_seconds) : void 0);
+			case "library": return this._detailValue("Library", t.library?.name);
+			case "content_rating": return this._detailValue("Content rating", t.content_rating);
+			case "rating": return this._detailValue("Rating", t.rating);
+			case "audience_rating": return this._detailValue("Audience rating", t.audience_rating);
+			case "genres": return this._detailValue("Genres", t.genres?.join(" · "));
+			case "studio": return this._detailValue("Studio", t.studio);
+			default: return I;
+		}
 	}
 	_detailValue(e, t) {
 		return t == null || t === "" || t === 0 ? I : P`<div class="detail-value"><small>${e}</small><span>${String(t)}</span></div>`;
@@ -2088,6 +2052,7 @@ var Ne = o`
 	}
 	_cardEpisodeTitle(e, t) {
 		let n = t === "media" ? e.title || e.full_title : e.full_title || e.title;
+		if (e.type === "season") return this._seasonShowTitle(e) || n || "Untitled";
 		if (e.type !== "episode") return n || "Untitled";
 		let r = e.hierarchy ?? {}, i = this._displayText(r.show), a = e.title || "", o = e.full_title || a || i, s = this._config.episode_layout ?? "current";
 		if (s === "show_first") return i || o || "Untitled";
@@ -2100,6 +2065,10 @@ var Ne = o`
 		}
 	}
 	_cardEpisodeSubtitle(e, t) {
+		if (e.type === "season") {
+			let t = this._seasonLabel(e);
+			return t === (this._seasonShowTitle(e) || this._displayText(e.title || e.full_title)) ? "" : t;
+		}
 		if (e.type !== "episode") return this._mediaSubtitle(e);
 		let n = e.hierarchy ?? {}, r = this._displayText(n.show), i = e.title || "", a = this._episodeNumber(e), o = this._config.episode_layout ?? "current";
 		if (o === "show_first") return this._joinText(a, i);
@@ -2117,6 +2086,20 @@ var Ne = o`
 	_episodeNumber(e) {
 		let t = e.hierarchy ?? {}, n = t.season_number ?? t.season, r = t.episode_number ?? t.episode;
 		return n == null || r == null ? "" : this._config.episode_number_style === "padded" ? `S${this._paddedIndex(n)}E${this._paddedIndex(r)}` : `S${this._displayText(n)} · E${this._displayText(r)}`;
+	}
+	_seasonShowTitle(e) {
+		let t = e.hierarchy ?? {}, n = this._displayText(t.show);
+		if (n) return n;
+		let r = this._displayText(t.season);
+		return r && r !== this._seasonLabel(e) ? r : "";
+	}
+	_seasonLabel(e) {
+		let t = this._displayText(e.title || e.full_title);
+		if (t) return t;
+		let n = e.hierarchy ?? {}, r = this._displayText(n.season), i = this._displayText(n.show);
+		if (r && r !== i) return r;
+		let a = n.season_number;
+		return a == null ? "" : `Season ${this._displayText(a)}`;
 	}
 	_paddedIndex(e) {
 		let t = this._displayText(e);
@@ -2223,7 +2206,7 @@ var Ne = o`
 		if (!(!this.hass || !this._config.entry_id || !e.session_id)) {
 			this._terminating = !0;
 			try {
-				let t = await we(this.hass, this._config.entry_id, e.session_id);
+				let t = await Te(this.hass, this._config.entry_id, e.session_id);
 				this._pendingTermination = void 0, this.dispatchEvent(new CustomEvent("hass-notification", {
 					bubbles: !0,
 					composed: !0,
@@ -2236,16 +2219,16 @@ var Ne = o`
 			}
 		}
 	}
-}, Le = [
+}, Ie = [
 	"recently_added",
 	"popular",
 	"users",
 	"history"
 ];
-function X(e, t) {
+function Y(e, t) {
 	return !(e?.modes && !e.modes.includes(t.mode) || e?.when && !e.when(t));
 }
-var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (e) => ["backdrop", "both"].includes(e.config.artwork ?? "poster"), Q = (e) => e.config.click_action === "details", ze = (e) => (e.config.popup_animation ?? "scale") !== "none", Be = (e) => !!e.config.popup_show_summary, $ = (e) => !!e.data.capabilities?.stream_termination, Ve = (e) => $(e) && !!e.config.allow_termination, He = (e) => Ve(e) && Q(e) && ["popup", "both"].includes(e.config.termination_location ?? "popup"), Ue = {
+var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Le = (e) => ["backdrop", "both"].includes(e.config.artwork ?? "poster"), Z = (e) => e.config.click_action === "details", Re = (e) => (e.config.popup_animation ?? "scale") !== "none", ze = (e) => !!e.config.popup_show_summary, Q = (e) => !!e.data.capabilities?.stream_termination, Be = (e) => Q(e) && !!e.config.allow_termination, Ve = (e) => Be(e) && Z(e) && ["popup", "both"].includes(e.config.termination_location ?? "popup"), He = {
 	summary: "TV episode text",
 	className: "inline-advanced",
 	description: "Choose how episode names and numbers are arranged on dashboard items. Popup text is configured separately.",
@@ -2349,7 +2332,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 			block: "episodeTextPreview"
 		}
 	]
-}, We = [
+}, Ue = [
 	{
 		id: "content-source",
 		summary: "Content and source",
@@ -2451,7 +2434,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 				options: [
 					{
 						value: "none",
-						label: "Show every item"
+						label: "Use Tautulli items as returned"
 					},
 					{
 						value: "smart",
@@ -2468,10 +2451,15 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 				]
 			},
 			{
+				kind: "hint",
+				modes: ["recently_added"],
+				text: "Tautulli can return a multi-episode addition as one season item. Grouping controls extra card-side grouping and cannot split that season into individual episodes."
+			},
+			{
 				kind: "select",
 				key: "section_id",
 				label: "Library",
-				modes: Le,
+				modes: Ie,
 				options: (e) => [{
 					value: "",
 					label: "All libraries"
@@ -2845,7 +2833,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 					kind: "select",
 					key: "artwork_placement",
 					label: "Artwork position",
-					when: Z,
+					when: X,
 					options: [
 						{
 							value: "left",
@@ -2865,7 +2853,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 					kind: "select",
 					key: "artwork_aspect",
 					label: "Poster / cover shape",
-					when: Z,
+					when: X,
 					options: [
 						{
 							value: "auto",
@@ -2889,7 +2877,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 					kind: "select",
 					key: "artwork_fit",
 					label: "Poster / cover fit",
-					when: Z,
+					when: X,
 					options: [{
 						value: "cover",
 						label: "Crop to fill"
@@ -2932,7 +2920,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 					min: 0,
 					max: 100,
 					suffix: "%",
-					when: Re
+					when: Le
 				}
 			]
 		}, {
@@ -2989,7 +2977,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 					min: 48,
 					max: 240,
 					suffix: "px",
-					when: Z,
+					when: X,
 					fallback: (e) => e.config.style_preset === "classic" ? 85 : e.config.density === "comfortable" ? 112 : e.config.density === "detailed" ? 140 : 92
 				},
 				{
@@ -2999,7 +2987,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 					min: 0,
 					max: 24,
 					suffix: "px",
-					when: Z
+					when: X
 				},
 				{
 					kind: "appearanceNumber",
@@ -3063,12 +3051,6 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 			},
 			{
 				kind: "toggle",
-				key: "demo_when_empty",
-				label: "Demo stream in active view when empty",
-				when: (e) => e.mode === "active"
-			},
-			{
-				kind: "toggle",
 				key: "animations",
 				label: "State animations"
 			}
@@ -3106,7 +3088,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 					label: "Music audio quality"
 				}]
 			},
-			Ue,
+			He,
 			{
 				summary: "Playback and progress",
 				className: "inline-advanced",
@@ -3167,13 +3149,13 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 		id: "card-information",
 		summary: "Card information",
 		description: "Control what information appears on each item.",
-		applies: { modes: Le },
+		applies: { modes: Ie },
 		fields: [{
 			kind: "toggle",
 			key: "show_summary",
 			label: "Summary"
 		}],
-		subsections: [Ue]
+		subsections: [He]
 	},
 	{
 		id: "tap-behaviour",
@@ -3193,31 +3175,31 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 		}, {
 			kind: "hint",
 			text: "The popup has its own settings below under “Popup settings”.",
-			when: Q
+			when: Z
 		}]
 	},
 	{
 		id: "terminate",
 		summary: "Terminate stream",
-		description: (e) => Q(e) ? "Configure the administrator-only terminate button and where it appears." : "The terminate button will appear directly on stream cards in the main card.",
+		description: (e) => Z(e) ? "Configure the administrator-only terminate button and where it appears." : "The terminate button will appear directly on stream cards in the main card.",
 		applies: { modes: ["active"] },
 		fields: [
 			{
 				kind: "block",
 				block: "terminationUnavailableHint",
-				when: (e) => !$(e)
+				when: (e) => !Q(e)
 			},
 			{
 				kind: "toggle",
 				key: "allow_termination",
 				label: "Enable terminate-stream action",
-				when: $
+				when: Q
 			},
 			{
 				kind: "select",
 				key: "termination_location",
 				label: "Show button in",
-				when: (e) => Ve(e) && Q(e),
+				when: (e) => Be(e) && Z(e),
 				options: [
 					{
 						value: "popup",
@@ -3237,7 +3219,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 				kind: "select",
 				key: "termination_popup_placement",
 				label: "Button position in popup",
-				when: He,
+				when: Ve,
 				options: [{
 					value: "footer",
 					label: "Bottom right"
@@ -3250,7 +3232,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 				kind: "select",
 				key: "termination_button_style",
 				label: "Button style in popup",
-				when: He,
+				when: Ve,
 				options: [{
 					value: "label",
 					label: "Icon and text"
@@ -3270,7 +3252,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 		groupTitle: "Popup settings",
 		summary: "Popup layout and appearance",
 		description: "Control the details window independently from the dashboard card.",
-		applies: { when: Q },
+		applies: { when: Z },
 		fields: [
 			{
 				kind: "select",
@@ -3349,7 +3331,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 				min: 0,
 				max: 1500,
 				suffix: "ms",
-				when: ze
+				when: Re
 			},
 			{
 				kind: "number",
@@ -3358,7 +3340,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 				min: 0,
 				max: 1e3,
 				suffix: "ms",
-				when: ze
+				when: Re
 			},
 			{
 				kind: "toggleNumber",
@@ -3389,7 +3371,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 		id: "popup-summary",
 		summary: "Popup summary",
 		description: "Choose the media context displayed above the progress bar.",
-		applies: { when: Q },
+		applies: { when: Z },
 		fields: [
 			{
 				kind: "toggle",
@@ -3407,7 +3389,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 				kind: "select",
 				key: "popup_summary_lines",
 				label: "Description length",
-				when: (e) => e.mode !== "users" && Be(e),
+				when: (e) => e.mode !== "users" && ze(e),
 				options: [
 					{
 						value: "2",
@@ -3451,7 +3433,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 		id: "popup-details",
 		summary: (e) => e.mode === "users" ? "User details" : e.mode === "active" ? "Stream details" : "Media details",
 		description: "Choose the layout and every field shown in the details area below the popup summary.",
-		applies: { when: Q },
+		applies: { when: Z },
 		fields: [
 			{
 				kind: "select",
@@ -3468,61 +3450,12 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 			{
 				kind: "block",
 				block: "streamDetailOrder",
-				modes: ["active"]
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_media_type",
-				label: "Media type",
-				when: (e) => e.mode !== "users"
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_year",
-				label: "Year",
-				when: (e) => e.mode !== "users"
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_duration",
-				label: "Duration",
-				when: (e) => e.mode !== "users"
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_library",
-				label: "Library",
-				when: (e) => e.mode !== "users"
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_content_rating",
-				label: "Content rating",
-				when: (e) => e.mode !== "users"
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_rating",
-				label: "Rating",
-				when: (e) => e.mode !== "users"
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_audience_rating",
-				label: "Audience rating",
-				when: (e) => e.mode !== "users"
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_genres",
-				label: "Genres",
-				when: (e) => e.mode !== "users"
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_studio",
-				label: "Studio",
-				when: (e) => e.mode !== "users"
+				modes: [
+					"active",
+					"recently_added",
+					"popular",
+					"history"
+				]
 			},
 			{
 				kind: "toggle",
@@ -3550,7 +3483,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 			}
 		]
 	}
-], Ge = [
+], $ = [
 	{
 		field: "user",
 		key: "popup_show_user",
@@ -3602,9 +3535,24 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 		label: "Season / episode"
 	},
 	{
+		field: "media_type",
+		key: "popup_show_media_type",
+		label: "Media type"
+	},
+	{
 		field: "year",
 		key: "popup_show_year",
 		label: "Year"
+	},
+	{
+		field: "duration",
+		key: "popup_show_duration",
+		label: "Duration"
+	},
+	{
+		field: "library",
+		key: "popup_show_library",
+		label: "Library"
 	},
 	{
 		field: "content_rating",
@@ -3631,7 +3579,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 		key: "popup_show_studio",
 		label: "Studio"
 	}
-], Ke = class extends G {
+], We = class extends G {
 	static {
 		this.properties = {
 			hass: { attribute: !1 },
@@ -3646,13 +3594,13 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 		};
 	}
 	static {
-		this.styles = Pe;
+		this.styles = Ne;
 	}
 	constructor() {
 		super(), this._subscriptionGeneration = 0, this._detailDragEnd = () => {
 			this._draggedDetailField = void 0, this._lastDragTarget = void 0, this._dragPreviewOrder = void 0, this._dragOriginalOrder = void 0;
 		}, this._restoreStreamDetailOrder = () => {
-			this._update("popup_detail_order", [...J]);
+			this._update("popup_detail_order", [...q]);
 		}, this._resetAppearance = () => {
 			let e = { ...this._config };
 			for (let t of [
@@ -3670,10 +3618,10 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 				"paused_color",
 				"buffering_color"
 			]) delete e[t];
-			this._config = Y(e), this._emitConfig();
+			this._config = J(e), this._emitConfig();
 		}, this._resetAllDefaults = () => {
 			let e = this._config.entry_id;
-			this._config = Y({ ...e ? { entry_id: e } : {} }), this._emitConfig();
+			this._config = J({ ...e ? { entry_id: e } : {} }), this._emitConfig();
 		}, this._input = (e) => {
 			let t = e.currentTarget, n = t.dataset.key, r = t.value;
 			if (t instanceof HTMLInputElement && t.type === "checkbox" && (r = t.checked), [
@@ -3727,12 +3675,12 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 					"paused_color",
 					"buffering_color"
 				]) delete e[t];
-				this._config = Y(e), this._emitConfig();
+				this._config = J(e), this._emitConfig();
 				return;
 			}
 			if (n === "artwork") {
 				let e = r;
-				this._config = Y({
+				this._config = J({
 					...this._config,
 					artwork: e,
 					artwork_placement: e === "backdrop" ? "background" : "left"
@@ -3740,10 +3688,10 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 				return;
 			}
 			this._update(n, r), n === "entry_id" && this._loadReferences();
-		}, this._config = Y({}), this._entries = [], this._libraries = [], this._users = [];
+		}, this._config = J({}), this._entries = [], this._libraries = [], this._users = [];
 	}
 	setConfig(e) {
-		this._config = Y(e);
+		this._config = J(e);
 	}
 	disconnectedCallback() {
 		this._stopActiveSubscription(), super.disconnectedCallback();
@@ -3756,7 +3704,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 	}
 	async _loadEntries() {
 		if (this.hass) try {
-			this._entries = await q(this.hass), !this._config.entry_id && this._entries[0] && this._update("entry_id", this._entries[0].entry_id), await this._loadReferences(), await this._startActiveSubscription();
+			this._entries = await be(this.hass), !this._config.entry_id && this._entries[0] && this._update("entry_id", this._entries[0].entry_id), await this._loadReferences(), await this._startActiveSubscription();
 		} catch (e) {
 			this._error = e instanceof Error ? e.message : String(e);
 		}
@@ -3768,7 +3716,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 		let t = ++this._subscriptionGeneration;
 		this._activeEntryId = e, this._activeCount = void 0;
 		try {
-			let n = await be(this.hass, e, (e) => {
+			let n = await xe(this.hass, e, (e) => {
 				let n = e.items?.length ?? 0;
 				queueMicrotask(() => {
 					t === this._subscriptionGeneration && (this._activeCount = n);
@@ -3784,7 +3732,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 	}
 	async _loadReferences() {
 		if (!(!this.hass || !this._config.entry_id)) try {
-			let [e, t] = await Promise.all([Se(this.hass, this._config.entry_id), Ce(this.hass, this._config.entry_id)]);
+			let [e, t] = await Promise.all([Ce(this.hass, this._config.entry_id), we(this.hass, this._config.entry_id)]);
 			this._libraries = e.items.map((e) => ({
 				value: e.section_id,
 				label: `${e.name} (${e.type})`
@@ -3809,17 +3757,17 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 		};
 	}
 	render() {
-		let e = this._fieldContext, t = e.data.capabilities;
+		let e = this._fieldContext, t = e.data.capabilities, n = e.data.entries.find((e) => e.entry_id === this._config.entry_id), r = e.data.entries.length > 1;
 		return P`<div class="editor">
       ${this._error ? P`<div class="error" role="alert">${this._error}</div>` : I}
-      ${this._config.entry_id && t ? P`<div class="compatibility"><span></span><div><strong>${e.data.entries.find((e) => e.entry_id === this._config.entry_id)?.name ?? "Tautulli"}</strong><small>${this._connectionMessage(e.mode)}</small></div></div>` : I}
-      ${We.map((t) => this._renderSection(t, e))}
+      ${this._config.entry_id && t ? P`<div class="compatibility ${r ? "multiple-servers" : "single-server"}"><span></span><div>${r ? P`<strong>${n?.name ?? "Tautulli"}</strong>` : I}<small>${this._connectionMessage(e.mode)}</small></div></div>` : I}
+      ${Ue.map((t) => this._renderSection(t, e))}
       <p class="hint">Privacy and destructive permissions are enforced by the Tautulli Active Streams integration. Tokens and upstream image paths are never sent to this card.</p>
       <button class="reset-all" type="button" @click=${this._resetAllDefaults}>Reset all settings to defaults</button>
     </div>`;
 	}
 	_renderSection(e, t) {
-		if (!X(e.applies, t)) return I;
+		if (!Y(e.applies, t)) return I;
 		let n = I;
 		e.groupTitle && this._lastGroupTitle !== e.groupTitle && (this._lastGroupTitle = e.groupTitle, n = P`<h3 class="editor-group-title">${e.groupTitle}</h3>`);
 		let r = (e.fields ?? []).map((e) => this._renderField(e, t)), i = (e.subsections ?? []).map((e) => this._renderSubSection(e, t)), a = typeof e.description == "function" ? e.description(t) : e.description;
@@ -3831,7 +3779,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
     </details>`;
 	}
 	_renderSubSection(e, t) {
-		if (!X(e.applies, t)) return I;
+		if (!Y(e.applies, t)) return I;
 		let n = (e.fields ?? []).map((e) => this._renderField(e, t));
 		return e.header === "fineTune" ? P`<details>
         <summary>${e.summary}</summary>
@@ -3844,7 +3792,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
     </details>`;
 	}
 	_renderField(e, t) {
-		if (!X(e, t)) return I;
+		if (!Y(e, t)) return I;
 		if (e.kind === "hint") return P`<p class="hint">${typeof e.text == "function" ? e.text(t) : e.text}</p>`;
 		if (e.kind === "block") return this._renderBlock(e.block);
 		let n = typeof e.label == "function" ? e.label(t) : e.label;
@@ -3873,7 +3821,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
           ${this._recipe("cinematic", "Cinematic", "Backdrop and rich detail")}
           ${this._recipe("shelf", "Media shelf", "Horizontal poster carousel")}
         </div>`;
-			case "streamDetailOrder": return this._renderOrderedStreamDetails();
+			case "streamDetailOrder": return this._renderOrderedDetails();
 			case "terminationUnavailableHint": return P`<p class="hint">Stream termination is disabled in the integration's Dashboard card access settings.</p>`;
 			case "episodeTextPreview": return this._episodeTextPreview();
 		}
@@ -3881,22 +3829,25 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 	_connectionMessage(e) {
 		return e === "active" ? this._activeCount === void 0 ? "Checking active streams…" : this._activeCount === 0 ? "No active streams — start playback in Plex to see the live card preview" : `${this._activeCount} active ${this._activeCount === 1 ? "stream" : "streams"} available in the preview` : "Connected and ready";
 	}
-	_renderOrderedStreamDetails() {
-		let e = this._dragPreviewOrder ?? this._config.popup_detail_order ?? J;
+	_renderOrderedDetails() {
+		let e = this._detailFieldsForMode(), t = new Set(e), n = (this._dragPreviewOrder ?? this._config.popup_detail_order ?? q).filter((e) => t.has(e));
 		return P`<div class="detail-order-toolbar">
       <span>Drag the handle to reorder fields.</span>
       <div>
-        <button type="button" @click=${() => this._setAllStreamDetails(!0)}>Show all</button>
-        <button type="button" @click=${() => this._setAllStreamDetails(!1)}>Hide all</button>
+        <button type="button" @click=${() => this._setAllDetails(!0)}>Show all</button>
+        <button type="button" @click=${() => this._setAllDetails(!1)}>Hide all</button>
         <button type="button" @click=${this._restoreStreamDetailOrder}>Restore order</button>
       </div>
     </div>
     <div class="detail-order-list">
-      ${e.map((t, n) => this._renderStreamDetailRow(t, n, e.length))}
+      ${n.map((e, t) => this._renderStreamDetailRow(e, t, n.length))}
     </div>`;
 	}
+	_detailFieldsForMode() {
+		return this._config.mode === "active" ? q : Ee;
+	}
 	_renderStreamDetailRow(e, t, n) {
-		let r = Ge.find((t) => t.field === e);
+		let r = $.find((t) => t.field === e);
 		return r ? P`<div class="detail-order-row ${this._draggedDetailField === e ? "dragging" : ""}" data-detail-field=${e}
       @dragover=${(t) => this._detailDragOver(t, e)}
       @drop=${(t) => this._detailDrop(t, e)}>
@@ -3916,7 +3867,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
     </div>` : I;
 	}
 	_detailDragStart(e, t) {
-		let n = [...this._config.popup_detail_order ?? J];
+		let n = [...this._config.popup_detail_order ?? q];
 		if (this._draggedDetailField = t, this._lastDragTarget = void 0, this._dragOriginalOrder = n, this._dragPreviewOrder = n, e.dataTransfer) {
 			e.dataTransfer.effectAllowed = "move", e.dataTransfer.setData("text/plain", t);
 			let n = e.currentTarget.closest(".detail-order-row");
@@ -3925,7 +3876,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 	}
 	_detailDragOver(e, t) {
 		if (e.preventDefault(), e.dataTransfer && (e.dataTransfer.dropEffect = "move"), t !== this._draggedDetailField && this._lastDragTarget !== t) {
-			let e = [...this._dragPreviewOrder ?? this._config.popup_detail_order ?? J], n = this._draggedDetailField ? e.indexOf(this._draggedDetailField) : -1, r = e.indexOf(t);
+			let e = [...this._dragPreviewOrder ?? this._config.popup_detail_order ?? q], n = this._draggedDetailField ? e.indexOf(this._draggedDetailField) : -1, r = e.indexOf(t);
 			if (n < 0 || r < 0) return;
 			let i = new Map([...this.renderRoot.querySelectorAll(".detail-order-row")].map((e) => [e.dataset.detailField, e.getBoundingClientRect()])), [a] = e.splice(n, 1);
 			e.splice(r, 0, a), this._lastDragTarget = t, this._dragPreviewOrder = e, this.updateComplete.then(() => this._animateDetailReorder(i));
@@ -3933,7 +3884,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 	}
 	_detailDrop(e, t) {
 		e.preventDefault();
-		let n = this._draggedDetailField ?? e.dataTransfer?.getData("text/plain"), r = [...this._dragPreviewOrder ?? this._config.popup_detail_order ?? J], i = this._dragOriginalOrder ?? this._config.popup_detail_order ?? J;
+		let n = this._draggedDetailField ?? e.dataTransfer?.getData("text/plain"), r = [...this._dragPreviewOrder ?? this._config.popup_detail_order ?? q], i = this._dragOriginalOrder ?? this._config.popup_detail_order ?? q;
 		this._draggedDetailField = void 0, this._lastDragTarget = void 0, this._dragPreviewOrder = void 0, this._dragOriginalOrder = void 0, !(!n || n === t && r.every((e, t) => e === i[t])) && (r.every((e, t) => e === i[t]) || this._update("popup_detail_order", r));
 	}
 	_animateDetailReorder(e) {
@@ -3946,13 +3897,15 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 		}
 	}
 	_moveStreamDetail(e, t) {
-		let n = [...this._config.popup_detail_order ?? J], r = n.indexOf(e), i = r + t;
-		r < 0 || i < 0 || i >= n.length || ([n[r], n[i]] = [n[i], n[r]], this._update("popup_detail_order", n));
+		let n = [...this._config.popup_detail_order ?? q], r = new Set(this._detailFieldsForMode()), i = n.filter((e) => r.has(e)), a = i.indexOf(e), o = i[a + t];
+		if (a < 0 || !o) return;
+		let s = n.indexOf(e), c = n.indexOf(o);
+		[n[s], n[c]] = [n[c], n[s]], this._update("popup_detail_order", n);
 	}
-	_setAllStreamDetails(e) {
-		let t = { ...this._config };
-		for (let { key: n } of Ge) t[n] = e;
-		this._config = Y(t), this._emitConfig();
+	_setAllDetails(e) {
+		let t = { ...this._config }, n = new Set(this._detailFieldsForMode());
+		for (let { field: r, key: i } of $) n.has(r) && (t[i] = e);
+		this._config = J(t), this._emitConfig();
 	}
 	_select(e, t, n, r) {
 		return P`<label>${t}<select data-key=${e} @change=${this._input}>
@@ -3991,7 +3944,7 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
     </div></label>`;
 	}
 	_presetValue(e) {
-		return Oe[this._config.style_preset ?? "classic"][e];
+		return Ae[this._config.style_preset ?? "classic"][e];
 	}
 	_episodeTextPreview() {
 		let e = this._config.episode_number_style === "padded" ? "S01E02" : "S1 · E2", t = "Example Show", n = "Episode Name", r = `${t} — ${n}`, i = r, a = `${t} — ${e}`;
@@ -4111,24 +4064,24 @@ var Z = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), Re = (
 			"paused_color",
 			"buffering_color"
 		]) delete n[e];
-		this._config = Y(n), this._emitConfig();
+		this._config = J(n), this._emitConfig();
 	}
 	_update(e, t) {
 		let n = {
 			...this._config,
 			[e]: t
 		};
-		t === void 0 && delete n[e], this._config = Y(n), this._emitConfig();
+		t === void 0 && delete n[e], this._config = J(n), this._emitConfig();
 	}
 	_emitConfig() {
 		this.dispatchEvent(new CustomEvent("config-changed", {
 			bubbles: !0,
 			composed: !0,
-			detail: { config: De(this._config) }
+			detail: { config: ke(this._config) }
 		}));
 	}
 };
-customElements.get("tautulli-media-card") || customElements.define("tautulli-media-card", Ie), customElements.get("tautulli-media-card-editor") || customElements.define("tautulli-media-card-editor", Ke), window.customCards = window.customCards || [], window.customCards.some((e) => e.type === "tautulli-media-card") || window.customCards.push({
+customElements.get("tautulli-media-card") || customElements.define("tautulli-media-card", Fe), customElements.get("tautulli-media-card-editor") || customElements.define("tautulli-media-card-editor", We), window.customCards = window.customCards || [], window.customCards.some((e) => e.type === "tautulli-media-card") || window.customCards.push({
 	type: "tautulli-media-card",
 	name: "Tautulli Media Card",
 	description: "Active streams, recently added media, popular titles, and watch history from Tautulli.",

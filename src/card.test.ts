@@ -2,6 +2,7 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import "./index";
+import { cardStyles } from "./styles";
 import type { ActiveStream, CardEnvelope, HomeAssistant } from "./types";
 
 const STREAM: ActiveStream = {
@@ -36,6 +37,39 @@ const EPISODE_STREAM: ActiveStream = {
   },
 };
 
+const DETAILED_STREAM: ActiveStream = {
+  ...STREAM,
+  media: {
+    ...STREAM.media,
+    year: 2026,
+    duration_seconds: 7200,
+    library: { id: "1", name: "Movies" },
+    content_rating: "PG-13",
+    rating: 8.2,
+    audience_rating: 8.8,
+    genres: ["Drama", "Mystery"],
+    studio: "Example Studio",
+  },
+};
+
+const MUSIC_STREAM: ActiveStream = {
+  ...STREAM,
+  id: "server:music-session",
+  session_id: "music-session",
+  media: {
+    type: "track",
+    title: "Example Track",
+    full_title: "Example Track",
+    hierarchy: { artist: "Example Artist", album: "Example Album" },
+  },
+  quality: {
+    decision: "direct play",
+    audio_codec: "flac",
+    audio_channel_layout: "stereo",
+    audio_bitrate_kbps: 1411,
+  },
+};
+
 const ENVELOPE: CardEnvelope<ActiveStream> = {
   schema_version: 1,
   entry_id: "entry-1",
@@ -63,6 +97,34 @@ afterEach(() => {
 });
 
 describe("stream termination confirmation", () => {
+  it("never fabricates a sample stream in an empty editor preview", async () => {
+    const preview = document.createElement("div");
+    preview.className = "card-preview";
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      show_empty: true,
+      demo_when_empty: true,
+    });
+    preview.append(card);
+    document.body.append(preview);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: [] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    expect(card.renderRoot.querySelector("article")).toBeNull();
+    expect(card.renderRoot.textContent).not.toContain("Spider-Man");
+    expect(card.renderRoot.textContent).toContain("Nothing is playing");
+  });
+
   it("shows a neutral skeleton while loading and hides technical startup failures", async () => {
     const card = document.createElement("tautulli-media-card") as HTMLElement & {
       setConfig(config: Record<string, unknown>): void;
@@ -334,6 +396,148 @@ describe("stream termination confirmation", () => {
     expect(labels.slice(0, 3)).toEqual(["Bandwidth", "Plex user", "Player"]);
   });
 
+  it("renders every selectable media field in the active-stream popup", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      hass: HomeAssistant;
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      click_action: "details",
+      popup_detail_order: ["media_type", "year", "duration", "library", "content_rating", "rating", "audience_rating", "genres", "studio"],
+    });
+    card.hass = {
+      callWS: vi.fn(),
+      connection: { subscribeMessage: vi.fn().mockResolvedValue(() => undefined) },
+    } as unknown as HomeAssistant;
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: [DETAILED_STREAM] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+    card.renderRoot.querySelector<HTMLElement>(".open-details")?.click();
+    await card.updateComplete;
+
+    const detailText = new Map(
+      [...card.renderRoot.querySelectorAll(".details-grid .detail-value")].map((element) => [
+        element.querySelector("small")?.textContent,
+        element.querySelector("span")?.textContent,
+      ]),
+    );
+    expect(detailText.get("Media type")).toBe("movie");
+    expect(detailText.get("Year")).toBe("2026");
+    expect(detailText.get("Duration")).toBe("2h 0m");
+    expect(detailText.get("Library")).toBe("Movies");
+    expect(detailText.get("Content rating")).toBe("PG-13");
+    expect(detailText.get("Rating")).toBe("8.2");
+    expect(detailText.get("Audience rating")).toBe("8.8");
+    expect(detailText.get("Genres")).toBe("Drama · Mystery");
+    expect(detailText.get("Studio")).toBe("Example Studio");
+
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      click_action: "details",
+      popup_show_media_type: false,
+      popup_show_duration: false,
+      popup_show_library: false,
+    });
+    await card.updateComplete;
+    const hiddenLabels = [...card.renderRoot.querySelectorAll(".details-grid .detail-value small")].map((element) => element.textContent);
+    expect(hiddenLabels).not.toContain("Media type");
+    expect(hiddenLabels).not.toContain("Duration");
+    expect(hiddenLabels).not.toContain("Library");
+  });
+
+  it("honours media-detail toggles on modern active-stream cards", async () => {
+    const renderStream = async (stream: ActiveStream, config: Record<string, unknown>) => {
+      const card = document.createElement("tautulli-media-card") as HTMLElement & {
+        setConfig(config: Record<string, unknown>): void;
+        updateComplete: Promise<boolean>;
+        renderRoot: ShadowRoot;
+      };
+      card.setConfig({
+        type: "custom:tautulli-media-card",
+        entry_id: "entry-1",
+        mode: "active",
+        style_preset: "modern",
+        ...config,
+      });
+      document.body.append(card);
+      const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+      internal._data = { ...ENVELOPE, items: [stream] };
+      internal._loading = false;
+      internal.requestUpdate();
+      await card.updateComplete;
+      return card;
+    };
+
+    const movie = await renderStream(DETAILED_STREAM, { show_media_details: true });
+    expect(movie.renderRoot.querySelector(".subtitle")?.textContent).toBe("2026");
+
+    const hiddenEpisode = await renderStream(EPISODE_STREAM, { show_media_details: false });
+    expect(hiddenEpisode.renderRoot.querySelector(".subtitle")).toBeNull();
+
+    const music = await renderStream(MUSIC_STREAM, { show_quality: false, show_audio_quality: true });
+    expect(music.renderRoot.querySelector(".subtitle")?.textContent).toBe("Example Artist — Example Album");
+    expect(music.renderRoot.querySelector(".details.optional")?.textContent).toContain("flac");
+    expect(music.renderRoot.querySelector(".details.optional")?.textContent).toContain("stereo");
+    expect(music.renderRoot.querySelector(".details.optional")?.textContent).toContain("1411 Kbps");
+
+    const hiddenMusicQuality = await renderStream(MUSIC_STREAM, { show_quality: false, show_audio_quality: false });
+    expect(hiddenMusicQuality.renderRoot.querySelector(".details.optional")).toBeNull();
+  });
+
+  it("places media-popup text beside artwork in the responsive hero layout", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "recently_added",
+      click_action: "details",
+      popup_detail_order: ["studio", "media_type", "year"],
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<Record<string, unknown>>; _loading: boolean; requestUpdate(): void };
+    internal._data = {
+      ...ENVELOPE,
+      items: [{
+        id: "movie-1",
+        type: "movie",
+        title: "Example Movie",
+        year: 2026,
+        summary: "A responsive popup summary.",
+        studio: "Example Studio",
+        images: { poster_url: "/poster.jpg" },
+      }],
+    };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+    card.renderRoot.querySelector<HTMLElement>(".open-details")?.click();
+    await card.updateComplete;
+
+    const hero = card.renderRoot.querySelector(".media-summary .details-hero.with-poster");
+    expect(hero).not.toBeNull();
+    expect(hero?.querySelector(":scope > img.details-media-poster")).not.toBeNull();
+    expect(hero?.querySelector(".details-primary #details-title")?.textContent).toBe("Example Movie");
+    expect(hero?.querySelector(".details-primary .details-summary")?.textContent).toBe("A responsive popup summary.");
+    const labels = [...card.renderRoot.querySelectorAll(".details-grid .detail-value small")].map((element) => element.textContent);
+    expect(labels.slice(0, 3)).toEqual(["Studio", "Media type", "Year"]);
+    expect(cardStyles.cssText).toMatch(/\.details-dialog\s*\{[^}]*container-type:inline-size;/);
+    expect(cardStyles.cssText).toMatch(/@container \(max-width: 420px\)\s*\{[\s\S]*?\.details-hero\.with-poster\s*\{\s*grid-template-columns:1fr;/);
+  });
+
   it("controls the summary user independently from the ordered user detail", async () => {
     const card = document.createElement("tautulli-media-card") as HTMLElement & {
       hass: HomeAssistant;
@@ -470,6 +674,77 @@ describe("stream termination confirmation", () => {
     expect(card.renderRoot.querySelectorAll("article.media-item")).toHaveLength(1);
     expect(card.renderRoot.textContent).toContain("2 new episodes");
     expect(card.renderRoot.textContent).toContain("Example Show");
+  });
+
+  it.each([
+    ["legacy", { show: null, season: "Below Deck Mediterranean", season_number: 1, parent_id: "show-1" }],
+    ["corrected", { show: "Below Deck Mediterranean", season: "Season 10", season_number: 10, parent_id: "show-1" }],
+  ])("renders the parent show and season label from %s season payloads", async (_payloadType, hierarchy) => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "recently_added",
+      recent_grouping: "none",
+      click_action: "details",
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<Record<string, unknown>>; _loading: boolean; requestUpdate(): void };
+    internal._data = {
+      ...ENVELOPE,
+      items: [{
+        id: "season-10",
+        type: "season",
+        title: "Season 10",
+        full_title: "Season 10",
+        hierarchy,
+      }],
+    };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    expect(card.renderRoot.querySelector(".name")?.textContent).toBe("Below Deck Mediterranean");
+    expect(card.renderRoot.querySelector(".subtitle")?.textContent).toBe("Season 10");
+
+    card.renderRoot.querySelector<HTMLElement>(".open-details")?.click();
+    await card.updateComplete;
+    expect(card.renderRoot.querySelector("#details-title")?.textContent).toBe("Below Deck Mediterranean");
+    expect(card.renderRoot.querySelector(".details-subtitle")?.textContent).toBe("Season 10");
+  });
+
+  it("groups legacy season payloads by their parent show", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "recently_added",
+      recent_grouping: "show",
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<Record<string, unknown>>; _loading: boolean; requestUpdate(): void };
+    internal._data = {
+      ...ENVELOPE,
+      items: [
+        { id: "season-9", type: "season", title: "Season 9", hierarchy: { show: null, season: "Example Show", parent_id: "show-1" } },
+        { id: "season-10", type: "season", title: "Season 10", hierarchy: { show: null, season: "Example Show", parent_id: "show-1" } },
+      ],
+    };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    expect(card.renderRoot.querySelectorAll("article.media-item")).toHaveLength(1);
+    expect(card.renderRoot.querySelector(".name")?.textContent).toBe("Example Show");
+    expect(card.renderRoot.textContent).toContain("2 new episodes");
   });
 
   it("shows remaining time at the right of the modern cinematic progress bar", async () => {

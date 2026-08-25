@@ -73,6 +73,7 @@ describe("editor settings registry", () => {
       const keys = fieldKeys(ctxFor({}, mode));
       for (const key of activeOnly) expect(keys.has(key), `${key} leaked into ${mode}`).toBe(false);
     }
+    expect(active.has("demo_when_empty")).toBe(false);
   });
 
   it("shows TV episode text controls only for views that can contain episodes", () => {
@@ -89,6 +90,16 @@ describe("editor settings registry", () => {
     expect(recentMovies.has("episode_layout")).toBe(false);
     expect(history.has("episode_layout")).toBe(true);
     expect(popular.has("episode_layout")).toBe(false);
+  });
+
+  it("explains that disabling card grouping cannot split a Tautulli season item", () => {
+    const content = EDITOR_SECTIONS.find((section) => section.id === "content-source");
+    const grouping = content?.fields?.find((field) => "key" in field && field.key === "recent_grouping");
+    const options = grouping && "options" in grouping && Array.isArray(grouping.options) ? grouping.options : [];
+    expect(options.find((option) => option.value === "none")?.label).toBe("Use Tautulli items as returned");
+
+    const hint = content?.fields?.find((field) => field.kind === "hint" && field.modes?.includes("recently_added"));
+    expect(hint && "text" in hint ? hint.text : "").toContain("cannot split that season into individual episodes");
   });
 
   it("reveals custom episode fields and numbering only when they affect output", () => {
@@ -148,9 +159,33 @@ describe("editor settings registry", () => {
     expect(users.has("popup_show_playback_breakdown")).toBe(true);
     expect(media.has("popup_show_playback_breakdown")).toBe(false);
     expect(users.has("popup_show_genres")).toBe(false);
-    expect(media.has("popup_show_genres")).toBe(true);
+    expect(media.has("popup_show_genres")).toBe(false);
     expect(users.has("popup_show_artwork")).toBe(false);
     expect(media.has("popup_show_artwork")).toBe(true);
+  });
+
+  it("uses the ordered detail list as the only active-stream popup field controls", () => {
+    const popupDetails = EDITOR_SECTIONS.find((section) => section.id === "popup-details");
+    const activeFields = popupDetails?.fields?.filter((field) => appliesTo(field, ctxFor({}, "active"))) ?? [];
+    const recentFields = popupDetails?.fields?.filter((field) => appliesTo(field, ctxFor({}, "recently_added"))) ?? [];
+    const mediaKeys = [
+      "popup_show_media_type",
+      "popup_show_year",
+      "popup_show_duration",
+      "popup_show_library",
+      "popup_show_content_rating",
+      "popup_show_rating",
+      "popup_show_audience_rating",
+      "popup_show_genres",
+      "popup_show_studio",
+    ];
+
+    expect(activeFields.some((field) => field.kind === "block" && field.block === "streamDetailOrder")).toBe(true);
+    expect(recentFields.some((field) => field.kind === "block" && field.block === "streamDetailOrder")).toBe(true);
+    for (const key of mediaKeys) {
+      expect(activeFields.some((field) => "key" in field && field.key === key), `${key} duplicated outside the ordered list`).toBe(false);
+      expect(recentFields.some((field) => "key" in field && field.key === key), `${key} duplicated outside the ordered list`).toBe(false);
+    }
   });
 
   it("gates artwork sub-settings by artwork selection", () => {

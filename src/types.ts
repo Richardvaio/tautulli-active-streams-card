@@ -27,7 +27,10 @@ export type PopupDetailField =
   | "audio_quality"
   | "bandwidth"
   | "episode"
+  | "media_type"
   | "year"
+  | "duration"
+  | "library"
   | "content_rating"
   | "rating"
   | "audience_rating"
@@ -112,7 +115,6 @@ export interface CardConfig {
   episode_number_style?: EpisodeNumberStyle;
   show_summary?: boolean;
   show_empty?: boolean;
-  demo_when_empty?: boolean;
   animations?: boolean;
   allow_termination?: boolean;
   termination_location?: "popup" | "card" | "both";

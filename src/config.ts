@@ -13,7 +13,22 @@ export const DEFAULT_POPUP_DETAIL_ORDER: PopupDetailField[] = [
   "audio_quality",
   "bandwidth",
   "episode",
+  "media_type",
   "year",
+  "duration",
+  "library",
+  "content_rating",
+  "rating",
+  "audience_rating",
+  "genres",
+  "studio",
+];
+
+export const MEDIA_POPUP_DETAIL_FIELDS: PopupDetailField[] = [
+  "media_type",
+  "year",
+  "duration",
+  "library",
   "content_rating",
   "rating",
   "audience_rating",
@@ -69,7 +84,6 @@ export const DEFAULT_CONFIG: CardConfig = {
   autoscroll_animation: "smooth",
   showcase_advance: 6,
   showcase_transition: "fade",
-  demo_when_empty: true,
   animations: true,
   allow_termination: false,
   termination_location: "popup",
@@ -202,7 +216,7 @@ function migrateConfig(config: Partial<CardConfig> & Record<string, unknown>): P
       for (const specificKey of specificKeys) if (migrated[specificKey] === undefined) migrated[specificKey] = false;
     }
   }
-  for (const legacyKey of ["view", "preset", "show_title", "show_badge"]) delete migrated[legacyKey];
+  for (const legacyKey of ["view", "preset", "show_title", "show_badge", "demo_when_empty"]) delete migrated[legacyKey];
   return migrated;
 }
 

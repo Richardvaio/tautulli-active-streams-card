@@ -104,7 +104,7 @@ describe("visual editor", () => {
         return {
           entries: [{
             entry_id: "entry-1",
-            name: "Plex - Tardis",
+            name: "Primary Plex",
             capabilities: { active_streams: true, active_stream_subscription: true },
           }],
         };
@@ -129,13 +129,44 @@ describe("visual editor", () => {
     await vi.waitFor(() => {
       expect(editor.renderRoot.textContent).toContain("No active streams — start playback in Plex");
     });
-    expect(editor.renderRoot.textContent).toContain("Plex - Tardis");
+    expect(editor.renderRoot.querySelector(".compatibility")?.textContent).not.toContain("Primary Plex");
     expect(editor.renderRoot.textContent).not.toContain("Card API schema");
 
     activeCallback?.({ items: [{}, {}] });
     await vi.waitFor(() => {
       expect(editor.renderRoot.textContent).toContain("2 active streams available in the preview");
     });
+  });
+
+  it("shows the selected server name only when multiple servers are configured", async () => {
+    const callWS = vi.fn().mockImplementation(async (request: Record<string, unknown>) => {
+      if (request.type === "tautulli_active_streams/get_entries") {
+        return {
+          entries: [
+            { entry_id: "entry-1", name: "Living Room Plex", capabilities: { active_streams: true } },
+            { entry_id: "entry-2", name: "Family Plex", capabilities: { active_streams: true } },
+          ],
+        };
+      }
+      return { items: [] };
+    });
+    const editor = document.createElement("tautulli-media-card-editor") as HTMLElement & {
+      hass: HomeAssistant;
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    editor.setConfig({ type: "custom:tautulli-media-card", entry_id: "entry-1", mode: "active" });
+    editor.hass = {
+      callWS,
+      connection: { subscribeMessage: vi.fn().mockResolvedValue(() => undefined) },
+    } as unknown as HomeAssistant;
+    document.body.append(editor);
+
+    await vi.waitFor(() => {
+      expect(editor.renderRoot.querySelector(".compatibility")?.textContent).toContain("Living Room Plex");
+    });
+    expect(editor.renderRoot.querySelector(".compatibility")?.textContent).not.toContain("Family Plex");
   });
 
   it("preserves popup and layout select values when the editor is reopened", async () => {
@@ -260,9 +291,15 @@ describe("visual editor", () => {
     document.body.append(editor);
     await editor.updateComplete;
 
-    expect(editor.renderRoot.querySelectorAll('.drag-handle[draggable="true"]')).toHaveLength(16);
+    expect(editor.renderRoot.querySelectorAll('.drag-handle[draggable="true"]')).toHaveLength(19);
     expect(editor.renderRoot.querySelector('input[data-key="popup_summary_show_user"]')).not.toBeNull();
     expect(editor.renderRoot.querySelector('.detail-order-row input[data-key="popup_show_user"]')).not.toBeNull();
+    for (const field of ["media_type", "duration", "library"]) {
+      expect(editor.renderRoot.querySelector(`.detail-order-row[data-detail-field="${field}"]`)).not.toBeNull();
+    }
+    for (const key of ["popup_show_year", "popup_show_content_rating", "popup_show_rating", "popup_show_audience_rating", "popup_show_genres", "popup_show_studio"]) {
+      expect(editor.renderRoot.querySelectorAll(`input[data-key="${key}"]`), `${key} should appear once`).toHaveLength(1);
+    }
     const dragHandle = editor.renderRoot.querySelector<HTMLElement>('.detail-order-row[data-detail-field="user"] .drag-handle');
     const targetRow = editor.renderRoot.querySelector<HTMLElement>('.detail-order-row[data-detail-field="device"]');
     const dataTransfer = {
@@ -294,13 +331,59 @@ describe("visual editor", () => {
     expect(editor.renderRoot.querySelector(".detail-order-row.dragging")).toBeNull();
     expect([...editor.renderRoot.querySelectorAll<HTMLElement>(".detail-order-row")].slice(0, 3).map((row) => row.dataset.detailField)).toEqual(["user", "player", "device"]);
 
-    const changes: Array<{ popup_detail_order?: string[] }> = [];
+    const changes: Array<{ popup_detail_order?: string[]; popup_show_duration?: boolean }> = [];
     editor.addEventListener("config-changed", (event) => changes.push((event as CustomEvent).detail.config));
+
+    const durationToggle = editor.renderRoot.querySelector<HTMLInputElement>('.detail-order-row input[data-key="popup_show_duration"]');
+    expect(durationToggle?.checked).toBe(true);
+    if (durationToggle) {
+      durationToggle.checked = false;
+      durationToggle.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    expect(changes.at(-1)?.popup_show_duration).toBe(false);
+    editor.setConfig(changes.at(-1) ?? {});
+    await editor.updateComplete;
+    expect(editor.renderRoot.querySelector<HTMLInputElement>('.detail-order-row input[data-key="popup_show_duration"]')?.checked).toBe(false);
+
     editor.renderRoot.querySelector<HTMLButtonElement>('button[aria-label="Move Plex user down"]')?.click();
     await editor.updateComplete;
 
     expect(changes.at(-1)?.popup_detail_order?.slice(0, 2)).toEqual(["player", "user"]);
     const rows = [...editor.renderRoot.querySelectorAll<HTMLElement>(".detail-order-row")];
     expect(rows.slice(0, 2).map((row) => row.dataset.detailField)).toEqual(["player", "user"]);
+  });
+
+  it("uses the same sortable detail controls for media popups", async () => {
+    const editor = document.createElement("tautulli-media-card-editor") as HTMLElement & {
+      hass: HomeAssistant;
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    editor.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "recently_added",
+      click_action: "details",
+      popup_detail_order: ["studio", "media_type", "year"],
+    });
+    editor.hass = {
+      callWS: vi.fn().mockResolvedValue({ entries: [], items: [] }),
+      connection: { subscribeMessage: vi.fn() },
+    } as unknown as HomeAssistant;
+    document.body.append(editor);
+    await editor.updateComplete;
+
+    const rows = [...editor.renderRoot.querySelectorAll<HTMLElement>(".detail-order-row")];
+    expect(rows).toHaveLength(9);
+    expect(rows.slice(0, 3).map((row) => row.dataset.detailField)).toEqual(["studio", "media_type", "year"]);
+    expect(editor.renderRoot.querySelector('.detail-order-row[data-detail-field="player"]')).toBeNull();
+    expect(editor.renderRoot.querySelectorAll('input[data-key="popup_show_year"]')).toHaveLength(1);
+
+    const changes: Array<{ popup_detail_order?: string[] }> = [];
+    editor.addEventListener("config-changed", (event) => changes.push((event as CustomEvent).detail.config));
+    editor.renderRoot.querySelector<HTMLButtonElement>('button[aria-label="Move Studio down"]')?.click();
+    await editor.updateComplete;
+    expect(changes.at(-1)?.popup_detail_order?.filter((field) => ["studio", "media_type", "year"].includes(field)).slice(0, 3)).toEqual(["media_type", "studio", "year"]);
   });
 });

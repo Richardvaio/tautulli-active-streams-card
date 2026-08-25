@@ -1,7 +1,7 @@
 import { LitElement, html, nothing } from "lit";
 import type { PropertyValues, TemplateResult } from "lit";
 import { getEntries, getLibraries, getUsers, subscribeActive } from "./api";
-import { compactConfig, DEFAULT_POPUP_DETAIL_ORDER, normalizeConfig, STYLE_PRESETS } from "./config";
+import { compactConfig, DEFAULT_POPUP_DETAIL_ORDER, MEDIA_POPUP_DETAIL_FIELDS, normalizeConfig, STYLE_PRESETS } from "./config";
 import { appliesTo, EDITOR_SECTIONS } from "./editor-registry";
 import type { BlockField, Field, FieldContext, Section, SubSection } from "./editor-registry";
 import { editorStyles } from "./styles";
@@ -20,7 +20,10 @@ const STREAM_DETAIL_FIELDS: Array<{ field: PopupDetailField; key: keyof CardConf
   { field: "audio_quality", key: "popup_show_audio_quality", label: "Audio quality" },
   { field: "bandwidth", key: "popup_show_bandwidth", label: "Bandwidth" },
   { field: "episode", key: "popup_show_episode", label: "Season / episode" },
+  { field: "media_type", key: "popup_show_media_type", label: "Media type" },
   { field: "year", key: "popup_show_year", label: "Year" },
+  { field: "duration", key: "popup_show_duration", label: "Duration" },
+  { field: "library", key: "popup_show_library", label: "Library" },
   { field: "content_rating", key: "popup_show_content_rating", label: "Content rating" },
   { field: "rating", key: "popup_show_rating", label: "Rating" },
   { field: "audience_rating", key: "popup_show_audience_rating", label: "Audience rating" },
@@ -158,9 +161,11 @@ export class TautulliMediaCardEditor extends LitElement {
   protected override render() {
     const ctx = this._fieldContext;
     const capabilities = ctx.data.capabilities;
+    const selectedEntry = ctx.data.entries.find((entry) => entry.entry_id === this._config.entry_id);
+    const multipleServers = ctx.data.entries.length > 1;
     return html`<div class="editor">
       ${this._error ? html`<div class="error" role="alert">${this._error}</div>` : nothing}
-      ${this._config.entry_id && capabilities ? html`<div class="compatibility"><span></span><div><strong>${ctx.data.entries.find((entry) => entry.entry_id === this._config.entry_id)?.name ?? "Tautulli"}</strong><small>${this._connectionMessage(ctx.mode)}</small></div></div>` : nothing}
+      ${this._config.entry_id && capabilities ? html`<div class="compatibility ${multipleServers ? "multiple-servers" : "single-server"}"><span></span><div>${multipleServers ? html`<strong>${selectedEntry?.name ?? "Tautulli"}</strong>` : nothing}<small>${this._connectionMessage(ctx.mode)}</small></div></div>` : nothing}
       ${EDITOR_SECTIONS.map((section) => this._renderSection(section, ctx))}
       <p class="hint">Privacy and destructive permissions are enforced by the Tautulli Active Streams integration. Tokens and upstream image paths are never sent to this card.</p>
       <button class="reset-all" type="button" @click=${this._resetAllDefaults}>Reset all settings to defaults</button>
@@ -243,7 +248,7 @@ export class TautulliMediaCardEditor extends LitElement {
           ${this._recipe("shelf", "Media shelf", "Horizontal poster carousel")}
         </div>`;
       case "streamDetailOrder":
-        return this._renderOrderedStreamDetails();
+        return this._renderOrderedDetails();
       case "terminationUnavailableHint":
         return html`<p class="hint">Stream termination is disabled in the integration's Dashboard card access settings.</p>`;
       case "episodeTextPreview":
@@ -258,19 +263,26 @@ export class TautulliMediaCardEditor extends LitElement {
     return `${this._activeCount} active ${this._activeCount === 1 ? "stream" : "streams"} available in the preview`;
   }
 
-  private _renderOrderedStreamDetails() {
-    const order = this._dragPreviewOrder ?? this._config.popup_detail_order ?? DEFAULT_POPUP_DETAIL_ORDER;
+  private _renderOrderedDetails() {
+    const availableFields = this._detailFieldsForMode();
+    const available = new Set(availableFields);
+    const order = (this._dragPreviewOrder ?? this._config.popup_detail_order ?? DEFAULT_POPUP_DETAIL_ORDER)
+      .filter((field) => available.has(field));
     return html`<div class="detail-order-toolbar">
       <span>Drag the handle to reorder fields.</span>
       <div>
-        <button type="button" @click=${() => this._setAllStreamDetails(true)}>Show all</button>
-        <button type="button" @click=${() => this._setAllStreamDetails(false)}>Hide all</button>
+        <button type="button" @click=${() => this._setAllDetails(true)}>Show all</button>
+        <button type="button" @click=${() => this._setAllDetails(false)}>Hide all</button>
         <button type="button" @click=${this._restoreStreamDetailOrder}>Restore order</button>
       </div>
     </div>
     <div class="detail-order-list">
       ${order.map((field, index) => this._renderStreamDetailRow(field, index, order.length))}
     </div>`;
+  }
+
+  private _detailFieldsForMode(): PopupDetailField[] {
+    return this._config.mode === "active" ? DEFAULT_POPUP_DETAIL_ORDER : MEDIA_POPUP_DETAIL_FIELDS;
   }
 
   private _renderStreamDetailRow(field: PopupDetailField, index: number, length: number) {
@@ -367,16 +379,23 @@ export class TautulliMediaCardEditor extends LitElement {
 
   private _moveStreamDetail(field: PopupDetailField, direction: -1 | 1): void {
     const order = [...(this._config.popup_detail_order ?? DEFAULT_POPUP_DETAIL_ORDER)];
+    const available = new Set(this._detailFieldsForMode());
+    const displayedOrder = order.filter((candidate) => available.has(candidate));
+    const displayedIndex = displayedOrder.indexOf(field);
+    const target = displayedOrder[displayedIndex + direction];
+    if (displayedIndex < 0 || !target) return;
     const index = order.indexOf(field);
-    const nextIndex = index + direction;
-    if (index < 0 || nextIndex < 0 || nextIndex >= order.length) return;
-    [order[index], order[nextIndex]] = [order[nextIndex]!, order[index]!];
+    const targetIndex = order.indexOf(target);
+    [order[index], order[targetIndex]] = [order[targetIndex]!, order[index]!];
     this._update("popup_detail_order", order);
   }
 
-  private _setAllStreamDetails(visible: boolean): void {
+  private _setAllDetails(visible: boolean): void {
     const config = { ...this._config } as CardConfig;
-    for (const { key } of STREAM_DETAIL_FIELDS) (config as unknown as Record<string, unknown>)[key] = visible;
+    const available = new Set(this._detailFieldsForMode());
+    for (const { field, key } of STREAM_DETAIL_FIELDS) {
+      if (available.has(field)) (config as unknown as Record<string, unknown>)[key] = visible;
+    }
     this._config = normalizeConfig(config);
     this._emitConfig();
   }

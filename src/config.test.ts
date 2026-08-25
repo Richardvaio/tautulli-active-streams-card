@@ -50,6 +50,12 @@ describe("card configuration", () => {
     });
   });
 
+  it("drops the retired demo-stream setting from existing cards", () => {
+    const config = normalizeConfig({ demo_when_empty: true } as never);
+    expect(config).not.toHaveProperty("demo_when_empty");
+    expect(compactConfig(config)).not.toHaveProperty("demo_when_empty");
+  });
+
   it("round-trips advanced card and popup settings without losing values", () => {
     const configured = normalizeConfig({
       entry_id: "entry-1",
@@ -123,8 +129,9 @@ describe("card configuration", () => {
       popup_detail_order: ["bandwidth", "user", "bandwidth", "invalid"] as never,
     });
     expect(config.popup_detail_order?.slice(0, 2)).toEqual(["bandwidth", "user"]);
-    expect(config.popup_detail_order).toHaveLength(16);
-    expect(new Set(config.popup_detail_order).size).toBe(16);
+    expect(config.popup_detail_order).toHaveLength(19);
+    expect(new Set(config.popup_detail_order).size).toBe(19);
+    expect(config.popup_detail_order).toEqual(expect.arrayContaining(["media_type", "duration", "library"]));
 
     const saved = compactConfig(config);
     expect(saved.popup_detail_order?.slice(0, 2)).toEqual(["bandwidth", "user"]);

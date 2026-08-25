@@ -2,7 +2,6 @@ import { LitElement, html, nothing } from "lit";
 import type { PropertyValues, TemplateResult } from "lit";
 import { getCardData, getEntries, subscribeActive, SUPPORTED_SCHEMA, terminateSession } from "./api";
 import { DEFAULT_POPUP_DETAIL_ORDER, modeTitle, normalizeConfig, STYLE_PRESETS } from "./config";
-import { buildDemoStream } from "./demo";
 import { cardStyles } from "./styles";
 import type { ActiveStream, CardConfig, CardEnvelope, HomeAssistant, MediaItem, PopupDetailField } from "./types";
 
@@ -19,7 +18,10 @@ const STREAM_DETAIL_VISIBILITY: Record<PopupDetailField, keyof CardConfig> = {
   audio_quality: "popup_show_audio_quality",
   bandwidth: "popup_show_bandwidth",
   episode: "popup_show_episode",
+  media_type: "popup_show_media_type",
   year: "popup_show_year",
+  duration: "popup_show_duration",
+  library: "popup_show_library",
   content_rating: "popup_show_content_rating",
   rating: "popup_show_rating",
   audience_rating: "popup_show_audience_rating",
@@ -92,15 +94,6 @@ export class TautulliMediaCard extends LitElement {
 
   static getConfigElement(): HTMLElement {
     return document.createElement("tautulli-media-card-editor");
-  }
-
-  /** True while rendered inside the visual editor preview pane (pierces shadow roots). */
-  private get _inEditorPreview(): boolean {
-    for (let node: Element | null = this.parentElement; node;) {
-      if (node.matches(".card-preview, .element-preview, hui-card-preview")) return true;
-      node = node.parentElement ?? (node.getRootNode() instanceof ShadowRoot ? (node.getRootNode() as ShadowRoot).host : null);
-    }
-    return false;
   }
 
   getGridOptions() {
@@ -347,12 +340,8 @@ export class TautulliMediaCard extends LitElement {
   protected override render(): TemplateResult | typeof nothing {
     const items = this._filteredItems();
     if (this._error && !this._data) return nothing;
-    const demoActive = !this._loading && !this._error && this._config.mode === "active" && !items.length
-      && this._config.demo_when_empty !== false && this._data && this._inEditorPreview;
-    const hiddenWhenEmpty = !demoActive && !this._config.show_empty;
-    if (!this._loading && !this._error && !items.length && hiddenWhenEmpty) return nothing;
+    if (!this._loading && !this._error && !items.length && !this._config.show_empty) return nothing;
     const columns = this._config.columns === "auto" ? "auto" : String(this._config.columns ?? 1);
-    const displayItems = demoActive ? [buildDemoStream()] : items;
     return html`
       <ha-card>
         ${this._config.show_header || this._config.show_count ? html`
@@ -362,17 +351,17 @@ export class TautulliMediaCard extends LitElement {
           </div>` : nothing}
         ${this._data?.stale ? html`<p class="stale">Showing the last successful update</p>` : nothing}
         ${this._loading ? this._renderLoading()
-          : !displayItems.length ? html`<div class="empty">${this._config.mode === "active" ? "Nothing is playing" : "No matching media"}</div>`
+          : !items.length ? html`<div class="empty">${this._config.mode === "active" ? "Nothing is playing" : "No matching media"}</div>`
           : html`${(this._config.layout === "carousel" || (["marquee", "showcase"].includes(this._config.layout ?? "grid") && this._config.carousel_buttons !== false)) ? html`<div class="carousel-controls" aria-label="Carousel controls">
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(-1) : this._scrollCarousel(-1)} aria-label="Previous items"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(1) : this._scrollCarousel(1)} aria-label="Next items"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
             </div>` : nothing}
             <div class="content ${this._config.layout ?? "grid"} ${columns === "auto" ? "auto" : ""} ${["marquee", "showcase"].includes(this._config.layout ?? "") && this._filteredItems().length < 2 ? "single" : ""}" style=${`--columns:${columns};--scroll-gap:${this._config.scroll_gap ?? 8}px;--scroll-peek:${this._config.scroll_peek ?? 36}px;--marquee-speed:${this._config.autoscroll_speed ?? 40}px`}>
               ${this._config.layout === "showcase"
-                ? html`${displayItems.map((item) => this._renderItem(item))}${displayItems.length >= 2 ? displayItems.map((item) => this._renderItem(item, undefined, true)) : nothing}`
+                ? html`${items.map((item) => this._renderItem(item))}${items.length >= 2 ? items.map((item) => this._renderItem(item, undefined, true)) : nothing}`
                 : this._config.layout === "marquee"
-                  ? html`<div class="marquee-track">${this._renderMarqueeStrip(displayItems)}</div>`
-                  : displayItems.map((item) => this._renderItem(item))}
+                  ? html`<div class="marquee-track">${this._renderMarqueeStrip(items)}</div>`
+                  : items.map((item) => this._renderItem(item))}
             </div>`}
       </ha-card>
       ${this._renderDetailsDialog()}
@@ -420,8 +409,13 @@ export class TautulliMediaCard extends LitElement {
       const type = media.type ?? "unknown";
       let key = media.id ?? `${type}:${media.title}:${media.added_at}`;
       if (["episode", "show", "season"].includes(type) && ["smart", "show", "season"].includes(grouping)) {
-        const show = hierarchy.grandparent_id ?? hierarchy.show ?? media.title;
-        key = grouping === "season" ? `tv:${show}:${hierarchy.season_number ?? hierarchy.season}` : `tv:${show}`;
+        const show = hierarchy.grandparent_id
+          ?? hierarchy.show
+          ?? (type === "season" ? hierarchy.parent_id ?? this._seasonShowTitle(media) : media.title);
+        const season = type === "season"
+          ? this._seasonLabel(media)
+          : hierarchy.season_number ?? hierarchy.season;
+        key = grouping === "season" ? `tv:${show}:${season}` : `tv:${show}`;
       } else if (["track", "album", "artist"].includes(type) && grouping === "smart") {
         key = `music:${hierarchy.parent_id ?? hierarchy.album ?? hierarchy.artist ?? media.title}`;
       }
@@ -434,8 +428,12 @@ export class TautulliMediaCard extends LitElement {
       const representative = group[0] as MediaItem;
       const hierarchy = representative.hierarchy ?? {};
       const tv = ["episode", "show", "season"].includes(representative.type ?? "");
-      const title = tv ? hierarchy.show ?? representative.title : hierarchy.album ?? hierarchy.artist ?? representative.title;
-      const season = hierarchy.season_number ? `Season ${hierarchy.season_number}` : hierarchy.season;
+      const title = tv
+        ? representative.type === "season" ? this._seasonShowTitle(representative) || representative.title : hierarchy.show ?? representative.title
+        : hierarchy.album ?? hierarchy.artist ?? representative.title;
+      const season = representative.type === "season"
+        ? this._seasonLabel(representative)
+        : hierarchy.season_number ? `Season ${hierarchy.season_number}` : hierarchy.season;
       return {
         ...representative,
         type: tv ? "show" : "album",
@@ -527,12 +525,17 @@ export class TautulliMediaCard extends LitElement {
       return this._renderClassicActive(item);
     }
     const media = item.media ?? {};
+    const music = ["track", "album", "artist"].includes(media.type ?? "");
     const title = this._cardEpisodeTitle(media, "active");
     const subtitle = this._cardEpisodeSubtitle(media, "active");
+    const mediaDetail = music ? subtitle : subtitle || (media.year ? String(media.year) : "");
+    const showVideoQuality = !music && Boolean(this._config.show_quality);
+    const showAudioQuality = music && Boolean(this._config.show_audio_quality);
+    const showBandwidth = Boolean(this._config.show_bandwidth && item.quality?.bandwidth_kbps);
     const image = this._image(item.images);
     const background = this._backgroundImage(item.images);
     const progress = Math.max(0, Math.min(100, Number(item.playback?.progress_percent) || 0));
-    const stateColor = item.state === "paused" ? "var(--tas-paused-color)" : item.state === "buffering" ? "var(--tas-buffering-color)" : media.type === "track" ? "#1db954" : "var(--tas-playing-color)";
+    const stateColor = item.state === "paused" ? "var(--tas-paused-color)" : item.state === "buffering" ? "var(--tas-buffering-color)" : music ? "#1db954" : "var(--tas-playing-color)";
     const canTerminate = this._canTerminate(item) && (
       this._config.click_action !== "details"
       || ["card", "both"].includes(this._config.termination_location ?? "popup")
@@ -547,12 +550,15 @@ export class TautulliMediaCard extends LitElement {
             ${this._config.show_user && item.user?.display_name ? html`<span>${item.user.display_name}</span>` : nothing}
           </div>
           <h3 class="name">${title}</h3>
-          ${subtitle ? html`<div class="subtitle">${subtitle}</div>` : nothing}
+          ${mediaDetail && (music || this._config.show_media_details) ? html`<div class="subtitle">${mediaDetail}</div>` : nothing}
           ${this._config.show_device && item.client ? html`<div class="meta"><span>${item.client.player || item.client.product || item.client.device}</span></div>` : nothing}
-          ${this._config.show_quality ? html`<div class="details optional">
-            ${item.quality?.decision ? html`<span>${item.quality.decision}</span>` : nothing}
-            ${item.quality?.video_resolution ? html`<span>${item.quality.video_resolution}</span>` : nothing}
-            ${item.quality?.bandwidth_kbps ? html`<span>${this._bandwidth(item.quality.bandwidth_kbps)}</span>` : nothing}
+          ${showVideoQuality || showAudioQuality || showBandwidth ? html`<div class="details optional">
+            ${showVideoQuality && item.quality?.decision ? html`<span>${item.quality.decision}</span>` : nothing}
+            ${showVideoQuality && item.quality?.video_resolution ? html`<span>${item.quality.video_resolution}</span>` : nothing}
+            ${showAudioQuality && item.quality?.audio_codec ? html`<span>${item.quality.audio_codec}</span>` : nothing}
+            ${showAudioQuality && item.quality?.audio_channel_layout ? html`<span>${item.quality.audio_channel_layout}</span>` : nothing}
+            ${showAudioQuality && item.quality?.audio_bitrate_kbps ? html`<span>${item.quality.audio_bitrate_kbps} Kbps</span>` : nothing}
+            ${showBandwidth && item.quality?.bandwidth_kbps ? html`<span>${this._bandwidth(item.quality.bandwidth_kbps)}</span>` : nothing}
           </div>` : nothing}
           ${this._config.show_progress ? html`<div class="modern-progress-row">
             <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(progress)} style=${`--progress:${progress}%`}></div>
@@ -1051,7 +1057,12 @@ export class TautulliMediaCard extends LitElement {
       case "audio_quality": return this._detailValue("Audio", [item.quality?.audio_codec, item.quality?.audio_channel_layout].filter(Boolean).join(" · "));
       case "bandwidth": return this._detailValue("Bandwidth", item.quality?.bandwidth_kbps ? this._bandwidth(item.quality.bandwidth_kbps) : undefined);
       case "episode": return this._detailValue("Season / episode", media.type === "episode" ? `S${hierarchy.season_number ?? "–"} · E${hierarchy.episode_number ?? hierarchy.episode ?? "–"}` : undefined);
+      case "media_type": return this._detailValue("Media type", media.type);
       case "year": return this._detailValue("Year", media.year);
+      case "duration": return this._detailValue("Duration", media.duration_seconds
+        ? this._duration(media.duration_seconds)
+        : item.playback?.duration_ms ? this._duration(Math.ceil(item.playback.duration_ms / 1000)) : undefined);
+      case "library": return this._detailValue("Library", media.library?.name);
       case "content_rating": return this._detailValue("Content rating", media.content_rating);
       case "rating": return this._detailValue("Rating", media.rating);
       case "audience_rating": return this._detailValue("Audience rating", media.audience_rating);
@@ -1093,27 +1104,48 @@ export class TautulliMediaCard extends LitElement {
     const media: MediaItem = this._config.mode === "recently_added" ? item as MediaItem : item.media ?? {};
     const poster = this._config.popup_show_artwork ? media.images?.poster_url ?? undefined : undefined;
     const backdrop = this._config.popup_show_artwork ? media.images?.backdrop_url ?? undefined : undefined;
+    const title = media.type === "season"
+      ? this._cardEpisodeTitle(media, "media")
+      : media.full_title || media.title || "Media details";
+    const subtitle = media.type === "season"
+      ? this._cardEpisodeSubtitle(media, "media")
+      : this._mediaSubtitle(media);
     const body = html`
-      <section class="popup-summary media-summary">${poster ? html`<img class="details-media-poster" src=${poster} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
-      ${this._mediaSubtitle(media) ? html`<p class="details-subtitle">${this._mediaSubtitle(media)}</p>` : nothing}
-      ${this._config.popup_show_summary && media.summary ? html`<p class="details-summary">${media.summary}</p>` : nothing}</section>
+      <section class="popup-summary media-summary"><div class="details-hero ${poster ? "with-poster" : ""}">
+        ${poster ? html`<img class="details-media-poster" src=${poster} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
+        <div class="details-primary">
+          <h2 id="details-title" class="details-inline-title">${title}</h2>
+          ${subtitle ? html`<p class="details-subtitle">${subtitle}</p>` : nothing}
+          ${this._config.popup_show_summary && media.summary ? html`<p class="details-summary">${media.summary}</p>` : nothing}
+        </div>
+      </div></section>
       <h3 class="details-section-title">Media details</h3>
       <div class="details-grid">
-        ${this._config.popup_show_media_type ? this._detailValue("Media type", media.type) : nothing}
-        ${this._config.popup_show_year ? this._detailValue("Year", media.year) : nothing}
-        ${this._config.popup_show_duration ? this._detailValue("Duration", media.duration_seconds ? this._duration(media.duration_seconds) : undefined) : nothing}
-        ${this._config.popup_show_library ? this._detailValue("Library", media.library?.name) : nothing}
-        ${this._config.popup_show_content_rating ? this._detailValue("Content rating", media.content_rating) : nothing}
-        ${this._config.popup_show_rating ? this._detailValue("Rating", media.rating) : nothing}
-        ${this._config.popup_show_audience_rating ? this._detailValue("Audience rating", media.audience_rating) : nothing}
-        ${this._config.popup_show_genres ? this._detailValue("Genres", media.genres?.join(" · ")) : nothing}
-        ${this._config.popup_show_studio ? this._detailValue("Studio", media.studio) : nothing}
+        ${(this._config.popup_detail_order ?? DEFAULT_POPUP_DETAIL_ORDER).map((field) =>
+          this._config[STREAM_DETAIL_VISIBILITY[field]]
+            ? this._renderMediaDetailField(field, media)
+            : nothing)}
         ${this._config.mode === "popular" ? this._detailValue("Rank", item.rank ? `#${item.rank}` : undefined) : nothing}
         ${this._config.mode === "popular" ? this._detailValue("Plays", item.total_plays) : nothing}
         ${this._config.mode === "history" && this._config.popup_show_user ? this._detailValue("Plex user", item.user?.display_name) : nothing}
         ${this._config.mode === "history" ? this._detailValue("Played", item.started_at ? this._date(item.started_at) : undefined) : nothing}
       </div>`;
-    return this._renderDialogShell(media.full_title || media.title || "Media details", body, backdrop);
+    return this._renderDialogShell(title, body, backdrop, true);
+  }
+
+  private _renderMediaDetailField(field: PopupDetailField, media: MediaItem): TemplateResult | typeof nothing {
+    switch (field) {
+      case "media_type": return this._detailValue("Media type", media.type);
+      case "year": return this._detailValue("Year", media.year);
+      case "duration": return this._detailValue("Duration", media.duration_seconds ? this._duration(media.duration_seconds) : undefined);
+      case "library": return this._detailValue("Library", media.library?.name);
+      case "content_rating": return this._detailValue("Content rating", media.content_rating);
+      case "rating": return this._detailValue("Rating", media.rating);
+      case "audience_rating": return this._detailValue("Audience rating", media.audience_rating);
+      case "genres": return this._detailValue("Genres", media.genres?.join(" · "));
+      case "studio": return this._detailValue("Studio", media.studio);
+      default: return nothing;
+    }
   }
 
   private _detailValue(label: string, value: unknown): TemplateResult | typeof nothing {
@@ -1157,6 +1189,7 @@ export class TautulliMediaCard extends LitElement {
     const normalTitle = context === "media"
       ? media.title || media.full_title
       : media.full_title || media.title;
+    if (media.type === "season") return this._seasonShowTitle(media) || normalTitle || "Untitled";
     if (media.type !== "episode") return normalTitle || "Untitled";
 
     const hierarchy = media.hierarchy ?? {};
@@ -1176,6 +1209,11 @@ export class TautulliMediaCard extends LitElement {
   }
 
   private _cardEpisodeSubtitle(media: MediaItem, context: "active" | "classic" | "media"): string {
+    if (media.type === "season") {
+      const label = this._seasonLabel(media);
+      const title = this._seasonShowTitle(media) || this._displayText(media.title || media.full_title);
+      return label === title ? "" : label;
+    }
     if (media.type !== "episode") return this._mediaSubtitle(media);
     const hierarchy = media.hierarchy ?? {};
     const show = this._displayText(hierarchy.show);
@@ -1207,6 +1245,25 @@ export class TautulliMediaCard extends LitElement {
       return `S${this._paddedIndex(season)}E${this._paddedIndex(episode)}`;
     }
     return `S${this._displayText(season)} · E${this._displayText(episode)}`;
+  }
+
+  private _seasonShowTitle(media: MediaItem): string {
+    const hierarchy = media.hierarchy ?? {};
+    const show = this._displayText(hierarchy.show);
+    if (show) return show;
+    const legacyParent = this._displayText(hierarchy.season);
+    return legacyParent && legacyParent !== this._seasonLabel(media) ? legacyParent : "";
+  }
+
+  private _seasonLabel(media: MediaItem): string {
+    const title = this._displayText(media.title || media.full_title);
+    if (title) return title;
+    const hierarchy = media.hierarchy ?? {};
+    const season = this._displayText(hierarchy.season);
+    const show = this._displayText(hierarchy.show);
+    if (season && season !== show) return season;
+    const number = hierarchy.season_number;
+    return number === undefined || number === null ? "" : `Season ${this._displayText(number)}`;
   }
 
   private _paddedIndex(value: string | number): string {
