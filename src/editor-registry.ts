@@ -88,7 +88,7 @@ export interface HintField extends Applicability {
 export interface BlockField extends Applicability {
   kind: "block";
   /** Identifier of a composite block rendered by dedicated editor code. */
-  block: "recipes" | "streamDetailOrder" | "terminationUnavailableHint" | "episodeTextPreview";
+  block: "recipes" | "streamDetailOrder" | "userDetailOrder" | "terminationUnavailableHint" | "episodeTextPreview";
 }
 
 export type Field =
@@ -125,7 +125,6 @@ export interface Section {
 }
 
 export const ALL_MODES: readonly CardMode[] = ["active", "recently_added", "popular", "users", "history"];
-const NOT_ACTIVE: readonly CardMode[] = ["recently_added", "popular", "users", "history"];
 
 export function appliesTo(applies: Applicability | undefined, ctx: FieldContext): boolean {
   if (applies?.modes && !applies.modes.includes(ctx.mode)) return false;
@@ -133,10 +132,13 @@ export function appliesTo(applies: Applicability | undefined, ctx: FieldContext)
   return true;
 }
 
-const posterish = (ctx: FieldContext) => ["poster", "both"].includes(ctx.config.artwork ?? "poster");
-const backdropish = (ctx: FieldContext) => ["backdrop", "both"].includes(ctx.config.artwork ?? "poster");
+const NON_MEDIA_STATS = ["top_users", "top_libraries", "top_platforms"];
+const mediaContextAvailable = (ctx: FieldContext) => ctx.mode !== "users"
+  && !(ctx.mode === "popular" && NON_MEDIA_STATS.includes(ctx.config.stat_id ?? "popular_movies"));
+const posterish = (ctx: FieldContext) => mediaContextAvailable(ctx) && ["poster", "both"].includes(ctx.config.artwork ?? "poster");
+const backdropish = (ctx: FieldContext) => mediaContextAvailable(ctx) && ["backdrop", "both"].includes(ctx.config.artwork ?? "poster");
 const popupEnabled = (ctx: FieldContext) => ctx.config.click_action === "details";
-const animating = (ctx: FieldContext) => (ctx.config.popup_animation ?? "scale") !== "none";
+const animating = (ctx: FieldContext) => ctx.config.animations !== false && (ctx.config.popup_animation ?? "scale") !== "none";
 const summaryShown = (ctx: FieldContext) => Boolean(ctx.config.popup_show_summary);
 const canTerminate = (ctx: FieldContext) => Boolean(ctx.data.capabilities?.stream_termination);
 const terminationArmed = (ctx: FieldContext) => canTerminate(ctx) && Boolean(ctx.config.allow_termination);
@@ -152,6 +154,12 @@ const episodeNumberUsed = (ctx: FieldContext) =>
   ctx.config.episode_layout !== "custom"
   || ["show_and_number", "number_and_title", "show_number_and_title", "number_only"].includes(
     ctx.config.episode_subtitle ?? "show_and_number",
+  );
+
+const popupEpisodeNumberUsed = (ctx: FieldContext) =>
+  ctx.config.popup_episode_layout === "custom"
+  && ["show_and_number", "number_and_title", "show_number_and_title", "number_only"].includes(
+    ctx.config.popup_episode_subtitle ?? "show_and_number",
   );
 
 const movieTextAvailable = (ctx: FieldContext) => {
@@ -194,7 +202,7 @@ const MOVIE_TEXT_SUBSECTION: SubSection = {
 const TV_EPISODE_TEXT_SUBSECTION: SubSection = {
   summary: "TV episode text",
   className: "inline-advanced",
-  description: "Choose how episode names and numbers are arranged on dashboard items. Popup text is configured separately.",
+  description: "Choose how episode names and numbers are arranged on dashboard items. Popup episode text is configured under Popup summary.",
   applies: { when: episodeTextAvailable },
   fields: [
     {
@@ -254,15 +262,14 @@ export const EDITOR_SECTIONS: Section[] = [
         options: (ctx) => {
           const cap = ctx.data.capabilities;
           return [
-            { value: "active", label: "Active streams" },
+            ...(cap?.active_streams === false ? [] : [{ value: "active", label: "Active streams" }]),
             ...(cap?.recently_added === false ? [] : [{ value: "recently_added", label: "Recently added" }]),
-            ...(cap?.home_stats === false ? [] : [{ value: "popular", label: "Popular and top media" }]),
+            ...(cap?.home_stats === false ? [] : [{ value: "popular", label: "Statistics and rankings" }]),
             ...(cap?.user_stats === false ? [] : [{ value: "users", label: "Plex user activity" }]),
             ...(cap?.history === false ? [] : [{ value: "history", label: "Watch history (administrators)" }]),
           ];
         },
       },
-      { kind: "text", key: "title", label: "Title" },
       {
         kind: "select", key: "media_type", label: "Media", modes: ["active"],
         options: [
@@ -294,7 +301,7 @@ export const EDITOR_SECTIONS: Section[] = [
         text: "Tautulli can return a multi-episode addition as one season item. Grouping controls extra card-side grouping and cannot split that season into individual episodes.",
       },
       {
-        kind: "select", key: "section_id", label: "Library", modes: NOT_ACTIVE,
+        kind: "select", key: "section_id", label: "Library", modes: ["recently_added", "popular"],
         options: (ctx) => [{ value: "", label: "All libraries" }, ...ctx.data.libraries],
       },
       {
@@ -325,6 +332,29 @@ export const EDITOR_SECTIONS: Section[] = [
         ],
       },
       { kind: "number", key: "time_range", label: "Time range", min: 1, max: 3650, suffix: "days", modes: ["popular"] },
+      {
+        kind: "select", key: "sort_by", label: "Sort active streams by", modes: ["active"],
+        options: [
+          { value: "server", label: "Tautulli order" },
+          { value: "user", label: "Plex user" },
+          { value: "title", label: "Media title" },
+          { value: "state", label: "Playback state" },
+          { value: "progress", label: "Progress" },
+        ],
+      },
+      {
+        kind: "select", key: "sort_direction", label: "Sort direction",
+        modes: ["active"], when: (ctx) => (ctx.config.sort_by ?? "server") !== "server",
+        options: [
+          { value: "ascending", label: "Ascending" },
+          { value: "descending", label: "Descending" },
+        ],
+      },
+      {
+        kind: "number", key: "max_items",
+        label: (ctx) => (ctx.mode === "active" ? "Maximum active streams" : "Maximum items"),
+        min: 1, max: 50, suffix: "",
+      },
     ],
   },
   {
@@ -354,22 +384,22 @@ export const EDITOR_SECTIONS: Section[] = [
           { value: "showcase", label: "Showcase (one at a time)" },
         ],
       },
-      { kind: "number", key: "scroll_gap", label: "Item spacing", min: 0, max: 48, suffix: "px",
+      { kind: "number", key: "scroll_gap", label: "Scrolling layout spacing", min: 0, max: 48, suffix: "px",
         when: (ctx) => ["stack", "horizontal", "carousel", "marquee"].includes(ctx.config.layout ?? "grid") },
       { kind: "number", key: "scroll_peek", label: "Next item peek", min: 0, max: 200, suffix: "px",
-        when: (ctx) => ["horizontal", "carousel", "marquee"].includes(ctx.config.layout ?? "grid") },
+        when: (ctx) => ctx.config.layout === "horizontal" },
       {
-        kind: "select", key: "autoscroll_direction", label: "Scroll direction",
+        kind: "select", key: "autoscroll_direction", label: "Movement direction",
         when: (ctx) => ctx.config.layout === "marquee",
         options: [
-          { value: "ltr", label: "Left to right" },
-          { value: "rtl", label: "Right to left" },
+          { value: "ltr", label: "Cards move left" },
+          { value: "rtl", label: "Cards move right" },
         ],
       },
       { kind: "slider", key: "autoscroll_speed", label: "Auto-scroll speed", min: 10, max: 200, suffix: "px/s",
         when: (ctx) => ctx.config.layout === "marquee" },
       { kind: "toggle", key: "carousel_buttons", label: "Show previous / next buttons",
-        when: (ctx) => ["horizontal", "marquee", "showcase"].includes(ctx.config.layout ?? "grid") },
+        when: (ctx) => ["horizontal", "carousel", "showcase"].includes(ctx.config.layout ?? "grid") },
       { kind: "number", key: "showcase_advance", label: "Advance every", min: 2, max: 60, suffix: "s",
         when: (ctx) => ctx.config.layout === "showcase" },
       {
@@ -408,25 +438,8 @@ export const EDITOR_SECTIONS: Section[] = [
         ],
       },
       {
-        kind: "select", key: "sort_by", label: "Sort active streams by", modes: ["active"],
-        options: [
-          { value: "server", label: "Tautulli order" },
-          { value: "user", label: "Plex user" },
-          { value: "title", label: "Media title" },
-          { value: "state", label: "Playback state" },
-          { value: "progress", label: "Progress" },
-        ],
-      },
-      {
-        kind: "select", key: "sort_direction", label: "Sort direction",
-        modes: ["active"], when: (ctx) => (ctx.config.sort_by ?? "server") !== "server",
-        options: [
-          { value: "ascending", label: "Ascending" },
-          { value: "descending", label: "Descending" },
-        ],
-      },
-      {
         kind: "select", key: "artwork", label: "Artwork display",
+        when: mediaContextAvailable,
         options: [
           { value: "poster", label: "Poster / cover" },
           { value: "backdrop", label: "Backdrop" },
@@ -442,17 +455,12 @@ export const EDITOR_SECTIONS: Section[] = [
           { value: "transparent", label: "Transparent (items only)" },
         ],
       },
-      {
-        kind: "number", key: "max_items",
-        label: (ctx) => (ctx.mode === "active" ? "Maximum active streams" : "Maximum items"),
-        min: 1, max: 50, suffix: "",
-      },
     ],
     subsections: [
       {
         summary: "Artwork adjustments",
         className: "inline-advanced",
-        applies: { when: (ctx) => (ctx.config.artwork ?? "poster") !== "none" },
+        applies: { when: (ctx) => mediaContextAvailable(ctx) && (ctx.config.artwork ?? "poster") !== "none" },
         description: "Recommended values come from the selected look. These controls only affect the artwork currently in use.",
         fields: [
           {
@@ -501,10 +509,10 @@ export const EDITOR_SECTIONS: Section[] = [
           { kind: "appearanceText", key: "border_color", label: "Border colour", placeholder: "Theme variable or colour", colour: true },
           { kind: "appearanceText", key: "item_shadow", label: "Panel shadow", placeholder: "CSS box-shadow value" },
           { kind: "appearanceNumber", key: "border_radius", label: "Corner radius", min: 0, max: 32, suffix: "px" },
-          { kind: "appearanceNumber", key: "item_gap", label: "Item spacing", min: 0, max: 32, suffix: "px" },
-          { kind: "appearanceNumber", key: "artwork_width", label: "Poster / cover width", min: 48, max: 240, suffix: "px", when: posterish,
+          { kind: "appearanceNumber", key: "item_gap", label: "Base card spacing", min: 0, max: 32, suffix: "px" },
+          { kind: "appearanceNumber", key: "artwork_width", label: "Poster / cover width", min: 48, max: 240, suffix: "px", when: (ctx) => ctx.mode !== "users" && posterish(ctx),
             fallback: (ctx) => (ctx.config.style_preset === "classic" ? 85 : ctx.config.density === "comfortable" ? 112 : ctx.config.density === "detailed" ? 140 : 92) },
-          { kind: "appearanceNumber", key: "artwork_inset", label: "Poster / cover inset", min: 0, max: 24, suffix: "px", when: posterish },
+          { kind: "appearanceNumber", key: "artwork_inset", label: "Poster / cover inset", min: 0, max: 24, suffix: "px", when: (ctx) => ctx.mode !== "users" && posterish(ctx) },
           { kind: "appearanceNumber", key: "title_size", label: "Base title size", min: 11, max: 32, suffix: "px" },
           { kind: "appearanceNumber", key: "progress_height", label: "Progress height", min: 2, max: 24, suffix: "px" },
           { kind: "appearanceText", key: "playing_color", label: "Playing colour", placeholder: "Theme variable or colour", colour: true },
@@ -519,10 +527,11 @@ export const EDITOR_SECTIONS: Section[] = [
     summary: "General",
     description: "Control header, empty states and animation behaviour.",
     fields: [
-      { kind: "toggle", key: "show_header", label: "Header" },
+      { kind: "toggle", key: "show_header", label: "Show title" },
+      { kind: "text", key: "title", label: "Custom title", when: (ctx) => ctx.config.show_header === true },
       { kind: "toggle", key: "show_count", label: "Item count" },
-      { kind: "toggle", key: "show_empty", label: "Show when empty" },
-      { kind: "toggle", key: "animations", label: "State animations" },
+      { kind: "toggle", key: "show_empty", label: "Show card when no items are available" },
+      { kind: "toggle", key: "animations", label: "Enable animations" },
     ],
   },
   {
@@ -551,12 +560,12 @@ export const EDITOR_SECTIONS: Section[] = [
         summary: "Playback and progress", className: "inline-advanced",
         fields: [
           { kind: "toggle", key: "show_progress", label: "Progress bar" },
-          { kind: "toggle", key: "show_progress_percent", label: "Progress percentage" },
+          { kind: "toggle", key: "show_progress_percent", label: "Progress percentage", when: (ctx) => ctx.config.show_progress !== false },
           { kind: "toggle", key: "show_state", label: "Playback state" },
-          { kind: "toggle", key: "show_pause_duration", label: "Paused duration" },
-          { kind: "toggle", key: "show_track_number", label: "Music track number" },
+          { kind: "toggle", key: "show_pause_duration", label: "Paused duration", when: (ctx) => ctx.config.show_state !== false },
+          { kind: "toggle", key: "show_track_number", label: "Music track number", when: (ctx) => ctx.config.show_state !== false && ctx.config.media_type !== "video" },
           { kind: "toggle", key: "show_eta", label: "Estimated finish time" },
-          { kind: "toggle", key: "show_remaining", label: "Time remaining" },
+          { kind: "toggle", key: "show_remaining", label: "Time remaining", when: (ctx) => ctx.config.show_progress !== false },
         ],
       },
       {
@@ -572,11 +581,37 @@ export const EDITOR_SECTIONS: Section[] = [
     id: "card-information",
     summary: "Card information",
     description: "Control what information appears on each item.",
-    applies: { modes: NOT_ACTIVE },
+    applies: { modes: ["recently_added", "popular", "history"], when: mediaContextAvailable },
     fields: [
       { kind: "toggle", key: "show_summary", label: "Summary" },
     ],
     subsections: [MOVIE_TEXT_SUBSECTION, TV_EPISODE_TEXT_SUBSECTION],
+  },
+  {
+    id: "user-card-information",
+    summary: "User card information",
+    description: "Choose the activity totals and insights displayed on each Plex user card.",
+    applies: { modes: ["users"] },
+    subsections: [
+      {
+        summary: "Activity summary", className: "inline-advanced",
+        fields: [
+          { kind: "toggle", key: "user_card_show_last_active", label: "Last active" },
+          { kind: "toggle", key: "user_card_show_plays", label: "Play count" },
+          { kind: "toggle", key: "user_card_show_watch_time", label: "Watch time" },
+          { kind: "toggle", key: "user_card_show_completion", label: "Completion" },
+        ],
+      },
+      {
+        summary: "Detailed insights", className: "inline-advanced",
+        fields: [
+          { kind: "toggle", key: "user_card_show_media_breakdown", label: "Movie and TV breakdown" },
+          { kind: "toggle", key: "user_card_show_playback_breakdown", label: "Direct play and transcode breakdown" },
+          { kind: "toggle", key: "user_card_show_favourites", label: "Favourite media" },
+          { kind: "toggle", key: "user_card_show_habits", label: "Viewing habits and player" },
+        ],
+      },
+    ],
   },
   {
     id: "tap-behaviour",
@@ -645,7 +680,7 @@ export const EDITOR_SECTIONS: Section[] = [
         ],
       },
       { kind: "toggleNumber", key: "popup_cinematic_art", label: "Backdrop art strength", min: 5, max: 100, suffix: "%",
-        when: (ctx) => (ctx.config.popup_style ?? "clean") === "cinematic" },
+        when: (ctx) => mediaContextAvailable(ctx) && ctx.config.popup_show_artwork !== false && (ctx.config.popup_style ?? "clean") === "cinematic" },
       {
         kind: "select", key: "popup_width", label: "Popup width",
         options: [
@@ -663,8 +698,8 @@ export const EDITOR_SECTIONS: Section[] = [
           { value: "rise", label: "Rise from below" },
         ],
       },
-      { kind: "number", key: "popup_animation_duration", label: "Open animation duration", min: 0, max: 1500, suffix: "ms", when: animating },
-      { kind: "number", key: "popup_close_animation_duration", label: "Close animation duration", min: 0, max: 1000, suffix: "ms", when: animating },
+      { kind: "slider", key: "popup_animation_duration", label: "Open animation duration", min: 0, max: 1500, suffix: "ms", when: animating },
+      { kind: "slider", key: "popup_close_animation_duration", label: "Close animation duration", min: 0, max: 1000, suffix: "ms", when: animating },
       { kind: "toggleNumber", key: "popup_backdrop_dim", label: "Dim background", min: 1, max: 95, suffix: "%" },
       { kind: "toggleNumber", key: "popup_backdrop_blur", label: "Blur background", min: 1, max: 24, suffix: "px" },
       { kind: "appearanceText", key: "popup_background", label: "Popup background", placeholder: "Theme variable, colour, or rgba()", colour: true },
@@ -674,10 +709,10 @@ export const EDITOR_SECTIONS: Section[] = [
     id: "popup-summary",
     summary: "Popup summary",
     description: "Choose the media context displayed above the progress bar.",
-    applies: { when: popupEnabled },
+    applies: { modes: ["active", "recently_added", "popular", "history"], when: (ctx) => popupEnabled(ctx) && mediaContextAvailable(ctx) },
     fields: [
-      { kind: "toggle", key: "popup_show_artwork", label: "Artwork", when: (ctx) => ctx.mode !== "users" },
-      { kind: "toggle", key: "popup_show_summary", label: "Media description", when: (ctx) => ctx.mode !== "users" },
+      { kind: "toggle", key: "popup_show_artwork", label: "Artwork" },
+      { kind: "toggle", key: "popup_show_summary", label: "Media description" },
       {
         kind: "select", key: "popup_summary_lines", label: "Description length",
         when: (ctx) => ctx.mode !== "users" && summaryShown(ctx),
@@ -687,8 +722,44 @@ export const EDITOR_SECTIONS: Section[] = [
         ],
       },
       { kind: "toggle", key: "popup_summary_show_user", label: "Plex user", modes: ["active"] },
-      { kind: "toggle", key: "popup_show_user", label: "Plex user", modes: ["history"] },
       { kind: "toggle", key: "popup_show_progress", label: "Progress", modes: ["active"] },
+      {
+        kind: "select", key: "popup_episode_layout", label: "TV episode text", when: episodeTextAvailable,
+        options: [
+          { value: "automatic", label: "Automatic popup format" },
+          { value: "card", label: "Match dashboard card" },
+          { value: "custom", label: "Custom popup format" },
+        ],
+      },
+      {
+        kind: "select", key: "popup_episode_title", label: "Popup primary title",
+        when: (ctx) => episodeTextAvailable(ctx) && ctx.config.popup_episode_layout === "custom",
+        options: [
+          { value: "full_title", label: "Full title" },
+          { value: "show", label: "Show name" },
+          { value: "episode_title", label: "Episode title" },
+        ],
+      },
+      {
+        kind: "select", key: "popup_episode_subtitle", label: "Popup subtitle content",
+        when: (ctx) => episodeTextAvailable(ctx) && ctx.config.popup_episode_layout === "custom",
+        options: [
+          { value: "show_and_number", label: "Show and episode number" },
+          { value: "number_and_title", label: "Episode number and title" },
+          { value: "show_number_and_title", label: "Show, number and title" },
+          { value: "number_only", label: "Episode number only" },
+          { value: "episode_title", label: "Episode title only" },
+          { value: "none", label: "Hidden" },
+        ],
+      },
+      {
+        kind: "select", key: "popup_episode_number_style", label: "Popup episode numbering",
+        when: (ctx) => episodeTextAvailable(ctx) && popupEpisodeNumberUsed(ctx),
+        options: [
+          { value: "compact", label: "Compact (S1 · E2)" },
+          { value: "padded", label: "Zero-padded (S01E02)" },
+        ],
+      },
     ],
   },
   {
@@ -705,10 +776,7 @@ export const EDITOR_SECTIONS: Section[] = [
         ],
       },
       { kind: "block", block: "streamDetailOrder", modes: ["active", "recently_added", "popular", "history"] },
-      { kind: "toggle", key: "popup_show_playback_breakdown", label: "Playback breakdown", modes: ["users"] },
-      { kind: "toggle", key: "popup_show_favourites", label: "Favourite media", modes: ["users"] },
-      { kind: "toggle", key: "popup_show_habits", label: "Viewing habits and player", modes: ["users"] },
-      { kind: "toggle", key: "popup_show_recent_activity", label: "Recent activity", modes: ["users"] },
+      { kind: "block", block: "userDetailOrder", modes: ["users"] },
     ],
   },
 ];

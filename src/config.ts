@@ -1,4 +1,4 @@
-import type { CardConfig, PopupDetailField } from "./types";
+import type { CardConfig, PopupDetailField, UserPopupDetailGroup } from "./types";
 
 export const CURRENT_CONFIG_VERSION = 1;
 
@@ -22,7 +22,14 @@ export const DEFAULT_POPUP_DETAIL_ORDER: PopupDetailField[] = [
   "audience_rating",
   "genres",
   "studio",
+  "rank",
+  "plays",
+  "played",
 ];
+
+export const ACTIVE_POPUP_DETAIL_FIELDS: PopupDetailField[] = DEFAULT_POPUP_DETAIL_ORDER.filter(
+  (field) => !["rank", "plays", "played"].includes(field),
+);
 
 export const MEDIA_POPUP_DETAIL_FIELDS: PopupDetailField[] = [
   "media_type",
@@ -34,6 +41,25 @@ export const MEDIA_POPUP_DETAIL_FIELDS: PopupDetailField[] = [
   "audience_rating",
   "genres",
   "studio",
+];
+
+export const POPULAR_POPUP_DETAIL_FIELDS: PopupDetailField[] = [
+  ...MEDIA_POPUP_DETAIL_FIELDS,
+  "rank",
+  "plays",
+];
+
+export const HISTORY_POPUP_DETAIL_FIELDS: PopupDetailField[] = [
+  "user",
+  ...MEDIA_POPUP_DETAIL_FIELDS,
+  "played",
+];
+
+export const DEFAULT_USER_POPUP_DETAIL_ORDER: UserPopupDetailGroup[] = [
+  "playback",
+  "favourites",
+  "habits",
+  "recent_activity",
 ];
 
 export const DEFAULT_CONFIG: CardConfig = {
@@ -77,12 +103,20 @@ export const DEFAULT_CONFIG: CardConfig = {
   episode_number_style: "compact",
   movie_subtitle: "automatic",
   show_summary: false,
+  user_card_show_last_active: true,
+  user_card_show_plays: true,
+  user_card_show_watch_time: true,
+  user_card_show_completion: true,
+  user_card_show_media_breakdown: true,
+  user_card_show_playback_breakdown: true,
+  user_card_show_favourites: true,
+  user_card_show_habits: true,
   show_empty: false,
   scroll_gap: 8,
   scroll_peek: 36,
   autoscroll_speed: 60,
   autoscroll_direction: "ltr",
-  autoscroll_animation: "smooth",
+  carousel_buttons: true,
   showcase_advance: 6,
   showcase_transition: "fade",
   showcase_direction: "left",
@@ -95,6 +129,7 @@ export const DEFAULT_CONFIG: CardConfig = {
   popup_cinematic_art: 45,
   popup_content_style: "open",
   popup_detail_order: DEFAULT_POPUP_DETAIL_ORDER,
+  popup_user_detail_order: DEFAULT_USER_POPUP_DETAIL_ORDER,
   popup_width: "standard",
   popup_animation: "scale",
   popup_animation_duration: 220,
@@ -107,6 +142,10 @@ export const DEFAULT_CONFIG: CardConfig = {
   popup_show_summary: true,
   popup_summary_show_user: true,
   popup_summary_lines: 3,
+  popup_episode_layout: "automatic",
+  popup_episode_title: "full_title",
+  popup_episode_subtitle: "show_and_number",
+  popup_episode_number_style: "compact",
   popup_show_technical: true,
   popup_show_user: true,
   popup_show_progress: true,
@@ -133,6 +172,9 @@ export const DEFAULT_CONFIG: CardConfig = {
   popup_show_audience_rating: true,
   popup_show_genres: true,
   popup_show_studio: true,
+  popup_show_rank: true,
+  popup_show_plays: true,
+  popup_show_played: true,
   popup_show_playback_breakdown: true,
   popup_show_favourites: true,
   popup_show_habits: true,
@@ -148,17 +190,53 @@ export function normalizeConfig(config: Partial<CardConfig>): CardConfig {
   }
   const migrated = migrateConfig(config as Partial<CardConfig> & Record<string, unknown>);
   const merged = { ...DEFAULT_CONFIG, ...migrated, config_version: CURRENT_CONFIG_VERSION } as CardConfig;
+  const mergedValues = merged as unknown as Record<string, unknown>;
+  const choiceFields: Array<[keyof CardConfig, readonly string[]]> = [
+    ["mode", ["active", "recently_added", "popular", "users", "history"]],
+    ["media_type", ["all", "video", "music", "movie", "show", "artist"]],
+    ["recent_grouping", ["none", "smart", "show", "season"]],
+    ["layout", ["grid", "list", "stack", "horizontal", "carousel", "marquee", "showcase"]],
+    ["autoscroll_direction", ["ltr", "rtl"]],
+    ["showcase_transition", ["fade", "slide", "horizontal"]],
+    ["showcase_direction", ["left", "right"]],
+    ["sort_by", ["server", "user", "title", "state", "progress"]],
+    ["sort_direction", ["ascending", "descending"]],
+    ["density", ["compact", "comfortable", "detailed"]],
+    ["artwork", ["poster", "backdrop", "both", "none"]],
+    ["artwork_fit", ["cover", "contain"]],
+    ["artwork_aspect", ["auto", "poster", "square", "backdrop"]],
+    ["artwork_position", ["center", "top", "bottom", "left", "right"]],
+    ["artwork_placement", ["left", "right", "background"]],
+    ["style_preset", ["classic", "modern", "minimal"]],
+    ["container_style", ["auto", "surface", "transparent"]],
+    ["episode_layout", ["current", "show_first", "episode_first", "custom"]],
+    ["episode_title", ["full_title", "show", "episode_title"]],
+    ["episode_subtitle", ["show_and_number", "number_and_title", "show_number_and_title", "number_only", "episode_title", "none"]],
+    ["episode_number_style", ["compact", "padded"]],
+    ["movie_subtitle", ["automatic", "year", "content_rating", "rating", "audience_rating", "genres", "studio", "none"]],
+    ["termination_location", ["popup", "card", "both"]],
+    ["click_action", ["none", "details"]],
+    ["popup_style", ["clean", "panel", "cinematic"]],
+    ["popup_content_style", ["open", "panel"]],
+    ["popup_width", ["compact", "standard", "wide"]],
+    ["popup_animation", ["none", "fade", "scale", "rise"]],
+    ["popup_episode_layout", ["automatic", "card", "custom"]],
+    ["popup_episode_title", ["full_title", "show", "episode_title"]],
+    ["popup_episode_subtitle", ["show_and_number", "number_and_title", "show_number_and_title", "number_only", "episode_title", "none"]],
+    ["popup_episode_number_style", ["compact", "padded"]],
+    ["termination_popup_placement", ["top", "footer"]],
+    ["termination_button_style", ["label", "icon"]],
+    ["stat_id", ["popular_movies", "top_movies", "popular_tv", "top_tv", "popular_music", "top_music", "top_users", "top_libraries", "top_platforms", "last_watched", "most_concurrent"]],
+    ["metric", ["plays", "duration"]],
+  ];
+  for (const [key, choices] of choiceFields) {
+    if (!choices.includes(String(mergedValues[key] ?? ""))) mergedValues[key] = DEFAULT_CONFIG[key];
+  }
   if (migrated.max_items === undefined && merged.mode !== "active") merged.max_items = 12;
   else merged.max_items = Math.min(50, Math.max(1, Number(merged.max_items) || 50));
   merged.time_range = Math.min(3650, Math.max(1, Number(merged.time_range) || 30));
   const summaryLines = Number(merged.popup_summary_lines);
   merged.popup_summary_lines = ([0, 2, 3, 5].includes(summaryLines) ? summaryLines : 3) as CardConfig["popup_summary_lines"];
-  if (!["fade", "slide", "horizontal"].includes(merged.showcase_transition ?? "")) {
-    merged.showcase_transition = DEFAULT_CONFIG.showcase_transition;
-  }
-  if (!["left", "right"].includes(merged.showcase_direction ?? "")) {
-    merged.showcase_direction = DEFAULT_CONFIG.showcase_direction;
-  }
   const requestedDetailOrder = Array.isArray(merged.popup_detail_order) ? merged.popup_detail_order : [];
   const validDetailOrder = requestedDetailOrder.filter(
     (field, index): field is PopupDetailField => DEFAULT_POPUP_DETAIL_ORDER.includes(field as PopupDetailField)
@@ -168,8 +246,18 @@ export function normalizeConfig(config: Partial<CardConfig>): CardConfig {
     ...validDetailOrder,
     ...DEFAULT_POPUP_DETAIL_ORDER.filter((field) => !validDetailOrder.includes(field)),
   ];
-  if (typeof merged.columns === "number") {
-    merged.columns = Math.min(4, Math.max(1, merged.columns));
+  const requestedUserDetailOrder = Array.isArray(merged.popup_user_detail_order) ? merged.popup_user_detail_order : [];
+  const validUserDetailOrder = requestedUserDetailOrder.filter(
+    (group, index): group is UserPopupDetailGroup => DEFAULT_USER_POPUP_DETAIL_ORDER.includes(group as UserPopupDetailGroup)
+      && requestedUserDetailOrder.indexOf(group) === index,
+  );
+  merged.popup_user_detail_order = [
+    ...validUserDetailOrder,
+    ...DEFAULT_USER_POPUP_DETAIL_ORDER.filter((group) => !validUserDetailOrder.includes(group)),
+  ];
+  if (merged.columns !== "auto") {
+    const columns = Number(merged.columns);
+    merged.columns = Number.isFinite(columns) ? Math.min(4, Math.max(1, columns)) : "auto";
   }
   for (const [key, min, max] of [
     ["border_radius", 0, 32],
@@ -226,7 +314,7 @@ function migrateConfig(config: Partial<CardConfig> & Record<string, unknown>): P
       for (const specificKey of specificKeys) if (migrated[specificKey] === undefined) migrated[specificKey] = false;
     }
   }
-  for (const legacyKey of ["view", "preset", "show_title", "show_badge", "demo_when_empty"]) delete migrated[legacyKey];
+  for (const legacyKey of ["view", "preset", "show_title", "show_badge", "demo_when_empty", "autoscroll_animation"]) delete migrated[legacyKey];
   return migrated;
 }
 

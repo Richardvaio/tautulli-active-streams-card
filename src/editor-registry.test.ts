@@ -56,13 +56,27 @@ describe("editor settings registry", () => {
 
   it("never gates the core source fields by mode", () => {
     const content = EDITOR_SECTIONS.find((s) => s.id === "content-source");
-    const core = content?.fields?.filter((f) => "key" in f && ["entry_id", "mode", "title"].includes(f.key));
-    expect(core).toHaveLength(3);
+    const core = content?.fields?.filter((f) => "key" in f && ["entry_id", "mode"].includes(f.key));
+    expect(core).toHaveLength(2);
     for (const mode of ALL_MODES) {
       const keys = fieldKeys(ctxFor({}, mode));
       expect(keys.has("entry_id")).toBe(true);
       expect(keys.has("mode")).toBe(true);
     }
+  });
+
+  it("places the custom title directly behind the setting that enables it", () => {
+    expect(fieldKeys(ctxFor({ show_header: false })).has("title")).toBe(false);
+    expect(fieldKeys(ctxFor({ show_header: true })).has("title")).toBe(true);
+    const general = EDITOR_SECTIONS.find((section) => section.id === "general");
+    expect(general?.fields?.filter((field) => "key" in field).map((field) => "key" in field ? field.key : "").slice(0, 2)).toEqual(["show_header", "title"]);
+  });
+
+  it("shows library filtering only for requests that send a library", () => {
+    expect(fieldKeys(ctxFor({}, "recently_added")).has("section_id")).toBe(true);
+    expect(fieldKeys(ctxFor({}, "popular")).has("section_id")).toBe(true);
+    expect(fieldKeys(ctxFor({}, "users")).has("section_id")).toBe(false);
+    expect(fieldKeys(ctxFor({}, "history")).has("section_id")).toBe(false);
   });
 
   it("shows active-only card settings only for active streams", () => {
@@ -81,6 +95,8 @@ describe("editor settings registry", () => {
     const horizontallySlidingShowcase = fieldKeys(ctxFor({ layout: "showcase", showcase_transition: "horizontal" }));
     const showcaseWithoutAnimations = fieldKeys(ctxFor({ layout: "showcase", animations: false }));
     const horizontal = fieldKeys(ctxFor({ layout: "horizontal" }));
+    const carousel = fieldKeys(ctxFor({ layout: "carousel" }));
+    const marquee = fieldKeys(ctxFor({ layout: "marquee" }));
     const grid = fieldKeys(ctxFor({ layout: "grid" }));
     expect(showcase.has("showcase_advance")).toBe(true);
     expect(showcase.has("showcase_transition")).toBe(true);
@@ -91,6 +107,12 @@ describe("editor settings registry", () => {
     expect(horizontal.has("scroll_gap")).toBe(true);
     expect(horizontal.has("scroll_peek")).toBe(true);
     expect(horizontal.has("carousel_buttons")).toBe(true);
+    expect(carousel.has("scroll_gap")).toBe(true);
+    expect(carousel.has("scroll_peek")).toBe(false);
+    expect(carousel.has("carousel_buttons")).toBe(true);
+    expect(marquee.has("scroll_gap")).toBe(true);
+    expect(marquee.has("scroll_peek")).toBe(false);
+    expect(marquee.has("carousel_buttons")).toBe(false);
     expect(horizontal.has("showcase_transition")).toBe(false);
     expect(grid.has("showcase_advance")).toBe(false);
     expect(grid.has("showcase_transition")).toBe(false);
@@ -187,15 +209,49 @@ describe("editor settings registry", () => {
   it("shows cinematic art strength only for the cinematic style", () => {
     const cinematic = fieldKeys(ctxFor({ popup_style: "cinematic" }));
     const clean = fieldKeys(ctxFor({ popup_style: "clean" }));
+    const withoutArtwork = fieldKeys(ctxFor({ popup_style: "cinematic", popup_show_artwork: false }));
+    const user = fieldKeys(ctxFor({ popup_style: "cinematic" }, "users"));
     expect(cinematic.has("popup_cinematic_art")).toBe(true);
     expect(clean.has("popup_cinematic_art")).toBe(false);
+    expect(withoutArtwork.has("popup_cinematic_art")).toBe(false);
+    expect(user.has("popup_cinematic_art")).toBe(false);
+  });
+
+  it("offers independent popup episode text only where episodes can appear", () => {
+    const automatic = fieldKeys(ctxFor({ popup_episode_layout: "automatic", media_type: "video" }, "active"));
+    const custom = fieldKeys(ctxFor({
+      popup_episode_layout: "custom",
+      popup_episode_subtitle: "number_and_title",
+      media_type: "video",
+    }, "active"));
+    const music = fieldKeys(ctxFor({ popup_episode_layout: "custom", media_type: "music" }, "active"));
+    expect(automatic.has("popup_episode_layout")).toBe(true);
+    expect(automatic.has("popup_episode_title")).toBe(false);
+    expect(custom.has("popup_episode_title")).toBe(true);
+    expect(custom.has("popup_episode_subtitle")).toBe(true);
+    expect(custom.has("popup_episode_number_style")).toBe(true);
+    expect(music.has("popup_episode_layout")).toBe(false);
   });
 
   it("shows animation duration only when an animation is selected", () => {
     const animating = fieldKeys(ctxFor({ popup_animation: "rise" }));
     const none = fieldKeys(ctxFor({ popup_animation: "none" }));
+    const globallyDisabled = fieldKeys(ctxFor({ popup_animation: "rise", animations: false }));
     expect(animating.has("popup_animation_duration")).toBe(true);
     expect(none.has("popup_animation_duration")).toBe(false);
+    expect(globallyDisabled.has("popup_animation_duration")).toBe(false);
+    expect(globallyDisabled.has("popup_close_animation_duration")).toBe(false);
+  });
+
+  it("hides playback settings when their parent display is disabled", () => {
+    const noProgress = fieldKeys(ctxFor({ show_progress: false }));
+    const noState = fieldKeys(ctxFor({ show_state: false }));
+    const video = fieldKeys(ctxFor({ media_type: "video" }));
+    expect(noProgress.has("show_progress_percent")).toBe(false);
+    expect(noProgress.has("show_remaining")).toBe(false);
+    expect(noState.has("show_pause_duration")).toBe(false);
+    expect(noState.has("show_track_number")).toBe(false);
+    expect(video.has("show_track_number")).toBe(false);
   });
 
   it("cascades termination fields on capability, enablement, location and popup state", () => {
@@ -211,12 +267,27 @@ describe("editor settings registry", () => {
   it("gates users-only and non-users popup detail fields by mode", () => {
     const users = fieldKeys(ctxFor({}, "users"));
     const media = fieldKeys(ctxFor({}, "recently_added"));
-    expect(users.has("popup_show_playback_breakdown")).toBe(true);
+    expect(users.has("popup_show_playback_breakdown")).toBe(false);
     expect(media.has("popup_show_playback_breakdown")).toBe(false);
     expect(users.has("popup_show_genres")).toBe(false);
     expect(media.has("popup_show_genres")).toBe(false);
     expect(users.has("popup_show_artwork")).toBe(false);
     expect(media.has("popup_show_artwork")).toBe(true);
+    expect(users.has("artwork")).toBe(false);
+    expect(users.has("show_summary")).toBe(false);
+    for (const key of [
+      "user_card_show_last_active",
+      "user_card_show_plays",
+      "user_card_show_watch_time",
+      "user_card_show_completion",
+      "user_card_show_media_breakdown",
+      "user_card_show_playback_breakdown",
+      "user_card_show_favourites",
+      "user_card_show_habits",
+    ]) expect(users.has(key), `${key} missing from users`).toBe(true);
+    const popupDetails = EDITOR_SECTIONS.find((section) => section.id === "popup-details");
+    expect(popupDetails?.fields?.some((field) => field.kind === "block" && field.block === "userDetailOrder" && appliesTo(field, ctxFor({}, "users")))).toBe(true);
+    expect(popupDetails?.fields?.some((field) => field.kind === "block" && field.block === "userDetailOrder" && appliesTo(field, ctxFor({}, "recently_added")))).toBe(false);
   });
 
   it("uses the ordered detail list as the only active-stream popup field controls", () => {
@@ -253,6 +324,20 @@ describe("editor settings registry", () => {
     expect(poster.has("backdrop_opacity")).toBe(false);
     expect(none.has("artwork_aspect")).toBe(false);
     expect(none.has("backdrop_opacity")).toBe(false);
+  });
+
+  it("hides media-only artwork and summaries for non-media rankings", () => {
+    for (const stat_id of ["top_users", "top_libraries", "top_platforms"]) {
+      const keys = fieldKeys(ctxFor({ stat_id }, "popular"));
+      expect(keys.has("artwork"), `${stat_id} artwork`).toBe(false);
+      expect(keys.has("show_summary"), `${stat_id} summary`).toBe(false);
+      expect(keys.has("popup_show_artwork"), `${stat_id} popup artwork`).toBe(false);
+    }
+    for (const stat_id of ["popular_movies", "last_watched", "most_concurrent"]) {
+      const keys = fieldKeys(ctxFor({ stat_id }, "popular"));
+      expect(keys.has("artwork"), `${stat_id} artwork`).toBe(true);
+      expect(keys.has("popup_show_artwork"), `${stat_id} popup artwork`).toBe(true);
+    }
   });
 
   it("shows the summary-length selector only when the summary is enabled", () => {

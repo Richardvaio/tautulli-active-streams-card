@@ -10,6 +10,7 @@ describe("card configuration", () => {
     expect(config.max_items).toBe(50);
     expect(config.show_header).toBe(false);
     expect(config.show_count).toBe(false);
+    expect(config.carousel_buttons).toBe(true);
   });
 
   it("clamps values sent to bounded backend endpoints", () => {
@@ -79,6 +80,39 @@ describe("card configuration", () => {
     expect(compactConfig(config)).not.toHaveProperty("demo_when_empty");
   });
 
+  it("normalizes invalid YAML choices instead of leaving blank editor controls", () => {
+    const config = normalizeConfig({
+      mode: "broken",
+      layout: "diagonal",
+      artwork: "maybe",
+      style_preset: "unknown",
+      click_action: "launch",
+      popup_width: "huge",
+      popup_episode_layout: "separate",
+      metric: "hours",
+      columns: "many",
+    } as never);
+    expect(config).toMatchObject({
+      mode: "active",
+      layout: "grid",
+      artwork: "poster",
+      style_preset: "classic",
+      click_action: "none",
+      popup_width: "standard",
+      popup_episode_layout: "automatic",
+      metric: "plays",
+      columns: "auto",
+    });
+  });
+
+  it("drops retired marquee settings and validates movement direction", () => {
+    const migrated = normalizeConfig({ autoscroll_animation: "smooth", autoscroll_direction: "bounce" } as never);
+    expect(migrated.autoscroll_direction).toBe("ltr");
+    expect(migrated).not.toHaveProperty("autoscroll_animation");
+    expect(compactConfig(migrated)).not.toHaveProperty("autoscroll_animation");
+    expect(normalizeConfig({ autoscroll_direction: "rtl" }).autoscroll_direction).toBe("rtl");
+  });
+
   it("preserves the existing movie subtitle layout unless a source is selected", () => {
     const automatic = normalizeConfig({});
     expect(automatic.movie_subtitle).toBe("automatic");
@@ -112,6 +146,10 @@ describe("card configuration", () => {
       popup_width: "wide",
       popup_content_style: "panel",
       popup_summary_lines: 5,
+      popup_episode_layout: "custom",
+      popup_episode_title: "show",
+      popup_episode_subtitle: "number_and_title",
+      popup_episode_number_style: "padded",
       allow_termination: true,
       termination_location: "both",
       termination_popup_placement: "top",
@@ -166,13 +204,21 @@ describe("card configuration", () => {
       popup_detail_order: ["bandwidth", "user", "bandwidth", "invalid"] as never,
     });
     expect(config.popup_detail_order?.slice(0, 2)).toEqual(["bandwidth", "user"]);
-    expect(config.popup_detail_order).toHaveLength(19);
-    expect(new Set(config.popup_detail_order).size).toBe(19);
-    expect(config.popup_detail_order).toEqual(expect.arrayContaining(["media_type", "duration", "library"]));
+    expect(config.popup_detail_order).toHaveLength(22);
+    expect(new Set(config.popup_detail_order).size).toBe(22);
+    expect(config.popup_detail_order).toEqual(expect.arrayContaining(["media_type", "duration", "library", "rank", "plays", "played"]));
 
     const saved = compactConfig(config);
     expect(saved.popup_detail_order?.slice(0, 2)).toEqual(["bandwidth", "user"]);
     expect(normalizeConfig(saved).popup_detail_order).toEqual(config.popup_detail_order);
+  });
+
+  it("sanitizes and round-trips Plex user popup group order", () => {
+    const config = normalizeConfig({
+      popup_user_detail_order: ["habits", "playback", "habits", "invalid"] as never,
+    });
+    expect(config.popup_user_detail_order).toEqual(["habits", "playback", "favourites", "recent_activity"]);
+    expect(normalizeConfig(compactConfig(config)).popup_user_detail_order).toEqual(config.popup_user_detail_order);
   });
 
   it("migrates the former shared popup user setting into the summary setting", () => {

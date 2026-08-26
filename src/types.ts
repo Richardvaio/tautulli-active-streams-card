@@ -44,7 +44,11 @@ export type PopupDetailField =
   | "rating"
   | "audience_rating"
   | "genres"
-  | "studio";
+  | "studio"
+  | "rank"
+  | "plays"
+  | "played";
+export type UserPopupDetailGroup = "playback" | "favourites" | "habits" | "recent_activity";
 
 export interface HomeAssistant {
   callWS<T>(message: Record<string, unknown>): Promise<T>;
@@ -74,8 +78,7 @@ export interface CardConfig {
   scroll_gap?: number;
   scroll_peek?: number;
   autoscroll_speed?: number;
-  autoscroll_direction?: "ltr" | "rtl" | "bounce";
-  autoscroll_animation?: "linear" | "smooth";
+  autoscroll_direction?: "ltr" | "rtl";
   carousel_buttons?: boolean;
   showcase_advance?: number;
   showcase_transition?: "fade" | "slide" | "horizontal";
@@ -126,6 +129,14 @@ export interface CardConfig {
   episode_number_style?: EpisodeNumberStyle;
   movie_subtitle?: MovieSubtitleSource;
   show_summary?: boolean;
+  user_card_show_last_active?: boolean;
+  user_card_show_plays?: boolean;
+  user_card_show_watch_time?: boolean;
+  user_card_show_completion?: boolean;
+  user_card_show_media_breakdown?: boolean;
+  user_card_show_playback_breakdown?: boolean;
+  user_card_show_favourites?: boolean;
+  user_card_show_habits?: boolean;
   show_empty?: boolean;
   animations?: boolean;
   allow_termination?: boolean;
@@ -135,10 +146,15 @@ export interface CardConfig {
   popup_cinematic_art?: number;
   popup_content_style?: "open" | "panel";
   popup_detail_order?: PopupDetailField[];
+  popup_user_detail_order?: UserPopupDetailGroup[];
   popup_show_artwork?: boolean;
   popup_show_summary?: boolean;
   popup_summary_show_user?: boolean;
   popup_summary_lines?: 0 | 2 | 3 | 5;
+  popup_episode_layout?: "automatic" | "card" | "custom";
+  popup_episode_title?: EpisodeTitleSource;
+  popup_episode_subtitle?: EpisodeSubtitleSource;
+  popup_episode_number_style?: EpisodeNumberStyle;
   popup_width?: "compact" | "standard" | "wide";
   popup_animation?: "none" | "fade" | "scale" | "rise";
   popup_animation_duration?: number;
@@ -174,6 +190,9 @@ export interface CardConfig {
   popup_show_audience_rating?: boolean;
   popup_show_genres?: boolean;
   popup_show_studio?: boolean;
+  popup_show_rank?: boolean;
+  popup_show_plays?: boolean;
+  popup_show_played?: boolean;
   popup_show_playback_breakdown?: boolean;
   popup_show_favourites?: boolean;
   popup_show_habits?: boolean;

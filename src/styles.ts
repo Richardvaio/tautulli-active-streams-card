@@ -25,7 +25,7 @@ export const cardStyles = css`
   .content.horizontal > :is(.item, .classic-item, .media-item) { box-sizing:border-box; flex:0 0 min(600px, max(65cqw, calc(100cqw - var(--scroll-peek, 36px)))); scroll-snap-align:start; scroll-snap-stop:always; }
   .content.horizontal.single { overflow-x:hidden; scroll-snap-type:none; }
   .content.horizontal.single > :is(.item, .classic-item, .media-item) { flex-basis:100%; }
-  .content.carousel { display:flex; overflow-x:auto; overscroll-behavior-inline:contain; scroll-snap-type:x mandatory; scroll-padding-inline:var(--tas-gap, 8px); scrollbar-width:thin; padding-bottom:12px; }
+  .content.carousel { display:flex; gap:var(--scroll-gap, 8px); overflow-x:auto; overscroll-behavior-inline:contain; scroll-snap-type:x mandatory; scroll-padding-inline:var(--tas-gap, 8px); scrollbar-width:thin; padding-bottom:12px; }
   .content.marquee { display:block; overflow:hidden; padding-right:0; touch-action:pan-y; }
   .content.marquee .marquee-track { display:flex; flex-wrap:nowrap; gap:var(--scroll-gap, 8px); will-change:transform; animation-play-state:paused; user-select:none; -webkit-user-select:none; }
   .content.marquee .marquee-track .item { flex:0 0 min(72cqw, var(--carousel-width, 280px)); flex-shrink:0; }
@@ -97,9 +97,11 @@ export const cardStyles = css`
   .summary { font-size:12px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
   .progress { height:var(--tas-progress-height, 7px); border-radius:99px; overflow:hidden; background:color-mix(in srgb, var(--primary-text-color) 14%, transparent); margin-top:auto; }
   .progress::before { content:""; display:block; height:100%; width:var(--progress, 0%); background:var(--state-color, var(--primary-color)); transition:width .4s ease; }
-  .modern-progress-row { display:grid; grid-template-columns:minmax(64px,1fr) auto; align-items:center; gap:10px; margin-top:auto; padding-bottom:4px; }
-  .modern-progress-row .progress { width:100%; margin-top:0; }
+  .modern-progress-row { display:flex; align-items:center; gap:10px; margin-top:auto; padding-bottom:4px; }
+  .modern-progress-row .progress { flex:1 1 64px; width:100%; margin-top:0; }
+  .modern-progress-percent { color:var(--secondary-text-color); font-size:11px; white-space:nowrap; }
   .modern-progress-remaining { color:var(--secondary-text-color); font-size:11px; text-align:right; white-space:nowrap; }
+  .modern-eta { margin-left:auto; }
   .terminate { position:absolute; right:6px; top:6px; display:grid; place-items:center; width:32px; height:32px; padding:0; border:1px solid color-mix(in srgb, var(--error-color) 28%, transparent); border-radius:50%; color:var(--error-color); background:color-mix(in srgb, var(--error-color) 16%, transparent); box-shadow:0 3px 10px rgb(0 0 0 / 14%); cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
   .terminate:hover { border-color:color-mix(in srgb, var(--error-color) 42%, transparent); background:color-mix(in srgb, var(--error-color) 24%, transparent); transform:translateY(-1px); }
   .classic-item { position:relative; min-width:0; display:grid; grid-template-columns:minmax(48px, var(--art-width, 85px)) minmax(0, 1fr); gap:5px; overflow:hidden; color:var(--primary-text-color); border:1px solid var(--tas-border-color); border-radius:var(--tas-radius); background:var(--tas-item-background); box-shadow:var(--tas-shadow); }
@@ -345,6 +347,7 @@ export const editorStyles = css`
   .episode-preview strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--primary-text-color); font-size:14px; }
   .episode-preview span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--secondary-text-color); font-size:12px; }
   .error { color:var(--error-color); font-size:12px; }
+  .error[role="status"] { color:var(--secondary-text-color); }
   .section details { border-top:1px solid var(--divider-color); padding-top:10px; }
   .section details summary { cursor:pointer; color:var(--primary-text-color); font-size:13px; font-weight:600; }
   .advanced { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; padding-top:12px; }
