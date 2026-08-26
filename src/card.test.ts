@@ -607,6 +607,7 @@ describe("stream termination confirmation", () => {
       entry_id: "entry-1",
       mode: "recently_added",
       click_action: "details",
+      popup_summary_lines: 2,
       popup_detail_order: ["studio", "media_type", "year"],
     });
     document.body.append(card);
@@ -634,10 +635,171 @@ describe("stream termination confirmation", () => {
     expect(hero?.querySelector(":scope > img.details-media-poster")).not.toBeNull();
     expect(hero?.querySelector(".details-primary #details-title")?.textContent).toBe("Example Movie");
     expect(hero?.querySelector(".details-primary .details-summary")?.textContent).toBe("A responsive popup summary.");
+    expect(hero?.querySelector<HTMLElement>(".details-primary .details-summary")?.classList).toContain("compact");
+    expect(hero?.querySelector<HTMLElement>(".details-primary .details-summary")?.style.getPropertyValue("--summary-lines")).toBe("2");
     const labels = [...card.renderRoot.querySelectorAll(".details-grid .detail-value small")].map((element) => element.textContent);
     expect(labels.slice(0, 3)).toEqual(["Studio", "Media type", "Year"]);
     expect(cardStyles.cssText).toMatch(/\.details-dialog\s*\{[^}]*container-type:inline-size;/);
     expect(cardStyles.cssText).toMatch(/@container \(max-width: 420px\)\s*\{[\s\S]*?\.details-hero\.with-poster\s*\{\s*grid-template-columns:1fr;/);
+  });
+
+  it("orders ranking and history fields with the other popup details and preserves zero values", async () => {
+    const render = async (mode: "popular" | "history", item: Record<string, unknown>, order: string[]) => {
+      const card = document.createElement("tautulli-media-card") as HTMLElement & {
+        setConfig(config: Record<string, unknown>): void;
+        updateComplete: Promise<boolean>;
+        renderRoot: ShadowRoot;
+      };
+      card.setConfig({
+        type: "custom:tautulli-media-card",
+        entry_id: "entry-1",
+        mode,
+        click_action: "details",
+        popup_detail_order: order,
+      });
+      document.body.append(card);
+      const internal = card as unknown as { _data: CardEnvelope<Record<string, unknown>>; _loading: boolean; requestUpdate(): void };
+      internal._data = { ...ENVELOPE, items: [item] };
+      internal._loading = false;
+      internal.requestUpdate();
+      await card.updateComplete;
+      card.renderRoot.querySelector<HTMLElement>(".open-details")?.click();
+      await card.updateComplete;
+      return card;
+    };
+
+    const popular = await render("popular", {
+      rank: 2,
+      total_plays: 0,
+      media: { id: "movie-1", type: "movie", title: "Example Movie" },
+    }, ["plays", "rank"]);
+    const popularDetails = [...popular.renderRoot.querySelectorAll(".details-grid .detail-value")];
+    expect(popularDetails.slice(0, 2).map((field) => field.querySelector("small")?.textContent)).toEqual(["Plays", "Rank"]);
+    expect(popularDetails[0]?.querySelector("span")?.textContent).toBe("0");
+    expect(popular.renderRoot.querySelector(".details-section-title")?.textContent).toBe("Ranking details");
+
+    const history = await render("history", {
+      started_at: "2026-08-25T20:00:00Z",
+      user: { display_name: "Viewer" },
+      media: { id: "movie-2", type: "movie", title: "History Movie" },
+    }, ["played", "user"]);
+    expect([...history.renderRoot.querySelectorAll(".details-grid .detail-value small")].slice(0, 2).map((field) => field.textContent)).toEqual(["Played", "Plex user"]);
+  });
+
+  it("omits the popup details heading when every selected value is unavailable", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "recently_added",
+      click_action: "details",
+      popup_show_media_type: false,
+      popup_show_summary: false,
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<Record<string, unknown>>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: [{ id: "unknown-1", title: "Minimal item" }] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+    card.renderRoot.querySelector<HTMLElement>(".open-details")?.click();
+    await card.updateComplete;
+    expect(card.renderRoot.querySelector(".details-section-title")).toBeNull();
+    expect(card.renderRoot.querySelector(".details-grid")).toBeNull();
+  });
+
+  it("configures Plex user card information without exposing irrelevant artwork controls", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "users",
+      user_card_show_last_active: false,
+      user_card_show_watch_time: false,
+      user_card_show_completion: false,
+      user_card_show_media_breakdown: false,
+      user_card_show_favourites: false,
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<Record<string, unknown>>; _loading: boolean; requestUpdate(): void };
+    internal._data = {
+      ...ENVELOPE,
+      items: [{
+        id: "user-1",
+        display_name: "Viewer",
+        last_seen_at: "2026-08-25T20:00:00Z",
+        total_plays: 12,
+        total_duration_seconds: 3600,
+        completion_percent: 80,
+        movie_plays: 5,
+        tv_plays: 7,
+        direct_play_count: 8,
+        transcode_count: 4,
+        popular_movie: "Favourite Movie",
+        most_used_device: "Living Room TV",
+      }],
+    };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    const user = card.renderRoot.querySelector(".user-item");
+    expect(user?.querySelector(".eyebrow")).toBeNull();
+    expect(user?.querySelector(".user-stats")?.textContent).toContain("12 plays");
+    expect(user?.querySelector(".user-stats")?.textContent).not.toContain("watched");
+    expect(user?.querySelector(".user-stats")?.textContent).not.toContain("completion");
+    expect(user?.querySelector(".user-breakdown")?.textContent).toContain("8 direct plays");
+    expect(user?.querySelector(".user-breakdown")?.textContent).not.toContain("movies");
+    expect(user?.textContent).not.toContain("Favourite Movie");
+    expect(user?.textContent).toContain("Living Room TV");
+  });
+
+  it("renders Plex user popup groups in their configured order", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "users",
+      click_action: "details",
+      popup_user_detail_order: ["recent_activity", "favourites", "habits", "playback"],
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<Record<string, unknown>>; _loading: boolean; requestUpdate(): void };
+    internal._data = {
+      ...ENVELOPE,
+      items: [{
+        id: "user-1",
+        display_name: "Viewer",
+        total_plays: 12,
+        last_seen_at: "2026-08-25T20:00:00Z",
+        popular_movie: "Favourite Movie",
+        most_used_device: "Living Room TV",
+        movie_plays: 5,
+      }],
+    };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+    card.renderRoot.querySelector<HTMLElement>(".open-details")?.click();
+    await card.updateComplete;
+    expect([...card.renderRoot.querySelectorAll(".details-grid .detail-value small")].slice(0, 4).map((field) => field.textContent)).toEqual([
+      "Last active",
+      "Favourite movie",
+      "Most-used player",
+      "Movies",
+    ]);
   });
 
   it("controls the summary user independently from the ordered user detail", async () => {
@@ -873,6 +1035,99 @@ describe("stream termination confirmation", () => {
 
     expect(card.renderRoot.querySelector(".modern-progress-row")).not.toBeNull();
     expect(card.renderRoot.querySelector(".modern-progress-remaining")?.textContent).toContain("remaining");
+  });
+
+  it("supports automatic, card-matched and custom TV episode text in popups", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void; _selectedItem?: ActiveStream };
+    const openWith = async (config: Record<string, unknown>) => {
+      card.setConfig({
+        type: "custom:tautulli-media-card",
+        entry_id: "entry-1",
+        mode: "active",
+        click_action: "details",
+        ...config,
+      });
+      internal._data = { ...ENVELOPE, items: [EPISODE_STREAM] };
+      internal._loading = false;
+      internal._selectedItem = EPISODE_STREAM;
+      internal.requestUpdate();
+      await card.updateComplete;
+    };
+    document.body.append(card);
+
+    await openWith({ popup_episode_layout: "automatic" });
+    expect(card.renderRoot.querySelector("#details-title")?.textContent).toBe("Example Show — Episode Name");
+    expect(card.renderRoot.querySelector(".popup-summary .details-primary > p")?.textContent).toBe("Example Show — S1 · E2");
+
+    await openWith({
+      popup_episode_layout: "card",
+      episode_layout: "episode_first",
+      episode_number_style: "padded",
+    });
+    expect(card.renderRoot.querySelector("#details-title")?.textContent).toBe("Episode Name");
+    expect(card.renderRoot.querySelector(".popup-summary .details-primary > p")?.textContent).toBe("Example Show — S01E02");
+
+    await openWith({
+      popup_episode_layout: "custom",
+      popup_episode_title: "show",
+      popup_episode_subtitle: "number_and_title",
+      popup_episode_number_style: "padded",
+    });
+    expect(card.renderRoot.querySelector("#details-title")?.textContent).toBe("Example Show");
+    expect(card.renderRoot.querySelector(".popup-summary .details-primary > p")?.textContent).toBe("S01E02 — Episode Name");
+  });
+
+  it("honours every playback information toggle in the modern presentation", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: "modern",
+      show_state: false,
+      show_progress: true,
+      show_progress_percent: false,
+      show_eta: false,
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = ENVELOPE;
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    expect(card.renderRoot.querySelector(".eyebrow .state")).toBeNull();
+    expect(card.renderRoot.querySelector(".modern-progress-percent")).toBeNull();
+    expect(card.renderRoot.querySelector(".modern-eta")).toBeNull();
+
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: "modern",
+      show_state: true,
+      show_progress: true,
+      show_progress_percent: true,
+      show_eta: true,
+    });
+    await card.updateComplete;
+    expect(card.renderRoot.querySelector(".eyebrow .state")?.textContent).toContain("playing");
+    expect(card.renderRoot.querySelector(".modern-progress-percent")?.textContent).toBe("42%");
+    expect(card.renderRoot.querySelector(".modern-eta")?.textContent).toContain("ETA:");
+
+    internal._data = { ...ENVELOPE, items: [{ ...MUSIC_STREAM, media: { ...MUSIC_STREAM.media, hierarchy: { ...MUSIC_STREAM.media.hierarchy, track_number: 4 } } }] };
+    internal.requestUpdate();
+    await card.updateComplete;
+    expect(card.renderRoot.querySelector(".eyebrow .state")?.textContent).toContain("track 4");
   });
 
   it("renders a foreground poster and a dimmed backdrop when both are selected", async () => {
@@ -1276,5 +1531,41 @@ describe("horizontal row layout", () => {
     const scrollOptions = scrollBy.mock.calls[0]?.[0] as ScrollToOptions;
     expect(scrollOptions.left).toBeCloseTo(492);
     expect(scrollOptions.behavior).toBe("smooth");
+  });
+
+  it("honours navigation buttons and spacing only in supported shelf layouts", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      layout: "carousel",
+      carousel_buttons: false,
+      scroll_gap: 19,
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: [STREAM, { ...STREAM, id: "server:session-2" }] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    expect(card.renderRoot.querySelector(".carousel-controls")).toBeNull();
+    expect(card.renderRoot.querySelector<HTMLElement>(".content.carousel")?.style.getPropertyValue("--scroll-gap")).toBe("19px");
+    expect(cardStyles.cssText).toContain(".content.carousel { display:flex; gap:var(--scroll-gap, 8px)");
+
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      layout: "marquee",
+      carousel_buttons: true,
+    });
+    await card.updateComplete;
+    expect(card.renderRoot.querySelector(".carousel-controls")).toBeNull();
   });
 });

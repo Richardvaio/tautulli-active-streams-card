@@ -10,23 +10,21 @@ The guided editor keeps card and popup settings separate while showing changes i
 
 It requires **Tautulli Active Streams 2.7.0 or newer**.
 
-## Features
+## Available options
 
-- Active Plex streams with artwork, playback state, progress, users, clients, quality, bandwidth and remaining time.
-- Recently added Plex media with library and media-type filters.
-- Popular and top movies, television and music using Tautulli statistics.
-- Privacy-safe Plex user activity summaries.
-- Administrator-only, paginated watch history when enabled in the integration.
-- Classic, modern, minimal and cinematic presentation options.
-- Responsive grid, list, vertical stack, horizontal row, carousel, auto-scrolling marquee and showcase layouts.
-- Poster/cover, backdrop, combined poster-with-backdrop and artwork-free treatments.
-- Configurable headers, counts, fields, colours, spacing, progress bars and artwork sizing.
-- Configurable TV episode titles, subtitles and compact or zero-padded numbering.
-- Configurable movie subtitles using release year, content rating, critic or audience rating, genres or studio.
-- Detailed popup with configurable summary and reorderable stream-detail fields.
-- Optional administrator-only stream termination with a separate confirmation dialog.
-- Graceful loading, empty, stale and unavailable states.
-- Visual editor support; no YAML is required for normal setup.
+| Area | Choices |
+| --- | --- |
+| Content | Active streams, recently added media, statistics and rankings, Plex user activity, or watch history |
+| Layout | Responsive grid, single-column list, vertical stack, horizontal row, poster shelf, auto-scrolling marquee, or single-item showcase |
+| Presentation | Classic Tautulli, Modern Home Assistant, Minimal, plus balanced and cinematic editor recipes |
+| Artwork | Poster or music cover, backdrop, poster with backdrop, or no artwork |
+| Card information | Header, item count, playback state, progress, timing, user, client, quality, bandwidth, media metadata and user insights |
+| Media text | Configurable TV episode titles, subtitles and numbering; configurable movie subtitle sources |
+| Popup | Optional details, artwork, summary, progress, timing, independently formatted episode text, and reorderable stream, media, ranking, history or user sections |
+| Interaction | Open details, no action, or administrator-only stream termination with separate confirmation |
+| Appearance | Density, columns, colours, spacing, borders, shadows, artwork sizing, progress bars and animation timing |
+
+The visual editor presents only the options relevant to the selected content, layout and enabled features. YAML remains available for manual configuration but is not required for normal setup.
 
 The card uses only Home Assistant's authenticated WebSocket and signed image endpoints. It never connects directly to Tautulli or Plex and never receives their credentials, IP addresses, filesystem paths or raw upstream payloads.
 
@@ -136,6 +134,8 @@ For cards that can display TV episodes, open **Stream information → TV episode
 
 Episode numbering can use compact `S1 · E2` or zero-padded `S01E02` formatting. The editor includes a live example and hides controls that do not affect the selected layout.
 
+Popup episode text can be selected independently. Keep the automatic popup format, match the dashboard card, or choose a separate custom title, subtitle and numbering style under **Popup settings → Popup summary**.
+
 The same options are available in YAML:
 
 ```yaml
@@ -159,7 +159,7 @@ movie_subtitle: studio
 
 ## Details popup
 
-The optional popup can show artwork, summary, Plex user, progress, remaining time, estimated finish, paused duration, client, device, playback decision, video/audio quality, bandwidth, media metadata and ratings. Stream-detail fields can be reordered by dragging their handles in the editor.
+The optional popup can show artwork, summary, Plex user, progress, remaining time, estimated finish, paused duration, client, device, playback decision, video/audio quality, bandwidth, media metadata and ratings. Stream, media, ranking and history fields can be reordered by dragging their handles in the editor. User popups provide the same ordering controls for playback, favourites, habits and recent activity sections.
 
 ### Popup animation and background
 

@@ -29,11 +29,11 @@ var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nat
 	let t = "";
 	for (let n of e.cssRules) t += n.cssText;
 	return a(t);
-})(e) : e, { is: l, defineProperty: u, getOwnPropertyDescriptor: d, getOwnPropertyNames: f, getOwnPropertySymbols: p, getPrototypeOf: ee } = Object, m = globalThis, h = m.trustedTypes, te = h ? h.emptyScript : "", ne = m.reactiveElementPolyfillSupport, g = (e, t) => e, _ = {
+})(e) : e, { is: l, defineProperty: u, getOwnPropertyDescriptor: d, getOwnPropertyNames: f, getOwnPropertySymbols: p, getPrototypeOf: ee } = Object, m = globalThis, te = m.trustedTypes, ne = te ? te.emptyScript : "", re = m.reactiveElementPolyfillSupport, h = (e, t) => e, g = {
 	toAttribute(e, t) {
 		switch (t) {
 			case Boolean:
-				e = e ? te : null;
+				e = e ? ne : null;
 				break;
 			case Object:
 			case Array: e = e == null ? e : JSON.stringify(e);
@@ -58,23 +58,23 @@ var e = globalThis, t = e.ShadowRoot && (e.ShadyCSS === void 0 || e.ShadyCSS.nat
 		}
 		return n;
 	}
-}, re = (e, t) => !l(e, t), ie = {
+}, ie = (e, t) => !l(e, t), ae = {
 	attribute: !0,
 	type: String,
-	converter: _,
+	converter: g,
 	reflect: !1,
 	useDefault: !1,
-	hasChanged: re
+	hasChanged: ie
 };
 Symbol.metadata ??= Symbol("metadata"), m.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-var v = class extends HTMLElement {
+var _ = class extends HTMLElement {
 	static addInitializer(e) {
 		this._$Ei(), (this.l ??= []).push(e);
 	}
 	static get observedAttributes() {
 		return this.finalize(), this._$Eh && [...this._$Eh.keys()];
 	}
-	static createProperty(e, t = ie) {
+	static createProperty(e, t = ae) {
 		if (t.state && (t.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(e) && ((t = Object.create(t)).wrapped = !0), this.elementProperties.set(e, t), !t.noAccessor) {
 			let n = Symbol(), r = this.getPropertyDescriptor(e, n, t);
 			r !== void 0 && u(this.prototype, e, r);
@@ -100,16 +100,16 @@ var v = class extends HTMLElement {
 		};
 	}
 	static getPropertyOptions(e) {
-		return this.elementProperties.get(e) ?? ie;
+		return this.elementProperties.get(e) ?? ae;
 	}
 	static _$Ei() {
-		if (this.hasOwnProperty(g("elementProperties"))) return;
+		if (this.hasOwnProperty(h("elementProperties"))) return;
 		let e = ee(this);
 		e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
 	}
 	static finalize() {
-		if (this.hasOwnProperty(g("finalized"))) return;
-		if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(g("properties"))) {
+		if (this.hasOwnProperty(h("finalized"))) return;
+		if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(h("properties"))) {
 			let e = this.properties, t = [...f(e), ...p(e)];
 			for (let n of t) this.createProperty(n, e[n]);
 		}
@@ -171,14 +171,14 @@ var v = class extends HTMLElement {
 	_$ET(e, t) {
 		let n = this.constructor.elementProperties.get(e), r = this.constructor._$Eu(e, n);
 		if (r !== void 0 && !0 === n.reflect) {
-			let i = (n.converter?.toAttribute === void 0 ? _ : n.converter).toAttribute(t, n.type);
+			let i = (n.converter?.toAttribute === void 0 ? g : n.converter).toAttribute(t, n.type);
 			this._$Em = e, i == null ? this.removeAttribute(r) : this.setAttribute(r, i), this._$Em = null;
 		}
 	}
 	_$AK(e, t) {
 		let n = this.constructor, r = n._$Eh.get(e);
 		if (r !== void 0 && this._$Em !== r) {
-			let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? _ : e.converter;
+			let e = n.getPropertyOptions(r), i = typeof e.converter == "function" ? { fromAttribute: e.converter } : e.converter?.fromAttribute === void 0 ? g : e.converter;
 			this._$Em = r;
 			let a = i.fromAttribute(t, e.type);
 			this[r] = a ?? this._$Ej?.get(r) ?? a, this._$Em = null;
@@ -187,7 +187,7 @@ var v = class extends HTMLElement {
 	requestUpdate(e, t, n, r = !1, i) {
 		if (e !== void 0) {
 			let a = this.constructor;
-			if (!1 === r && (i = this[e]), n ??= a.getPropertyOptions(e), !((n.hasChanged ?? re)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, n)))) return;
+			if (!1 === r && (i = this[e]), n ??= a.getPropertyOptions(e), !((n.hasChanged ?? ie)(i, t) || n.useDefault && n.reflect && i === this._$Ej?.get(e) && !this.hasAttribute(a._$Eu(e, n)))) return;
 			this.C(e, t, n);
 		}
 		!1 === this.isUpdatePending && (this._$ES = this._$EP());
@@ -251,89 +251,89 @@ var v = class extends HTMLElement {
 	updated(e) {}
 	firstUpdated(e) {}
 };
-v.elementStyles = [], v.shadowRootOptions = { mode: "open" }, v[g("elementProperties")] = /* @__PURE__ */ new Map(), v[g("finalized")] = /* @__PURE__ */ new Map(), ne?.({ ReactiveElement: v }), (m.reactiveElementVersions ??= []).push("2.1.2");
+_.elementStyles = [], _.shadowRootOptions = { mode: "open" }, _[h("elementProperties")] = /* @__PURE__ */ new Map(), _[h("finalized")] = /* @__PURE__ */ new Map(), re?.({ ReactiveElement: _ }), (m.reactiveElementVersions ??= []).push("2.1.2");
 //#endregion
 //#region node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/lit-html.js
-var y = globalThis, ae = (e) => e, b = y.trustedTypes, oe = b ? b.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, x = "$lit$", S = `lit$${Math.random().toFixed(9).slice(2)}$`, C = "?" + S, se = `<${C}>`, w = document, T = () => w.createComment(""), E = (e) => e === null || typeof e != "object" && typeof e != "function", D = Array.isArray, ce = (e) => D(e) || typeof e?.[Symbol.iterator] == "function", O = "[ 	\n\f\r]", k = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, le = /-->/g, ue = />/g, A = RegExp(`>|${O}(?:([^\\s"'>=/]+)(${O}*=${O}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), de = /'/g, fe = /"/g, j = /^(?:script|style|textarea|title)$/i, M = ((e) => (t, ...n) => ({
+var v = globalThis, oe = (e) => e, y = v.trustedTypes, se = y ? y.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, b = "$lit$", x = `lit$${Math.random().toFixed(9).slice(2)}$`, S = "?" + x, ce = `<${S}>`, C = document, w = () => C.createComment(""), T = (e) => e === null || typeof e != "object" && typeof e != "function", E = Array.isArray, le = (e) => E(e) || typeof e?.[Symbol.iterator] == "function", D = "[ 	\n\f\r]", O = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, ue = /-->/g, de = />/g, k = RegExp(`>|${D}(?:([^\\s"'>=/]+)(${D}*=${D}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), fe = /'/g, pe = /"/g, me = /^(?:script|style|textarea|title)$/i, A = ((e) => (t, ...n) => ({
 	_$litType$: e,
 	strings: t,
 	values: n
-}))(1), N = Symbol.for("lit-noChange"), P = Symbol.for("lit-nothing"), pe = /* @__PURE__ */ new WeakMap(), F = w.createTreeWalker(w, 129);
-function me(e, t) {
-	if (!D(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
-	return oe === void 0 ? t : oe.createHTML(t);
+}))(1), j = Symbol.for("lit-noChange"), M = Symbol.for("lit-nothing"), he = /* @__PURE__ */ new WeakMap(), N = C.createTreeWalker(C, 129);
+function ge(e, t) {
+	if (!E(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
+	return se === void 0 ? t : se.createHTML(t);
 }
-var he = (e, t) => {
-	let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = k;
+var _e = (e, t) => {
+	let n = e.length - 1, r = [], i, a = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", o = O;
 	for (let t = 0; t < n; t++) {
 		let n = e[t], s, c, l = -1, u = 0;
-		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === k ? c[1] === "!--" ? o = le : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = A) : (j.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = A) : o = ue : o === A ? c[0] === ">" ? (o = i ?? k, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? A : c[3] === "\"" ? fe : de) : o === fe || o === de ? o = A : o === le || o === ue ? o = k : (o = A, i = void 0);
-		let d = o === A && e[t + 1].startsWith("/>") ? " " : "";
-		a += o === k ? n + se : l >= 0 ? (r.push(s), n.slice(0, l) + x + n.slice(l) + S + d) : n + S + (l === -2 ? t : d);
+		for (; u < n.length && (o.lastIndex = u, c = o.exec(n), c !== null);) u = o.lastIndex, o === O ? c[1] === "!--" ? o = ue : c[1] === void 0 ? c[2] === void 0 ? c[3] !== void 0 && (o = k) : (me.test(c[2]) && (i = RegExp("</" + c[2], "g")), o = k) : o = de : o === k ? c[0] === ">" ? (o = i ?? O, l = -1) : c[1] === void 0 ? l = -2 : (l = o.lastIndex - c[2].length, s = c[1], o = c[3] === void 0 ? k : c[3] === "\"" ? pe : fe) : o === pe || o === fe ? o = k : o === ue || o === de ? o = O : (o = k, i = void 0);
+		let d = o === k && e[t + 1].startsWith("/>") ? " " : "";
+		a += o === O ? n + ce : l >= 0 ? (r.push(s), n.slice(0, l) + b + n.slice(l) + x + d) : n + x + (l === -2 ? t : d);
 	}
-	return [me(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
-}, I = class e {
+	return [ge(e, a + (e[n] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), r];
+}, P = class e {
 	constructor({ strings: t, _$litType$: n }, r) {
 		let i;
 		this.parts = [];
-		let a = 0, o = 0, s = t.length - 1, c = this.parts, [l, u] = he(t, n);
-		if (this.el = e.createElement(l, r), F.currentNode = this.el.content, n === 2 || n === 3) {
+		let a = 0, o = 0, s = t.length - 1, c = this.parts, [l, u] = _e(t, n);
+		if (this.el = e.createElement(l, r), N.currentNode = this.el.content, n === 2 || n === 3) {
 			let e = this.el.content.firstChild;
 			e.replaceWith(...e.childNodes);
 		}
-		for (; (i = F.nextNode()) !== null && c.length < s;) {
+		for (; (i = N.nextNode()) !== null && c.length < s;) {
 			if (i.nodeType === 1) {
-				if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(x)) {
-					let t = u[o++], n = i.getAttribute(e).split(S), r = /([.?@])?(.*)/.exec(t);
+				if (i.hasAttributes()) for (let e of i.getAttributeNames()) if (e.endsWith(b)) {
+					let t = u[o++], n = i.getAttribute(e).split(x), r = /([.?@])?(.*)/.exec(t);
 					c.push({
 						type: 1,
 						index: a,
 						name: r[2],
 						strings: n,
-						ctor: r[1] === "." ? V : r[1] === "?" ? ge : r[1] === "@" ? _e : B
+						ctor: r[1] === "." ? ye : r[1] === "?" ? be : r[1] === "@" ? xe : L
 					}), i.removeAttribute(e);
-				} else e.startsWith(S) && (c.push({
+				} else e.startsWith(x) && (c.push({
 					type: 6,
 					index: a
 				}), i.removeAttribute(e));
-				if (j.test(i.tagName)) {
-					let e = i.textContent.split(S), t = e.length - 1;
+				if (me.test(i.tagName)) {
+					let e = i.textContent.split(x), t = e.length - 1;
 					if (t > 0) {
-						i.textContent = b ? b.emptyScript : "";
-						for (let n = 0; n < t; n++) i.append(e[n], T()), F.nextNode(), c.push({
+						i.textContent = y ? y.emptyScript : "";
+						for (let n = 0; n < t; n++) i.append(e[n], w()), N.nextNode(), c.push({
 							type: 2,
 							index: ++a
 						});
-						i.append(e[t], T());
+						i.append(e[t], w());
 					}
 				}
 			} else if (i.nodeType === 8) {
-				if (i.data === C) c.push({
+				if (i.data === S) c.push({
 					type: 2,
 					index: a
 				});
 				else {
 					let e = -1;
-					for (; (e = i.data.indexOf(S, e + 1)) !== -1;) c.push({
+					for (; (e = i.data.indexOf(x, e + 1)) !== -1;) c.push({
 						type: 7,
 						index: a
-					}), e += S.length - 1;
+					}), e += x.length - 1;
 				}
 			}
 			a++;
 		}
 	}
 	static createElement(e, t) {
-		let n = w.createElement("template");
+		let n = C.createElement("template");
 		return n.innerHTML = e, n;
 	}
 };
-function L(e, t, n = e, r) {
-	if (t === N) return t;
-	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = E(t) ? void 0 : t._$litDirective$;
-	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ??= [])[r] = i), i !== void 0 && (t = L(e, i._$AS(e, t.values), i, r)), t;
+function F(e, t, n = e, r) {
+	if (t === j) return t;
+	let i = r === void 0 ? n._$Cl : n._$Co?.[r], a = T(t) ? void 0 : t._$litDirective$;
+	return i?.constructor !== a && (i?._$AO?.(!1), a === void 0 ? i = void 0 : (i = new a(e), i._$AT(e, n, r)), r === void 0 ? n._$Cl = i : (n._$Co ??= [])[r] = i), i !== void 0 && (t = F(e, i._$AS(e, t.values), i, r)), t;
 }
-var R = class {
+var ve = class {
 	constructor(e, t) {
 		this._$AV = [], this._$AN = void 0, this._$AD = e, this._$AM = t;
 	}
@@ -344,28 +344,28 @@ var R = class {
 		return this._$AM._$AU;
 	}
 	u(e) {
-		let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? w).importNode(t, !0);
-		F.currentNode = r;
-		let i = F.nextNode(), a = 0, o = 0, s = n[0];
+		let { el: { content: t }, parts: n } = this._$AD, r = (e?.creationScope ?? C).importNode(t, !0);
+		N.currentNode = r;
+		let i = N.nextNode(), a = 0, o = 0, s = n[0];
 		for (; s !== void 0;) {
 			if (a === s.index) {
 				let t;
-				s.type === 2 ? t = new z(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new ve(i, this, e)), this._$AV.push(t), s = n[++o];
+				s.type === 2 ? t = new I(i, i.nextSibling, this, e) : s.type === 1 ? t = new s.ctor(i, s.name, s.strings, this, e) : s.type === 6 && (t = new Se(i, this, e)), this._$AV.push(t), s = n[++o];
 			}
-			a !== s?.index && (i = F.nextNode(), a++);
+			a !== s?.index && (i = N.nextNode(), a++);
 		}
-		return F.currentNode = w, r;
+		return N.currentNode = C, r;
 	}
 	p(e) {
 		let t = 0;
 		for (let n of this._$AV) n !== void 0 && (n.strings === void 0 ? n._$AI(e[t]) : (n._$AI(e, n, t), t += n.strings.length - 2)), t++;
 	}
-}, z = class e {
+}, I = class e {
 	get _$AU() {
 		return this._$AM?._$AU ?? this._$Cv;
 	}
 	constructor(e, t, n, r) {
-		this.type = 2, this._$AH = P, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = n, this.options = r, this._$Cv = r?.isConnected ?? !0;
+		this.type = 2, this._$AH = M, this._$AN = void 0, this._$AA = e, this._$AB = t, this._$AM = n, this.options = r, this._$Cv = r?.isConnected ?? !0;
 	}
 	get parentNode() {
 		let e = this._$AA.parentNode, t = this._$AM;
@@ -378,7 +378,7 @@ var R = class {
 		return this._$AB;
 	}
 	_$AI(e, t = this) {
-		e = L(this, e, t), E(e) ? e === P || e == null || e === "" ? (this._$AH !== P && this._$AR(), this._$AH = P) : e !== this._$AH && e !== N && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? ce(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
+		e = F(this, e, t), T(e) ? e === M || e == null || e === "" ? (this._$AH !== M && this._$AR(), this._$AH = M) : e !== this._$AH && e !== j && this._(e) : e._$litType$ === void 0 ? e.nodeType === void 0 ? le(e) ? this.k(e) : this._(e) : this.T(e) : this.$(e);
 	}
 	O(e) {
 		return this._$AA.parentNode.insertBefore(e, this._$AB);
@@ -387,36 +387,36 @@ var R = class {
 		this._$AH !== e && (this._$AR(), this._$AH = this.O(e));
 	}
 	_(e) {
-		this._$AH !== P && E(this._$AH) ? this._$AA.nextSibling.data = e : this.T(w.createTextNode(e)), this._$AH = e;
+		this._$AH !== M && T(this._$AH) ? this._$AA.nextSibling.data = e : this.T(C.createTextNode(e)), this._$AH = e;
 	}
 	$(e) {
-		let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = I.createElement(me(n.h, n.h[0]), this.options)), n);
+		let { values: t, _$litType$: n } = e, r = typeof n == "number" ? this._$AC(e) : (n.el === void 0 && (n.el = P.createElement(ge(n.h, n.h[0]), this.options)), n);
 		if (this._$AH?._$AD === r) this._$AH.p(t);
 		else {
-			let e = new R(r, this), n = e.u(this.options);
+			let e = new ve(r, this), n = e.u(this.options);
 			e.p(t), this.T(n), this._$AH = e;
 		}
 	}
 	_$AC(e) {
-		let t = pe.get(e.strings);
-		return t === void 0 && pe.set(e.strings, t = new I(e)), t;
+		let t = he.get(e.strings);
+		return t === void 0 && he.set(e.strings, t = new P(e)), t;
 	}
 	k(t) {
-		D(this._$AH) || (this._$AH = [], this._$AR());
+		E(this._$AH) || (this._$AH = [], this._$AR());
 		let n = this._$AH, r, i = 0;
-		for (let a of t) i === n.length ? n.push(r = new e(this.O(T()), this.O(T()), this, this.options)) : r = n[i], r._$AI(a), i++;
+		for (let a of t) i === n.length ? n.push(r = new e(this.O(w()), this.O(w()), this, this.options)) : r = n[i], r._$AI(a), i++;
 		i < n.length && (this._$AR(r && r._$AB.nextSibling, i), n.length = i);
 	}
 	_$AR(e = this._$AA.nextSibling, t) {
 		for (this._$AP?.(!1, !0, t); e !== this._$AB;) {
-			let t = ae(e).nextSibling;
-			ae(e).remove(), e = t;
+			let t = oe(e).nextSibling;
+			oe(e).remove(), e = t;
 		}
 	}
 	setConnected(e) {
 		this._$AM === void 0 && (this._$Cv = e, this._$AP?.(e));
 	}
-}, B = class {
+}, L = class {
 	get tagName() {
 		return this.element.tagName;
 	}
@@ -424,47 +424,47 @@ var R = class {
 		return this._$AM._$AU;
 	}
 	constructor(e, t, n, r, i) {
-		this.type = 1, this._$AH = P, this._$AN = void 0, this.element = e, this.name = t, this._$AM = r, this.options = i, n.length > 2 || n[0] !== "" || n[1] !== "" ? (this._$AH = Array(n.length - 1).fill(/* @__PURE__ */ new String()), this.strings = n) : this._$AH = P;
+		this.type = 1, this._$AH = M, this._$AN = void 0, this.element = e, this.name = t, this._$AM = r, this.options = i, n.length > 2 || n[0] !== "" || n[1] !== "" ? (this._$AH = Array(n.length - 1).fill(/* @__PURE__ */ new String()), this.strings = n) : this._$AH = M;
 	}
 	_$AI(e, t = this, n, r) {
 		let i = this.strings, a = !1;
-		if (i === void 0) e = L(this, e, t, 0), a = !E(e) || e !== this._$AH && e !== N, a && (this._$AH = e);
+		if (i === void 0) e = F(this, e, t, 0), a = !T(e) || e !== this._$AH && e !== j, a && (this._$AH = e);
 		else {
 			let r = e, o, s;
-			for (e = i[0], o = 0; o < i.length - 1; o++) s = L(this, r[n + o], t, o), s === N && (s = this._$AH[o]), a ||= !E(s) || s !== this._$AH[o], s === P ? e = P : e !== P && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
+			for (e = i[0], o = 0; o < i.length - 1; o++) s = F(this, r[n + o], t, o), s === j && (s = this._$AH[o]), a ||= !T(s) || s !== this._$AH[o], s === M ? e = M : e !== M && (e += (s ?? "") + i[o + 1]), this._$AH[o] = s;
 		}
 		a && !r && this.j(e);
 	}
 	j(e) {
-		e === P ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
+		e === M ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, e ?? "");
 	}
-}, V = class extends B {
+}, ye = class extends L {
 	constructor() {
 		super(...arguments), this.type = 3;
 	}
 	j(e) {
-		this.element[this.name] = e === P ? void 0 : e;
+		this.element[this.name] = e === M ? void 0 : e;
 	}
-}, ge = class extends B {
+}, be = class extends L {
 	constructor() {
 		super(...arguments), this.type = 4;
 	}
 	j(e) {
-		this.element.toggleAttribute(this.name, !!e && e !== P);
+		this.element.toggleAttribute(this.name, !!e && e !== M);
 	}
-}, _e = class extends B {
+}, xe = class extends L {
 	constructor(e, t, n, r, i) {
 		super(e, t, n, r, i), this.type = 5;
 	}
 	_$AI(e, t = this) {
-		if ((e = L(this, e, t, 0) ?? P) === N) return;
-		let n = this._$AH, r = e === P && n !== P || e.capture !== n.capture || e.once !== n.once || e.passive !== n.passive, i = e !== P && (n === P || r);
+		if ((e = F(this, e, t, 0) ?? M) === j) return;
+		let n = this._$AH, r = e === M && n !== M || e.capture !== n.capture || e.once !== n.once || e.passive !== n.passive, i = e !== M && (n === M || r);
 		r && this.element.removeEventListener(this.name, this, n), i && this.element.addEventListener(this.name, this, e), this._$AH = e;
 	}
 	handleEvent(e) {
 		typeof this._$AH == "function" ? this._$AH.call(this.options?.host ?? this.element, e) : this._$AH.handleEvent(e);
 	}
-}, ve = class {
+}, Se = class {
 	constructor(e, t, n) {
 		this.element = e, this.type = 6, this._$AN = void 0, this._$AM = t, this.options = n;
 	}
@@ -472,33 +472,33 @@ var R = class {
 		return this._$AM._$AU;
 	}
 	_$AI(e) {
-		L(this, e);
+		F(this, e);
 	}
-}, ye = {
-	M: x,
-	P: S,
-	A: C,
+}, Ce = {
+	M: b,
+	P: x,
+	A: S,
 	C: 1,
-	L: he,
-	R,
-	D: ce,
-	V: L,
-	I: z,
-	H: B,
-	N: ge,
-	U: _e,
-	B: V,
-	F: ve
-}, be = y.litHtmlPolyfillSupport;
-be?.(I, z), (y.litHtmlVersions ??= []).push("3.3.3");
-var xe = (e, t, n) => {
+	L: _e,
+	R: ve,
+	D: le,
+	V: F,
+	I,
+	H: L,
+	N: be,
+	U: xe,
+	B: ye,
+	F: Se
+}, we = v.litHtmlPolyfillSupport;
+we?.(P, I), (v.litHtmlVersions ??= []).push("3.3.3");
+var Te = (e, t, n) => {
 	let r = n?.renderBefore ?? t, i = r._$litPart$;
 	if (i === void 0) {
 		let e = n?.renderBefore ?? null;
-		r._$litPart$ = i = new z(t.insertBefore(T(), e), e, void 0, n ?? {});
+		r._$litPart$ = i = new I(t.insertBefore(w(), e), e, void 0, n ?? {});
 	}
 	return i._$AI(e), i;
-}, H = globalThis, U = class extends v {
+}, R = globalThis, z = class extends _ {
 	constructor() {
 		super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
 	}
@@ -508,7 +508,7 @@ var xe = (e, t, n) => {
 	}
 	update(e) {
 		let t = this.render();
-		this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = xe(t, this.renderRoot, this.renderOptions);
+		this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(e), this._$Do = Te(t, this.renderRoot, this.renderOptions);
 	}
 	connectedCallback() {
 		super.connectedCallback(), this._$Do?.setConnected(!0);
@@ -517,18 +517,18 @@ var xe = (e, t, n) => {
 		super.disconnectedCallback(), this._$Do?.setConnected(!1);
 	}
 	render() {
-		return N;
+		return j;
 	}
 };
-U._$litElement$ = !0, U.finalized = !0, H.litElementHydrateSupport?.({ LitElement: U });
-var Se = H.litElementPolyfillSupport;
-Se?.({ LitElement: U }), (H.litElementVersions ??= []).push("4.2.2");
+z._$litElement$ = !0, z.finalized = !0, R.litElementHydrateSupport?.({ LitElement: z });
+var Ee = R.litElementPolyfillSupport;
+Ee?.({ LitElement: z }), (R.litElementVersions ??= []).push("4.2.2");
 //#endregion
 //#region node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/directive.js
-var Ce = (e) => (...t) => ({
+var De = (e) => (...t) => ({
 	_$litDirective$: e,
 	values: t
-}), we = class {
+}), Oe = class {
 	constructor(e) {}
 	get _$AU() {
 		return this._$AM._$AU;
@@ -542,27 +542,27 @@ var Ce = (e) => (...t) => ({
 	update(e, t) {
 		return this.render(...t);
 	}
-}, { I: Te } = ye, Ee = {}, De = (e, t = Ee) => e._$AH = t, Oe = Ce(class extends we {
+}, { I: ke } = Ce, Ae = {}, je = (e, t = Ae) => e._$AH = t, Me = De(class extends Oe {
 	constructor() {
-		super(...arguments), this.key = P;
+		super(...arguments), this.key = M;
 	}
 	render(e, t) {
 		return this.key = e, t;
 	}
 	update(e, [t, n]) {
-		return t !== this.key && (De(e), this.key = t), n;
+		return t !== this.key && (je(e), this.key = t), n;
 	}
-}), W = "tautulli_active_streams";
-async function ke(e) {
-	return (await e.callWS({ type: `${W}/get_entries` })).entries ?? [];
+}), B = "tautulli_active_streams";
+async function Ne(e) {
+	return (await e.callWS({ type: `${B}/get_entries` })).entries ?? [];
 }
-async function Ae(e, t, n) {
+async function Pe(e, t, n) {
 	return e.connection.subscribeMessage(n, {
-		type: `${W}/subscribe_active_streams`,
+		type: `${B}/subscribe_active_streams`,
 		entry_id: t
 	});
 }
-async function je(e, t) {
+async function Fe(e, t) {
 	let n = {
 		entry_id: t.entry_id,
 		limit: t.mode === "recently_added" && t.recent_grouping !== "none" ? Math.min(50, (t.max_items ?? 12) * 4) : t.max_items
@@ -574,14 +574,14 @@ async function je(e, t) {
 			"artist"
 		].includes(t.media_type ?? "") ? t.media_type : void 0;
 		return e.callWS({
-			type: `${W}/get_recently_added`,
+			type: `${B}/get_recently_added`,
 			...n,
 			...r ? { media_type: r } : {},
 			...t.section_id ? { section_id: t.section_id } : {}
 		});
 	}
 	return t.mode === "popular" ? e.callWS({
-		type: `${W}/get_home_stats`,
+		type: `${B}/get_home_stats`,
 		...n,
 		stat_id: t.stat_id,
 		time_range: t.time_range,
@@ -589,34 +589,34 @@ async function je(e, t) {
 		...t.section_id ? { section_id: t.section_id } : {},
 		...t.user_id ? { user_id: t.user_id } : {}
 	}) : t.mode === "users" ? e.callWS({
-		type: `${W}/get_user_stats`,
+		type: `${B}/get_user_stats`,
 		entry_id: t.entry_id
 	}) : e.callWS({
-		type: `${W}/get_history`,
+		type: `${B}/get_history`,
 		...n,
 		...t.user_id ? { user_id: t.user_id } : {}
 	});
 }
-async function Me(e, t) {
+async function Ie(e, t) {
 	return e.callWS({
-		type: `${W}/get_libraries`,
+		type: `${B}/get_libraries`,
 		entry_id: t
 	});
 }
-async function Ne(e, t) {
+async function Le(e, t) {
 	return e.callWS({
-		type: `${W}/get_users`,
+		type: `${B}/get_users`,
 		entry_id: t
 	});
 }
-async function Pe(e, t, n) {
+async function Re(e, t, n) {
 	return e.callWS({
-		type: `${W}/terminate_session`,
+		type: `${B}/terminate_session`,
 		entry_id: t,
 		session_id: n
 	});
 }
-var G = [
+var V = [
 	"user",
 	"player",
 	"device",
@@ -635,8 +635,15 @@ var G = [
 	"rating",
 	"audience_rating",
 	"genres",
-	"studio"
-], Fe = [
+	"studio",
+	"rank",
+	"plays",
+	"played"
+], ze = V.filter((e) => ![
+	"rank",
+	"plays",
+	"played"
+].includes(e)), H = [
 	"media_type",
 	"year",
 	"duration",
@@ -646,7 +653,20 @@ var G = [
 	"audience_rating",
 	"genres",
 	"studio"
-], K = {
+], Be = [
+	...H,
+	"rank",
+	"plays"
+], Ve = [
+	"user",
+	...H,
+	"played"
+], U = [
+	"playback",
+	"favourites",
+	"habits",
+	"recent_activity"
+], W = {
 	type: "custom:tautulli-media-card",
 	config_version: 1,
 	mode: "active",
@@ -687,12 +707,20 @@ var G = [
 	episode_number_style: "compact",
 	movie_subtitle: "automatic",
 	show_summary: !1,
+	user_card_show_last_active: !0,
+	user_card_show_plays: !0,
+	user_card_show_watch_time: !0,
+	user_card_show_completion: !0,
+	user_card_show_media_breakdown: !0,
+	user_card_show_playback_breakdown: !0,
+	user_card_show_favourites: !0,
+	user_card_show_habits: !0,
 	show_empty: !1,
 	scroll_gap: 8,
 	scroll_peek: 36,
 	autoscroll_speed: 60,
 	autoscroll_direction: "ltr",
-	autoscroll_animation: "smooth",
+	carousel_buttons: !0,
 	showcase_advance: 6,
 	showcase_transition: "fade",
 	showcase_direction: "left",
@@ -704,7 +732,8 @@ var G = [
 	popup_style: "clean",
 	popup_cinematic_art: 45,
 	popup_content_style: "open",
-	popup_detail_order: G,
+	popup_detail_order: V,
+	popup_user_detail_order: U,
 	popup_width: "standard",
 	popup_animation: "scale",
 	popup_animation_duration: 220,
@@ -717,6 +746,10 @@ var G = [
 	popup_show_summary: !0,
 	popup_summary_show_user: !0,
 	popup_summary_lines: 3,
+	popup_episode_layout: "automatic",
+	popup_episode_title: "full_title",
+	popup_episode_subtitle: "show_and_number",
+	popup_episode_number_style: "compact",
 	popup_show_technical: !0,
 	popup_show_user: !0,
 	popup_show_progress: !0,
@@ -743,6 +776,9 @@ var G = [
 	popup_show_audience_rating: !0,
 	popup_show_genres: !0,
 	popup_show_studio: !0,
+	popup_show_rank: !0,
+	popup_show_plays: !0,
+	popup_show_played: !0,
 	popup_show_playback_breakdown: !0,
 	popup_show_favourites: !0,
 	popup_show_habits: !0,
@@ -751,27 +787,203 @@ var G = [
 	time_range: 30,
 	metric: "plays"
 };
-function q(e) {
+function G(e) {
 	if (!e || typeof e != "object") throw Error("Invalid Tautulli Media Card configuration");
-	let t = Ie(e), n = {
-		...K,
+	let t = He(e), n = {
+		...W,
 		...t,
 		config_version: 1
-	};
+	}, r = n;
+	for (let [e, t] of [
+		["mode", [
+			"active",
+			"recently_added",
+			"popular",
+			"users",
+			"history"
+		]],
+		["media_type", [
+			"all",
+			"video",
+			"music",
+			"movie",
+			"show",
+			"artist"
+		]],
+		["recent_grouping", [
+			"none",
+			"smart",
+			"show",
+			"season"
+		]],
+		["layout", [
+			"grid",
+			"list",
+			"stack",
+			"horizontal",
+			"carousel",
+			"marquee",
+			"showcase"
+		]],
+		["autoscroll_direction", ["ltr", "rtl"]],
+		["showcase_transition", [
+			"fade",
+			"slide",
+			"horizontal"
+		]],
+		["showcase_direction", ["left", "right"]],
+		["sort_by", [
+			"server",
+			"user",
+			"title",
+			"state",
+			"progress"
+		]],
+		["sort_direction", ["ascending", "descending"]],
+		["density", [
+			"compact",
+			"comfortable",
+			"detailed"
+		]],
+		["artwork", [
+			"poster",
+			"backdrop",
+			"both",
+			"none"
+		]],
+		["artwork_fit", ["cover", "contain"]],
+		["artwork_aspect", [
+			"auto",
+			"poster",
+			"square",
+			"backdrop"
+		]],
+		["artwork_position", [
+			"center",
+			"top",
+			"bottom",
+			"left",
+			"right"
+		]],
+		["artwork_placement", [
+			"left",
+			"right",
+			"background"
+		]],
+		["style_preset", [
+			"classic",
+			"modern",
+			"minimal"
+		]],
+		["container_style", [
+			"auto",
+			"surface",
+			"transparent"
+		]],
+		["episode_layout", [
+			"current",
+			"show_first",
+			"episode_first",
+			"custom"
+		]],
+		["episode_title", [
+			"full_title",
+			"show",
+			"episode_title"
+		]],
+		["episode_subtitle", [
+			"show_and_number",
+			"number_and_title",
+			"show_number_and_title",
+			"number_only",
+			"episode_title",
+			"none"
+		]],
+		["episode_number_style", ["compact", "padded"]],
+		["movie_subtitle", [
+			"automatic",
+			"year",
+			"content_rating",
+			"rating",
+			"audience_rating",
+			"genres",
+			"studio",
+			"none"
+		]],
+		["termination_location", [
+			"popup",
+			"card",
+			"both"
+		]],
+		["click_action", ["none", "details"]],
+		["popup_style", [
+			"clean",
+			"panel",
+			"cinematic"
+		]],
+		["popup_content_style", ["open", "panel"]],
+		["popup_width", [
+			"compact",
+			"standard",
+			"wide"
+		]],
+		["popup_animation", [
+			"none",
+			"fade",
+			"scale",
+			"rise"
+		]],
+		["popup_episode_layout", [
+			"automatic",
+			"card",
+			"custom"
+		]],
+		["popup_episode_title", [
+			"full_title",
+			"show",
+			"episode_title"
+		]],
+		["popup_episode_subtitle", [
+			"show_and_number",
+			"number_and_title",
+			"show_number_and_title",
+			"number_only",
+			"episode_title",
+			"none"
+		]],
+		["popup_episode_number_style", ["compact", "padded"]],
+		["termination_popup_placement", ["top", "footer"]],
+		["termination_button_style", ["label", "icon"]],
+		["stat_id", [
+			"popular_movies",
+			"top_movies",
+			"popular_tv",
+			"top_tv",
+			"popular_music",
+			"top_music",
+			"top_users",
+			"top_libraries",
+			"top_platforms",
+			"last_watched",
+			"most_concurrent"
+		]],
+		["metric", ["plays", "duration"]]
+	]) t.includes(String(r[e] ?? "")) || (r[e] = W[e]);
 	n.max_items = t.max_items === void 0 && n.mode !== "active" ? 12 : Math.min(50, Math.max(1, Number(n.max_items) || 50)), n.time_range = Math.min(3650, Math.max(1, Number(n.time_range) || 30));
-	let r = Number(n.popup_summary_lines);
+	let i = Number(n.popup_summary_lines);
 	n.popup_summary_lines = [
 		0,
 		2,
 		3,
 		5
-	].includes(r) ? r : 3, [
-		"fade",
-		"slide",
-		"horizontal"
-	].includes(n.showcase_transition ?? "") || (n.showcase_transition = K.showcase_transition), ["left", "right"].includes(n.showcase_direction ?? "") || (n.showcase_direction = K.showcase_direction);
-	let i = Array.isArray(n.popup_detail_order) ? n.popup_detail_order : [], a = i.filter((e, t) => G.includes(e) && i.indexOf(e) === t);
-	n.popup_detail_order = [...a, ...G.filter((e) => !a.includes(e))], typeof n.columns == "number" && (n.columns = Math.min(4, Math.max(1, n.columns)));
+	].includes(i) ? i : 3;
+	let a = Array.isArray(n.popup_detail_order) ? n.popup_detail_order : [], o = a.filter((e, t) => V.includes(e) && a.indexOf(e) === t);
+	n.popup_detail_order = [...o, ...V.filter((e) => !o.includes(e))];
+	let s = Array.isArray(n.popup_user_detail_order) ? n.popup_user_detail_order : [], c = s.filter((e, t) => U.includes(e) && s.indexOf(e) === t);
+	if (n.popup_user_detail_order = [...c, ...U.filter((e) => !c.includes(e))], n.columns !== "auto") {
+		let e = Number(n.columns);
+		n.columns = Number.isFinite(e) ? Math.min(4, Math.max(1, e)) : "auto";
+	}
 	for (let [e, t, r] of [
 		[
 			"border_radius",
@@ -864,7 +1076,7 @@ function q(e) {
 	}
 	return n;
 }
-function Ie(e) {
+function He(e) {
 	let t = { ...e };
 	if (typeof t.view == "string" && [
 		"active",
@@ -909,23 +1121,24 @@ function Ie(e) {
 		"preset",
 		"show_title",
 		"show_badge",
-		"demo_when_empty"
+		"demo_when_empty",
+		"autoscroll_animation"
 	]) delete t[e];
 	return t;
 }
-function Le(e) {
+function Ue(e) {
 	let t = {
 		type: e.type,
 		config_version: 1
 	};
 	for (let [n, r] of Object.entries(e)) {
 		if (["type", "config_version"].includes(n) || r === void 0) continue;
-		let e = K[n];
+		let e = W[n];
 		Array.isArray(r) && Array.isArray(e) ? JSON.stringify(r) !== JSON.stringify(e) && (t[n] = r) : r !== e && (t[n] = r);
 	}
 	return e.popup_summary_show_user !== e.popup_show_user && t.popup_summary_show_user === void 0 && (t.popup_summary_show_user = e.popup_summary_show_user), t;
 }
-var J = {
+var K = {
 	classic: {
 		card_background: "rgba(3, 18, 32, 0.82)",
 		item_background: "rgba(0, 0, 0, 0.42)",
@@ -969,7 +1182,7 @@ var J = {
 		buffering_color: "var(--error-color, #db4437)"
 	}
 };
-function Re(e) {
+function We(e) {
 	return e.title ? e.title : {
 		active: "Active streams",
 		recently_added: "Recently added",
@@ -980,7 +1193,7 @@ function Re(e) {
 }
 //#endregion
 //#region src/styles.ts
-var ze = o`
+var Ge = o`
   :host { display: block; container-type: inline-size; }
   ha-card { overflow: hidden; background:var(--tas-card-background, var(--ha-card-background, var(--card-background-color))); }
   :host([container-style="transparent"]) ha-card { border:0; background:transparent; box-shadow:none; overflow:visible; border-radius:0; }
@@ -1005,7 +1218,7 @@ var ze = o`
   .content.horizontal > :is(.item, .classic-item, .media-item) { box-sizing:border-box; flex:0 0 min(600px, max(65cqw, calc(100cqw - var(--scroll-peek, 36px)))); scroll-snap-align:start; scroll-snap-stop:always; }
   .content.horizontal.single { overflow-x:hidden; scroll-snap-type:none; }
   .content.horizontal.single > :is(.item, .classic-item, .media-item) { flex-basis:100%; }
-  .content.carousel { display:flex; overflow-x:auto; overscroll-behavior-inline:contain; scroll-snap-type:x mandatory; scroll-padding-inline:var(--tas-gap, 8px); scrollbar-width:thin; padding-bottom:12px; }
+  .content.carousel { display:flex; gap:var(--scroll-gap, 8px); overflow-x:auto; overscroll-behavior-inline:contain; scroll-snap-type:x mandatory; scroll-padding-inline:var(--tas-gap, 8px); scrollbar-width:thin; padding-bottom:12px; }
   .content.marquee { display:block; overflow:hidden; padding-right:0; touch-action:pan-y; }
   .content.marquee .marquee-track { display:flex; flex-wrap:nowrap; gap:var(--scroll-gap, 8px); will-change:transform; animation-play-state:paused; user-select:none; -webkit-user-select:none; }
   .content.marquee .marquee-track .item { flex:0 0 min(72cqw, var(--carousel-width, 280px)); flex-shrink:0; }
@@ -1077,9 +1290,11 @@ var ze = o`
   .summary { font-size:12px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
   .progress { height:var(--tas-progress-height, 7px); border-radius:99px; overflow:hidden; background:color-mix(in srgb, var(--primary-text-color) 14%, transparent); margin-top:auto; }
   .progress::before { content:""; display:block; height:100%; width:var(--progress, 0%); background:var(--state-color, var(--primary-color)); transition:width .4s ease; }
-  .modern-progress-row { display:grid; grid-template-columns:minmax(64px,1fr) auto; align-items:center; gap:10px; margin-top:auto; padding-bottom:4px; }
-  .modern-progress-row .progress { width:100%; margin-top:0; }
+  .modern-progress-row { display:flex; align-items:center; gap:10px; margin-top:auto; padding-bottom:4px; }
+  .modern-progress-row .progress { flex:1 1 64px; width:100%; margin-top:0; }
+  .modern-progress-percent { color:var(--secondary-text-color); font-size:11px; white-space:nowrap; }
   .modern-progress-remaining { color:var(--secondary-text-color); font-size:11px; text-align:right; white-space:nowrap; }
+  .modern-eta { margin-left:auto; }
   .terminate { position:absolute; right:6px; top:6px; display:grid; place-items:center; width:32px; height:32px; padding:0; border:1px solid color-mix(in srgb, var(--error-color) 28%, transparent); border-radius:50%; color:var(--error-color); background:color-mix(in srgb, var(--error-color) 16%, transparent); box-shadow:0 3px 10px rgb(0 0 0 / 14%); cursor:pointer; transition:background .16s ease,border-color .16s ease,transform .16s ease; }
   .terminate:hover { border-color:color-mix(in srgb, var(--error-color) 42%, transparent); background:color-mix(in srgb, var(--error-color) 24%, transparent); transform:translateY(-1px); }
   .classic-item { position:relative; min-width:0; display:grid; grid-template-columns:minmax(48px, var(--art-width, 85px)) minmax(0, 1fr); gap:5px; overflow:hidden; color:var(--primary-text-color); border:1px solid var(--tas-border-color); border-radius:var(--tas-radius); background:var(--tas-item-background); box-shadow:var(--tas-shadow); }
@@ -1264,7 +1479,7 @@ var ze = o`
     .progress::before { transition:none; }
     * { animation:none !important; }
   }
-`, Be = o`
+`, Ke = o`
   .editor-group-title { margin:10px 2px -2px; color:var(--primary-text-color); font-size:13px; font-weight:700; letter-spacing:.35px; text-transform:uppercase; }
   :host { display:block; }
   .editor { display:grid; gap:16px; padding:8px 0; }
@@ -1323,6 +1538,7 @@ var ze = o`
   .episode-preview strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--primary-text-color); font-size:14px; }
   .episode-preview span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--secondary-text-color); font-size:12px; }
   .error { color:var(--error-color); font-size:12px; }
+  .error[role="status"] { color:var(--secondary-text-color); }
   .section details { border-top:1px solid var(--divider-color); padding-top:10px; }
   .section details summary { cursor:pointer; color:var(--primary-text-color); font-size:13px; font-weight:600; }
   .advanced { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; padding-top:12px; }
@@ -1352,7 +1568,7 @@ var ze = o`
     .detail-order-toolbar { align-items:flex-start; flex-direction:column; }
     .detail-order-toolbar > div { justify-content:flex-start; }
   }
-`, Ve = {
+`, qe = {
 	user: "popup_show_user",
 	player: "popup_show_player",
 	device: "popup_show_device",
@@ -1371,8 +1587,11 @@ var ze = o`
 	rating: "popup_show_rating",
 	audience_rating: "popup_show_audience_rating",
 	genres: "popup_show_genres",
-	studio: "popup_show_studio"
-}, He = class extends U {
+	studio: "popup_show_studio",
+	rank: "popup_show_rank",
+	plays: "popup_show_plays",
+	played: "popup_show_played"
+}, Je = class extends z {
 	static {
 		this.properties = {
 			hass: { attribute: !1 },
@@ -1389,7 +1608,7 @@ var ze = o`
 		};
 	}
 	static {
-		this.styles = ze;
+		this.styles = Ge;
 	}
 	constructor() {
 		super(), this._dialogOpenedAt = 0, this._dialogClosing = !1, this._retryAttempt = 0, this._loadVersion = 0, this._pauseAnchors = /* @__PURE__ */ new Map(), this._scrollLockCount = 0, this._marqueeVelocity = 0, this._showcaseTimer = 0, this._showcaseAnimationFrame = 0, this._showcaseScrollEndBound = () => this._showcaseScrollEnd(), this._marqueeSets = 2, this._suppressNextClick = !1, this._pointerDownAt = null, this._marqueeSetWidth = 0, this._marqueeTouching = !1, this._marqueeShiftTotal = 0, this._marqueeDurationS = 0, this._marqueeDrag = null, this._showcaseIndex = 0, this._showcaseDirection = 1, this._visibilityChanged = () => {
@@ -1435,10 +1654,10 @@ var ze = o`
 			this._config.layout !== "showcase" || !["ArrowLeft", "ArrowRight"].includes(e.key) || (e.preventDefault(), this._advanceShowcase(e.key === "ArrowLeft" ? -1 : 1));
 		}, this._backdropTerminationClose = (e) => {
 			e.target === e.currentTarget && (Date.now() - this._dialogOpenedAt < 350 || this._closeTerminationDialog());
-		}, this._config = q({}), this._loading = !0, this._terminating = !1, this._pauseClock = Date.now();
+		}, this._config = G({}), this._loading = !0, this._terminating = !1, this._pauseClock = Date.now();
 	}
 	static getStubConfig() {
-		let e = { ...q({}) };
+		let e = { ...G({}) };
 		return delete e.type, e;
 	}
 	static getConfigElement() {
@@ -1453,7 +1672,7 @@ var ze = o`
 		};
 	}
 	setConfig(e) {
-		let t = this._config, n = q(e), r = [
+		let t = this._config, n = G(e), r = [
 			"entry_id",
 			"mode",
 			"max_items",
@@ -1505,7 +1724,7 @@ var ze = o`
 		this._loadVersion += 1, this._unsubscribe?.(), this._unsubscribe = void 0, this._refreshTimer && window.clearInterval(this._refreshTimer), this._refreshTimer = void 0, this._retryTimer && window.clearTimeout(this._retryTimer), this._retryTimer = void 0, this._pauseTimer && window.clearInterval(this._pauseTimer), this._pauseTimer = void 0, this._pauseAnchors.clear();
 	}
 	_applyAppearance() {
-		let e = J[this._config.style_preset ?? "classic"], t = {
+		let e = K[this._config.style_preset ?? "classic"], t = {
 			"--tas-card-background": this._config.card_background ?? e.card_background,
 			"--tas-item-background": this._config.item_background ?? e.item_background,
 			"--tas-border-color": this._config.border_color ?? e.border_color,
@@ -1532,7 +1751,7 @@ var ze = o`
 		this._loading = !this._data, this._error = void 0;
 		try {
 			if (!this._config.entry_id) {
-				let e = await ke(this.hass);
+				let e = await Ne(this.hass);
 				if (!e.length) throw Error("No loaded Tautulli Active Streams integration was found");
 				this._config = {
 					...this._config,
@@ -1540,7 +1759,7 @@ var ze = o`
 				};
 			}
 			if (e !== this._loadVersion) return;
-			if (this._config.mode === "active") this._unsubscribe = await Ae(this.hass, this._config.entry_id, (e) => this._receive(e));
+			if (this._config.mode === "active") this._unsubscribe = await Pe(this.hass, this._config.entry_id, (e) => this._receive(e));
 			else {
 				await this._loadData(e);
 				let t = ["popular", "users"].includes(this._config.mode) ? 9e5 : this._config.mode === "history" ? 6e4 : 3e5;
@@ -1552,7 +1771,7 @@ var ze = o`
 	}
 	async _loadData(e = this._loadVersion) {
 		if (!(!this.hass || !this._config.entry_id)) try {
-			let t = await je(this.hass, this._config);
+			let t = await Fe(this.hass, this._config);
 			e === this._loadVersion && this._receive(t);
 		} catch (t) {
 			e === this._loadVersion && this._setError(t);
@@ -1586,24 +1805,24 @@ var ze = o`
 	}
 	render() {
 		let e = this._filteredItems();
-		if (this._error && !this._data || !this._loading && !this._error && !e.length && !this._config.show_empty) return P;
+		if (this._error && !this._data || !this._loading && !this._error && !e.length && !this._config.show_empty) return M;
 		let t = this._config.columns === "auto" ? "auto" : String(this._config.columns ?? 1), n = this._config.showcase_transition ?? "fade";
-		return M`
+		return A`
       <ha-card>
-        ${this._config.show_header || this._config.show_count ? M`
+        ${this._config.show_header || this._config.show_count ? A`
           <div class="header">
-            ${this._config.show_header ? M`<h2 class="title">${Re(this._config)}</h2>` : M`<span></span>`}
-            ${this._config.show_count && this._data ? M`<span class="badge" aria-label="${e.length} items">${e.length}</span>` : P}
-          </div>` : P}
-        ${this._data?.stale ? M`<p class="stale">Showing the last successful update</p>` : P}
-        ${this._loading ? this._renderLoading() : e.length ? M`${this._config.layout === "carousel" || [
+            ${this._config.show_header ? A`<h2 class="title">${We(this._config)}</h2>` : A`<span></span>`}
+            ${this._config.show_count && this._data ? A`<span class="badge" aria-label="${e.length} items">${e.length}</span>` : M}
+          </div>` : M}
+        ${this._data?.stale ? A`<p class="stale">Showing the last successful update</p>` : M}
+        ${this._loading ? this._renderLoading() : e.length ? A`${[
 			"horizontal",
-			"marquee",
+			"carousel",
 			"showcase"
-		].includes(this._config.layout ?? "grid") && this._config.carousel_buttons !== !1 ? M`<div class="carousel-controls" aria-label="Carousel controls">
+		].includes(this._config.layout ?? "grid") && this._config.carousel_buttons !== !1 ? A`<div class="carousel-controls" aria-label="Carousel controls">
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(-1) : this._scrollCarousel(-1)} aria-label="Previous items"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(1) : this._scrollCarousel(1)} aria-label="Next items"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
-            </div>` : P}
+            </div>` : M}
             <div
               class="content ${this._config.layout ?? "grid"} ${t === "auto" ? "auto" : ""} ${[
 			"horizontal",
@@ -1611,14 +1830,14 @@ var ze = o`
 			"showcase"
 		].includes(this._config.layout ?? "") && this._filteredItems().length < 2 ? "single" : ""} ${this._config.layout === "showcase" ? `showcase-transition-${n}` : ""}"
               style=${`--columns:${t};--scroll-gap:${this._config.scroll_gap ?? 8}px;--scroll-peek:${this._config.scroll_peek ?? 36}px;--marquee-speed:${this._config.autoscroll_speed ?? 40}px;--showcase-transition-duration:${this._config.showcase_transition_duration ?? 400}ms`}
-              tabindex=${this._config.layout === "showcase" ? "0" : P}
-              role=${this._config.layout === "showcase" ? "region" : P}
-              aria-roledescription=${this._config.layout === "showcase" ? "carousel" : P}
-              aria-label=${this._config.layout === "showcase" ? "Media showcase" : P}
+              tabindex=${this._config.layout === "showcase" ? "0" : M}
+              role=${this._config.layout === "showcase" ? "region" : M}
+              aria-roledescription=${this._config.layout === "showcase" ? "carousel" : M}
+              aria-label=${this._config.layout === "showcase" ? "Media showcase" : M}
               @keydown=${this._showcaseKeydown}
             >
-              ${this._config.layout === "showcase" ? this._renderShowcase(e) : this._config.layout === "marquee" ? M`<div class="marquee-track">${this._renderMarqueeStrip(e)}</div>` : e.map((e) => this._renderItem(e))}
-            </div>` : M`<div class="empty">${this._config.mode === "active" ? "Nothing is playing" : "No matching media"}</div>`}
+              ${this._config.layout === "showcase" ? this._renderShowcase(e) : this._config.layout === "marquee" ? A`<div class="marquee-track">${this._renderMarqueeStrip(e)}</div>` : e.map((e) => this._renderItem(e))}
+            </div>` : A`<div class="empty">${this._config.mode === "active" ? "Nothing is playing" : "No matching media"}</div>`}
       </ha-card>
       ${this._renderDetailsDialog()}
       ${this._renderTerminationDialog()}
@@ -1700,58 +1919,60 @@ var ze = o`
 		});
 	}
 	_renderItem(e, t, n = !1) {
-		if (n) return M`<div class="strip-clone" aria-hidden="true" data-item-id=${this._itemId(e)}>${this._renderItem(e, void 0, !1)}</div>`;
+		if (n) return A`<div class="strip-clone" aria-hidden="true" data-item-id=${this._itemId(e)}>${this._renderItem(e, void 0, !1)}</div>`;
 		if (this._config.mode === "active") return this._renderActive(e);
 		if (this._config.mode === "users") return this._renderUser(e);
 		let r = this._config.mode === "recently_added" ? e : e.media ?? {}, i = this._cardEpisodeTitle(r, "media"), a = e._group_subtitle ?? this._cardEpisodeSubtitle(r, "media"), o = !!r.year && (r.type !== "movie" || this._config.movie_subtitle !== "year"), s = this._image(r.images), c = this._backgroundImage(r.images), l = this._config.mode === "history" ? Number(e.play_duration_seconds) || 0 : Number(r.duration_seconds) || 0;
-		return M`
+		return A`
       <article data-item-id=${this._itemId(e)} class="item media-item ${r.type ?? "unknown"} ${this._artClass(s, c)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(c)}>
         ${this._openDetailsButton(e, i)}
-        ${s ? M`<img class="art" src=${s} alt="" loading="lazy" referrerpolicy="no-referrer">` : P}
+        ${s ? A`<img class="art" src=${s} alt="" loading="lazy" referrerpolicy="no-referrer">` : M}
         <div class="body">
           <div class="eyebrow"><span>${this._itemEyebrow(e, r)}</span></div>
           <h3 class="name">${i}</h3>
-          ${a ? M`<div class="subtitle">${a}</div>` : P}
+          ${a ? A`<div class="subtitle">${a}</div>` : M}
           <div class="meta">
-            ${o ? M`<span>${r.year}</span>` : P}
-            ${l ? M`<span>${this._duration(l)}${this._config.mode === "history" ? " watched" : ""}</span>` : P}
-            ${r.library?.name ? M`<span>${r.library.name}</span>` : P}
+            ${o ? A`<span>${r.year}</span>` : M}
+            ${l ? A`<span>${this._duration(l)}${this._config.mode === "history" ? " watched" : ""}</span>` : M}
+            ${r.library?.name ? A`<span>${r.library.name}</span>` : M}
           </div>
-          ${this._config.show_summary && r.summary ? M`<div class="summary">${r.summary}</div>` : P}
+          ${this._config.show_summary && r.summary ? A`<div class="summary">${r.summary}</div>` : M}
         </div>
       </article>`;
 	}
 	_renderUser(e) {
-		let t = Number(e.total_duration_seconds) || 0, n = e.display_name || "Private user", r = String(n).trim().charAt(0).toUpperCase() || "?";
-		return M`<article data-item-id=${this._itemId(e)} class="item user-item ${this._config.click_action === "details" ? "interactive" : ""}">
+		let t = Number(e.total_duration_seconds) || 0, n = e.display_name || "Private user", r = String(n).trim().charAt(0).toUpperCase() || "?", i = this._config.user_card_show_plays || this._config.user_card_show_watch_time || this._config.user_card_show_completion, a = this._config.user_card_show_media_breakdown || this._config.user_card_show_playback_breakdown;
+		return A`<article data-item-id=${this._itemId(e)} class="item user-item ${this._config.click_action === "details" ? "interactive" : ""}">
       ${this._openDetailsButton(e, `${n} user details`)}
       <div class="user-avatar" aria-hidden="true">${r}</div>
       <div class="body">
-        <div class="eyebrow"><span>${e.last_seen_at ? `Last active ${this._date(e.last_seen_at)}` : "Plex activity summary"}</span></div>
+        ${this._config.user_card_show_last_active ? A`<div class="eyebrow"><span>${e.last_seen_at ? `Last active ${this._date(e.last_seen_at)}` : "Plex activity summary"}</span></div>` : M}
         <h3 class="name">${n}</h3>
-        <div class="user-stats">
-          <span><strong>${e.total_plays ?? 0}</strong> plays</span>
-          <span><strong>${this._duration(t)}</strong> watched</span>
-          <span><strong>${e.completion_percent ?? 0}%</strong> completion</span>
-        </div>
-        <div class="user-breakdown">
-          ${e.movie_plays ? M`<span><ha-icon icon="mdi:movie-open"></ha-icon>${e.movie_plays} movies</span>` : P}
-          ${e.tv_plays ? M`<span><ha-icon icon="mdi:television-classic"></ha-icon>${e.tv_plays} episodes</span>` : P}
-          ${e.direct_play_count ? M`<span><ha-icon icon="mdi:play-circle-outline"></ha-icon>${e.direct_play_count} direct plays</span>` : P}
-          ${e.transcode_count ? M`<span><ha-icon icon="mdi:swap-horizontal"></ha-icon>${e.transcode_count} transcodes</span>` : P}
-        </div>
-        <div class="user-favourites optional">
-          ${e.popular_movie ? M`<span><small>Favourite movie</small>${e.popular_movie}</span>` : P}
-          ${e.popular_show ? M`<span><small>Favourite show</small>${e.popular_show}</span>` : P}
-          ${e.most_used_device ? M`<span><small>Most-used player</small>${e.most_used_device}</span>` : P}
-          ${e.preferred_day ? M`<span><small>Usually watches</small>${e.preferred_day} ${e.preferred_time ?? ""}</span>` : P}
-        </div>
+        ${i ? A`<div class="user-stats">
+          ${this._config.user_card_show_plays ? A`<span><strong>${e.total_plays ?? 0}</strong> plays</span>` : M}
+          ${this._config.user_card_show_watch_time ? A`<span><strong>${this._duration(t)}</strong> watched</span>` : M}
+          ${this._config.user_card_show_completion ? A`<span><strong>${e.completion_percent ?? 0}%</strong> completion</span>` : M}
+        </div>` : M}
+        ${a ? A`<div class="user-breakdown">
+          ${this._config.user_card_show_media_breakdown && e.movie_plays ? A`<span><ha-icon icon="mdi:movie-open"></ha-icon>${e.movie_plays} movies</span>` : M}
+          ${this._config.user_card_show_media_breakdown && e.tv_plays ? A`<span><ha-icon icon="mdi:television-classic"></ha-icon>${e.tv_plays} episodes</span>` : M}
+          ${this._config.user_card_show_playback_breakdown && e.direct_play_count ? A`<span><ha-icon icon="mdi:play-circle-outline"></ha-icon>${e.direct_play_count} direct plays</span>` : M}
+          ${this._config.user_card_show_playback_breakdown && e.transcode_count ? A`<span><ha-icon icon="mdi:swap-horizontal"></ha-icon>${e.transcode_count} transcodes</span>` : M}
+        </div>` : M}
+        ${this._config.user_card_show_favourites ? A`<div class="user-favourites optional">
+          ${e.popular_movie ? A`<span><small>Favourite movie</small>${e.popular_movie}</span>` : M}
+          ${e.popular_show ? A`<span><small>Favourite show</small>${e.popular_show}</span>` : M}
+        </div>` : M}
+        ${this._config.user_card_show_habits ? A`<div class="user-favourites optional">
+          ${e.most_used_device ? A`<span><small>Most-used player</small>${e.most_used_device}</span>` : M}
+          ${e.preferred_day ? A`<span><small>Usually watches</small>${e.preferred_day} ${e.preferred_time ?? ""}</span>` : M}
+        </div>` : M}
       </div>
     </article>`;
 	}
 	_renderLoading() {
-		return M`<div class="content grid auto loading-grid" aria-label="Loading Tautulli media" aria-busy="true">
-      ${[0, 1].map(() => M`<div class="item skeleton" aria-hidden="true">
+		return A`<div class="content grid auto loading-grid" aria-label="Loading Tautulli media" aria-busy="true">
+      ${[0, 1].map(() => A`<div class="item skeleton" aria-hidden="true">
         <div class="skeleton-art"></div>
         <div class="skeleton-body"><span></span><span></span><span></span></div>
       </div>`)}
@@ -1764,32 +1985,36 @@ var ze = o`
 			"album",
 			"artist"
 		].includes(t.type ?? ""), r = this._cardEpisodeTitle(t, "active"), i = this._cardEpisodeSubtitle(t, "active"), a = n || t.type === "movie" ? i : i || (t.year ? String(t.year) : ""), o = !n && !!this._config.show_quality, s = n && !!this._config.show_audio_quality, c = !!(this._config.show_bandwidth && e.quality?.bandwidth_kbps), l = this._image(e.images), u = this._backgroundImage(e.images), d = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), f = this._playbackStateColor(e, n), p = this._canTerminate(e) && (this._config.click_action !== "details" || ["card", "both"].includes(this._config.termination_location ?? "popup"));
-		return M`
+		return A`
       <article data-item-id=${this._itemId(e)} class="item ${this._artClass(l, u)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(u, f)}>
         ${this._openDetailsButton(e, r)}
-        ${l ? M`<img class="art" src=${l} alt="" loading="lazy" referrerpolicy="no-referrer">` : P}
+        ${l ? A`<img class="art" src=${l} alt="" loading="lazy" referrerpolicy="no-referrer">` : M}
         <div class="body">
           <div class="eyebrow">
-            <span class="state ${e.state}">${e.state}${e.state === "paused" && this._config.show_pause_duration ? ` · ${this._elapsedDuration(this._pausedSeconds(e))}` : ""}</span>
-            ${this._config.show_user && e.user?.display_name ? M`<span>${e.user.display_name}</span>` : P}
+            ${this._config.show_state ? A`<span class="state ${e.state}">${this._stateText(e, n)}</span>` : M}
+            ${this._config.show_user && e.user?.display_name ? A`<span>${e.user.display_name}</span>` : M}
           </div>
           <h3 class="name">${r}</h3>
-          ${a && (n || this._config.show_media_details) ? M`<div class="subtitle">${a}</div>` : P}
-          ${this._config.show_device && e.client ? M`<div class="meta"><span>${e.client.player || e.client.product || e.client.device}</span></div>` : P}
-          ${o || s || c ? M`<div class="details optional">
-            ${o && e.quality?.decision ? M`<span>${e.quality.decision}</span>` : P}
-            ${o && e.quality?.video_resolution ? M`<span>${e.quality.video_resolution}</span>` : P}
-            ${s && e.quality?.audio_codec ? M`<span>${e.quality.audio_codec}</span>` : P}
-            ${s && e.quality?.audio_channel_layout ? M`<span>${e.quality.audio_channel_layout}</span>` : P}
-            ${s && e.quality?.audio_bitrate_kbps ? M`<span>${e.quality.audio_bitrate_kbps} Kbps</span>` : P}
-            ${c && e.quality?.bandwidth_kbps ? M`<span>${this._bandwidth(e.quality.bandwidth_kbps)}</span>` : P}
-          </div>` : P}
-          ${this._config.show_progress ? M`<div class="modern-progress-row">
+          ${a && (n || this._config.show_media_details) ? A`<div class="subtitle">${a}</div>` : M}
+          ${this._config.show_device && e.client || this._config.show_eta && this._eta(e) ? A`<div class="meta">
+            ${this._config.show_device && e.client ? A`<span>${e.client.player || e.client.product || e.client.device}</span>` : M}
+            ${this._config.show_eta && this._eta(e) ? A`<span class="modern-eta">ETA: ${this._eta(e)}</span>` : M}
+          </div>` : M}
+          ${o || s || c ? A`<div class="details optional">
+            ${o && e.quality?.decision ? A`<span>${e.quality.decision}</span>` : M}
+            ${o && e.quality?.video_resolution ? A`<span>${e.quality.video_resolution}</span>` : M}
+            ${s && e.quality?.audio_codec ? A`<span>${e.quality.audio_codec}</span>` : M}
+            ${s && e.quality?.audio_channel_layout ? A`<span>${e.quality.audio_channel_layout}</span>` : M}
+            ${s && e.quality?.audio_bitrate_kbps ? A`<span>${e.quality.audio_bitrate_kbps} Kbps</span>` : M}
+            ${c && e.quality?.bandwidth_kbps ? A`<span>${this._bandwidth(e.quality.bandwidth_kbps)}</span>` : M}
+          </div>` : M}
+          ${this._config.show_progress ? A`<div class="modern-progress-row">
+            ${this._config.show_progress_percent ? A`<span class="modern-progress-percent">${Math.round(d)}%</span>` : M}
             <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(d)} style=${`--progress:${d}%`}></div>
-            ${this._config.show_remaining && e.playback?.remaining_ms ? M`<span class="modern-progress-remaining">${this._duration(Math.ceil(e.playback.remaining_ms / 1e3))} remaining</span>` : P}
-          </div>` : P}
+            ${this._config.show_remaining && e.playback?.remaining_ms ? A`<span class="modern-progress-remaining">${this._duration(Math.ceil(e.playback.remaining_ms / 1e3))} remaining</span>` : M}
+          </div>` : M}
         </div>
-        ${p ? M`<button class="terminate" @click=${(t) => this._openTerminationDialog(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>` : P}
+        ${p ? A`<button class="terminate" @click=${(t) => this._openTerminationDialog(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>` : M}
       </article>`;
 	}
 	_renderClassicActive(e) {
@@ -1802,45 +2027,45 @@ var ze = o`
 			e.quality?.audio_channel_layout,
 			e.quality?.audio_bitrate_kbps ? `${e.quality.audio_bitrate_kbps} Kbps` : void 0
 		].filter(Boolean).join(" · "), ee = this._canTerminate(e) && (this._config.click_action !== "details" || ["card", "both"].includes(this._config.termination_location ?? "popup"));
-		return M`
+		return A`
       <article data-item-id=${this._itemId(e)} class="classic-item ${n ? "music" : "video"} ${e.state} ${this._artClass(r, i)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(i, o)}>
         ${this._openDetailsButton(e, c)}
-        ${r ? M`<img class="classic-art" src=${r} alt="" loading="lazy" referrerpolicy="no-referrer">` : i ? P : M`<div class="classic-art placeholder"><ha-icon icon="${n ? "mdi:music" : "mdi:movie-open"}"></ha-icon></div>`}
+        ${r ? A`<img class="classic-art" src=${r} alt="" loading="lazy" referrerpolicy="no-referrer">` : i ? M : A`<div class="classic-art placeholder"><ha-icon icon="${n ? "mdi:music" : "mdi:movie-open"}"></ha-icon></div>`}
         <div class="classic-body">
           <div class="classic-top">
-            ${this._config.show_device && d ? M`<span>${d}</span>` : M`<span></span>`}
-            ${this._config.show_user && e.user?.display_name ? M`<strong>${e.user.display_name}</strong>` : P}
+            ${this._config.show_device && d ? A`<span>${d}</span>` : A`<span></span>`}
+            ${this._config.show_user && e.user?.display_name ? A`<strong>${e.user.display_name}</strong>` : M}
           </div>
           <h3 class="classic-title">
             <ha-icon icon=${this._stateIcon(e.state, n)}></ha-icon>
             <span>${c}</span>
           </h3>
-          ${n && l ? M`<div class="classic-track"><ha-icon icon="mdi:music-note"></ha-icon><span>${l}</span></div>` : P}
+          ${n && l ? A`<div class="classic-track"><ha-icon icon="mdi:music-note"></ha-icon><span>${l}</span></div>` : M}
           <div class="classic-info">
-            ${this._config.show_media_details && u ? M`<span class="media-detail"><ha-icon icon=${t.type === "episode" ? "mdi:television-classic" : "mdi:filmstrip"}></ha-icon><span>${u}</span></span>` : M`<span></span>`}
-            ${this._config.show_eta && this._eta(e) ? M`<span>ETA: ${this._eta(e)}</span>` : P}
+            ${this._config.show_media_details && u ? A`<span class="media-detail"><ha-icon icon=${t.type === "episode" ? "mdi:television-classic" : "mdi:filmstrip"}></ha-icon><span>${u}</span></span>` : A`<span></span>`}
+            ${this._config.show_eta && this._eta(e) ? A`<span>ETA: ${this._eta(e)}</span>` : M}
           </div>
-          ${this._config.show_progress ? M`
+          ${this._config.show_progress ? A`
             <div class="classic-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(a)} style=${`--progress:${a}%`}>
-              ${this._config.show_state ? M`<span class="progress-state">${this._stateText(e, n)}</span>` : P}
-              ${this._config.show_progress_percent ? M`<span class="progress-percent">${Math.round(a)}%</span>` : P}
-              ${this._config.show_remaining && e.playback?.remaining_ms ? M`<span class="progress-remaining"><span class="remaining-label">Remaining - </span>${this._duration(Math.ceil(e.playback.remaining_ms / 1e3))}</span>` : P}
-            </div>` : P}
+              ${this._config.show_state ? A`<span class="progress-state">${this._stateText(e, n)}</span>` : M}
+              ${this._config.show_progress_percent ? A`<span class="progress-percent">${Math.round(a)}%</span>` : M}
+              ${this._config.show_remaining && e.playback?.remaining_ms ? A`<span class="progress-remaining"><span class="remaining-label">Remaining - </span>${this._duration(Math.ceil(e.playback.remaining_ms / 1e3))}</span>` : M}
+            </div>` : M}
           <div class="classic-bottom">
-            ${n && this._config.show_audio_quality && p ? M`<span>${p}</span>` : !n && this._config.show_quality && f ? M`<span>${f}</span>` : M`<span></span>`}
+            ${n && this._config.show_audio_quality && p ? A`<span>${p}</span>` : !n && this._config.show_quality && f ? A`<span>${f}</span>` : A`<span></span>`}
             <span>
-              ${this._config.show_bandwidth && e.quality?.bandwidth_kbps ? M`Bandwidth: ${this._bandwidth(e.quality.bandwidth_kbps)}` : P}
+              ${this._config.show_bandwidth && e.quality?.bandwidth_kbps ? A`Bandwidth: ${this._bandwidth(e.quality.bandwidth_kbps)}` : M}
             </span>
           </div>
         </div>
-        ${ee ? M`<button class="terminate" @click=${(t) => this._openTerminationDialog(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>` : P}
+        ${ee ? A`<button class="terminate" @click=${(t) => this._openTerminationDialog(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></button>` : M}
       </article>`;
 	}
 	_stateIcon(e, t) {
 		return e === "paused" ? "mdi:pause" : e === "buffering" ? "mdi:loading" : t ? "mdi:music-circle" : "mdi:play";
 	}
 	_playbackStateColor(e, t = !1) {
-		let n = J[this._config.style_preset ?? "classic"];
+		let n = K[this._config.style_preset ?? "classic"];
 		return e.state === "paused" ? this._config.paused_color ?? n.paused_color : e.state === "buffering" ? this._config.buffering_color ?? n.buffering_color : this._config.playing_color ?? (t ? "#1db954" : n.playing_color);
 	}
 	_stateText(e, t) {
@@ -1863,7 +2088,7 @@ var ze = o`
 		}
 	}
 	_openDetailsButton(e, t) {
-		return this._config.click_action === "details" ? M`<button class="open-details" type="button" data-detail-id=${this._itemId(e)} aria-label="Open details for ${String(t)}"></button>` : P;
+		return this._config.click_action === "details" ? A`<button class="open-details" type="button" data-detail-id=${this._itemId(e)} aria-label="Open details for ${String(t)}"></button>` : M;
 	}
 	_itemId(e) {
 		return String(e.id ?? e.session_id ?? e.media?.id ?? `${e.rank ?? ""}:${e.display_name ?? e.media?.title ?? e.title ?? "item"}`);
@@ -1888,9 +2113,9 @@ var ze = o`
 		e.shiftKey && i === n ? (e.preventDefault(), r?.focus()) : !e.shiftKey && i === r && (e.preventDefault(), n?.focus());
 	}
 	_renderMarqueeStrip(e) {
-		if (e.length < 2) return this._marqueeSets = 1, M`${e.map((e) => this._renderItem(e, void 0, !1))}`;
+		if (e.length < 2) return this._marqueeSets = 1, A`${e.map((e) => this._renderItem(e, void 0, !1))}`;
 		let t = e.length <= 4 ? 4 : e.length <= 8 ? 3 : 2;
-		return this._marqueeSets = t, M`${Array.from({ length: t }, (t, n) => e.map((e) => this._renderItem(e, void 0, n > 0)))}`;
+		return this._marqueeSets = t, A`${Array.from({ length: t }, (t, n) => e.map((e) => this._renderItem(e, void 0, n > 0)))}`;
 	}
 	_marqueeItemsPerSet() {
 		return Math.max(1, this._filteredItems().length || this._data?.items.length || 1);
@@ -1966,11 +2191,11 @@ var ze = o`
 		return !!this._selectedItem || this._dialogClosing || !!this._pendingTermination;
 	}
 	_renderShowcase(e) {
-		if (this._config.showcase_transition === "horizontal") return M`${e.map((e) => this._renderItem(e))}${e.length >= 2 ? e.map((e) => this._renderItem(e, void 0, !0)) : P}`;
+		if (this._config.showcase_transition === "horizontal") return A`${e.map((e) => this._renderItem(e))}${e.length >= 2 ? e.map((e) => this._renderItem(e, void 0, !0)) : M}`;
 		let t = this._normalizedShowcaseIndex(e.length), n = e[t];
-		if (!n) return M``;
+		if (!n) return A``;
 		let r = this._config.showcase_transition ?? "fade", i = this._showcaseDirection === -1 ? "previous" : "next";
-		return M`${Oe(`${r}:${t}:${this._itemId(n)}`, M`
+		return A`${Me(`${r}:${t}:${this._itemId(n)}`, A`
       <div class="showcase-slide ${r} ${i}" aria-label=${`Item ${t + 1} of ${e.length}`}>
         ${this._renderItem(n)}
       </div>
@@ -2046,46 +2271,43 @@ var ze = o`
 	}
 	_renderDetailsDialog() {
 		let e = this._selectedItem;
-		if (!e) return P;
+		if (!e) return M;
 		let t = this._data?.items.find((t) => this._itemId(t) === this._itemId(e)) ?? e;
 		return this._config.mode === "active" ? this._renderActiveDetails(t) : this._config.mode === "users" ? this._renderUserDetails(t) : this._renderMediaDetails(t);
 	}
 	_renderDialogShell(e, t, n, r = !1) {
 		let i = n ? `--details-backdrop:url("${n.replaceAll("\"", "")}");` : "", a = this._config.popup_backdrop_dim ?? 58, o = this._config.popup_backdrop_blur ?? 0, s = `--scrim-color:rgb(0 0 0 / ${a}%);--scrim-blur:${o ? `blur(${o}px)` : "none"};--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;`, c = this._config.popup_background, l = `${i}--dialog-animation-duration:${this._config.popup_animation_duration ?? 220}ms;--dialog-close-duration:${this._config.popup_close_animation_duration ?? 200}ms;--cinematic-art-opacity:${(this._config.popup_cinematic_art ?? 45) / 100};${c ? `background:${c};` : ""}`;
-		return M`<div class="dialog-backdrop ${this._dialogClosing ? "closing" : ""}" style=${s} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
+		return A`<div class="dialog-backdrop ${this._dialogClosing ? "closing" : ""}" style=${s} @click=${this._backdropClickClose} @keydown=${this._detailsKeydown}>
       <section class="details-dialog anim-${this._config.popup_animation ?? "scale"} ${this._dialogClosing ? "closing" : ""} popup-${this._config.popup_style ?? "clean"} popup-content-${this._config.popup_content_style ?? "open"} popup-width-${this._config.popup_width ?? "standard"} ${n ? "has-backdrop" : ""}" style=${l} role="dialog" aria-modal="true" aria-labelledby="details-title">
         <button class="dialog-close" @click=${this._closeDetails} aria-label="Close details"><ha-icon icon="mdi:close"></ha-icon></button>
-        <div class="details-content">${r ? P : M`<h2 id="details-title">${e}</h2>`}${t}</div>
+        <div class="details-content">${r ? M : A`<h2 id="details-title">${e}</h2>`}${t}</div>
       </section>
     </div>`;
 	}
 	_renderActiveDetails(e) {
-		let t = e.media ?? {}, n = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), r = t.hierarchy ?? {}, i = this._mediaSubtitle(t), a = this._config.popup_show_artwork ? e.images?.poster_url ?? void 0 : void 0, o = this._config.popup_show_artwork ? e.images?.backdrop_url ?? void 0 : void 0, s = this._canTerminate(e) && ["popup", "both"].includes(this._config.termination_location ?? "popup"), c = s && (this._config.termination_popup_placement ?? "footer") === "top", l = t.full_title || t.title || "Stream details", u = this._playbackStateColor(e, [
+		let t = e.media ?? {}, n = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), r = t.hierarchy ?? {}, i = this._popupMediaSubtitle(t, "active"), a = this._config.popup_show_artwork ? e.images?.poster_url ?? void 0 : void 0, o = this._config.popup_show_artwork ? e.images?.backdrop_url ?? void 0 : void 0, s = this._canTerminate(e) && ["popup", "both"].includes(this._config.termination_location ?? "popup"), c = s && (this._config.termination_popup_placement ?? "footer") === "top", l = this._popupMediaTitle(t, "active") || "Stream details", u = this._playbackStateColor(e, [
 			"track",
 			"album",
 			"artist"
-		].includes(t.type ?? "")), d = M`
+		].includes(t.type ?? "")), d = (this._config.popup_detail_order ?? V).map((n) => this._config[qe[n]] ? this._renderActiveDetailField(n, e, t, r) : M).filter((e) => e !== M), f = A`
       <section class="popup-summary" style=${this._backgroundStyle(void 0, u)}><div class="details-hero ${a ? "with-poster" : ""}">
-        ${a ? M`<img src=${a} alt="" loading="lazy" referrerpolicy="no-referrer">` : P}
-        ${c ? M`<div class="details-top-action">${this._popupTerminationButton(e)}</div>` : P}
+        ${a ? A`<img src=${a} alt="" loading="lazy" referrerpolicy="no-referrer">` : M}
+        ${c ? A`<div class="details-top-action">${this._popupTerminationButton(e)}</div>` : M}
         <div class="details-primary">
           <div class="details-heading-line">
             <h2 id="details-title" class="details-inline-title">${l}</h2>
-            ${this._config.popup_summary_show_user && e.user?.display_name ? M`<span class="details-summary-user"><ha-icon icon="mdi:account"></ha-icon>${e.user.display_name}</span>` : P}
+            ${this._config.popup_summary_show_user && e.user?.display_name ? A`<span class="details-summary-user"><ha-icon icon="mdi:account"></ha-icon>${e.user.display_name}</span>` : M}
           </div>
-          <div class="details-chips">${["paused", "buffering"].includes(e.state) ? M`<span class="state ${e.state}">${e.state}</span>` : P}${t.type ? M`<span>${t.type}</span>` : P}${t.year ? M`<span>${t.year}</span>` : P}</div>
-          ${i ? M`<p>${i}</p>` : P}
-          ${this._config.popup_show_summary && t.summary ? M`<p class="details-summary ${this._config.popup_summary_lines === 0 ? "" : "compact"}" style=${`--summary-lines:${this._config.popup_summary_lines ?? 3}`}>${t.summary}</p>` : P}
-          ${this._config.popup_show_progress ? M`<div class="details-progress"><span style=${`width:${n}%`}></span></div>
-          <div class="details-progress-label"><span>${Math.round(n)}% watched</span>${e.playback?.remaining_ms ? M`<span>${this._duration(Math.ceil(e.playback.remaining_ms / 1e3))} remaining</span>` : P}</div>` : P}
+          <div class="details-chips">${["paused", "buffering"].includes(e.state) ? A`<span class="state ${e.state}">${e.state}</span>` : M}${t.type ? A`<span>${t.type}</span>` : M}${t.year ? A`<span>${t.year}</span>` : M}</div>
+          ${i ? A`<p>${i}</p>` : M}
+          ${this._config.popup_show_summary && t.summary ? A`<p class="details-summary ${this._config.popup_summary_lines === 0 ? "" : "compact"}" style=${`--summary-lines:${this._config.popup_summary_lines ?? 3}`}>${t.summary}</p>` : M}
+          ${this._config.popup_show_progress ? A`<div class="details-progress"><span style=${`width:${n}%`}></span></div>
+          <div class="details-progress-label"><span>${Math.round(n)}% watched</span>${e.playback?.remaining_ms ? A`<span>${this._duration(Math.ceil(e.playback.remaining_ms / 1e3))} remaining</span>` : M}</div>` : M}
         </div>
       </div></section>
-      <h3 class="details-section-title">Stream details</h3>
-      <div class="details-grid">
-        ${(this._config.popup_detail_order ?? G).map((n) => this._config[Ve[n]] ? this._renderActiveDetailField(n, e, t, r) : P)}
-      </div>
-      ${s && !c ? M`<div class="details-actions">${this._popupTerminationButton(e)}</div>` : P}`;
-		return this._renderDialogShell(l, d, o, !0);
+      ${d.length ? A`<h3 class="details-section-title">Stream details</h3><div class="details-grid">${d}</div>` : M}
+      ${s && !c ? A`<div class="details-actions">${this._popupTerminationButton(e)}</div>` : M}`;
+		return this._renderDialogShell(l, f, o, !0);
 	}
 	_renderActiveDetailField(e, t, n, r) {
 		switch (e) {
@@ -2093,7 +2315,7 @@ var ze = o`
 			case "player": return this._detailValue("Player", [t.client?.product, t.client?.player].filter(Boolean).join(" · "));
 			case "device": return this._detailValue("Device", t.client?.device);
 			case "eta": return this._detailValue("Estimated finish", this._eta(t));
-			case "pause_duration": return t.state === "paused" ? this._detailValue("Paused for", this._elapsedDuration(this._pausedSeconds(t))) : P;
+			case "pause_duration": return t.state === "paused" ? this._detailValue("Paused for", this._elapsedDuration(this._pausedSeconds(t))) : M;
 			case "playback_decision": return this._detailValue("Playback", t.quality?.decision);
 			case "video_quality": return this._detailValue("Video", t.quality?.video_resolution);
 			case "audio_quality": return this._detailValue("Audio", [t.quality?.audio_codec, t.quality?.audio_channel_layout].filter(Boolean).join(" · "));
@@ -2108,71 +2330,73 @@ var ze = o`
 			case "audience_rating": return this._detailValue("Audience rating", n.audience_rating);
 			case "genres": return this._detailValue("Genres", n.genres?.join(" · "));
 			case "studio": return this._detailValue("Studio", n.studio);
+			case "rank":
+			case "plays":
+			case "played": return M;
 		}
 	}
 	_popupTerminationButton(e) {
 		let t = (this._config.termination_button_style ?? "label") === "icon";
-		return M`<button class="danger ${t ? "icon-only" : ""}" @click=${(t) => this._terminateFromDetails(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon>${t ? P : "Terminate stream"}</button>`;
+		return A`<button class="danger ${t ? "icon-only" : ""}" @click=${(t) => this._terminateFromDetails(e, t)} title="Terminate stream" aria-label="Terminate stream"><ha-icon icon="mdi:stop-circle-outline"></ha-icon>${t ? M : "Terminate stream"}</button>`;
 	}
 	_renderUserDetails(e) {
-		let t = M`
+		let t = (this._config.popup_user_detail_order ?? U).flatMap((t) => this._renderUserDetailGroup(t, e)).filter((e) => e !== M), n = A`
       <section class="popup-summary"><div class="user-popup-summary">
         <div class="user-avatar large" aria-hidden="true">${String(e.display_name || "?").charAt(0).toUpperCase()}</div>
         <div><strong>${e.total_plays ?? 0} plays</strong><span>${this._duration(Number(e.total_duration_seconds) || 0)} watched</span></div>
       </div></section>
-      <h3 class="details-section-title">User details</h3>
-      <div class="details-grid">
-        ${this._config.popup_show_playback_breakdown ? M`
-          ${this._detailValue("Movies", e.movie_plays)}
-          ${this._detailValue("TV episodes", e.tv_plays)}
-          ${this._detailValue("Completion", e.completion_percent === void 0 ? void 0 : `${e.completion_percent}%`)}
-          ${this._detailValue("Transcoded", e.transcode_percent === void 0 ? void 0 : `${e.transcode_percent}%`)}
-          ${this._detailValue("Direct plays", e.direct_play_count)}
-          ${this._detailValue("Direct streams", e.direct_stream_count)}
-          ${this._detailValue("Transcodes", e.transcode_count)}
-        ` : P}
-        ${this._config.popup_show_favourites ? M`${this._detailValue("Favourite movie", e.popular_movie)}${this._detailValue("Favourite show", e.popular_show)}` : P}
-        ${this._config.popup_show_habits ? M`${this._detailValue("Most-used player", e.most_used_device)}${this._detailValue("Usually watches", [e.preferred_day, e.preferred_time].filter(Boolean).join(" "))}` : P}
-        ${this._config.popup_show_recent_activity ? this._detailValue("Last active", e.last_seen_at ? this._date(e.last_seen_at) : void 0) : P}
-      </div>`;
-		return this._renderDialogShell(e.display_name || "Private user", t);
+      ${t.length ? A`<h3 class="details-section-title">User details</h3><div class="details-grid">${t}</div>` : M}`;
+		return this._renderDialogShell(e.display_name || "Private user", n);
+	}
+	_renderUserDetailGroup(e, t) {
+		switch (e) {
+			case "playback": return this._config.popup_show_playback_breakdown ? [
+				this._detailValue("Movies", t.movie_plays),
+				this._detailValue("TV episodes", t.tv_plays),
+				this._detailValue("Completion", t.completion_percent === void 0 ? void 0 : `${t.completion_percent}%`),
+				this._detailValue("Transcoded", t.transcode_percent === void 0 ? void 0 : `${t.transcode_percent}%`),
+				this._detailValue("Direct plays", t.direct_play_count),
+				this._detailValue("Direct streams", t.direct_stream_count),
+				this._detailValue("Transcodes", t.transcode_count)
+			] : [];
+			case "favourites": return this._config.popup_show_favourites ? [this._detailValue("Favourite movie", t.popular_movie), this._detailValue("Favourite show", t.popular_show)] : [];
+			case "habits": return this._config.popup_show_habits ? [this._detailValue("Most-used player", t.most_used_device), this._detailValue("Usually watches", [t.preferred_day, t.preferred_time].filter(Boolean).join(" "))] : [];
+			case "recent_activity": return this._config.popup_show_recent_activity ? [this._detailValue("Last active", t.last_seen_at ? this._date(t.last_seen_at) : void 0)] : [];
+		}
 	}
 	_renderMediaDetails(e) {
-		let t = this._config.mode === "recently_added" ? e : e.media ?? {}, n = this._config.popup_show_artwork ? t.images?.poster_url ?? void 0 : void 0, r = this._config.popup_show_artwork ? t.images?.backdrop_url ?? void 0 : void 0, i = t.type === "season" ? this._cardEpisodeTitle(t, "media") : t.full_title || t.title || "Media details", a = t.type === "season" ? this._cardEpisodeSubtitle(t, "media") : this._mediaSubtitle(t), o = M`
+		let t = this._config.mode === "recently_added" ? e : e.media ?? {}, n = this._config.popup_show_artwork ? t.images?.poster_url ?? void 0 : void 0, r = this._config.popup_show_artwork ? t.images?.backdrop_url ?? void 0 : void 0, i = this._popupMediaTitle(t, "media") || "Media details", a = this._popupMediaSubtitle(t, "media"), o = (this._config.popup_detail_order ?? V).map((n) => this._config[qe[n]] ? this._renderMediaDetailField(n, e, t) : M).filter((e) => e !== M), s = A`
       <section class="popup-summary media-summary"><div class="details-hero ${n ? "with-poster" : ""}">
-        ${n ? M`<img class="details-media-poster" src=${n} alt="" loading="lazy" referrerpolicy="no-referrer">` : P}
+        ${n ? A`<img class="details-media-poster" src=${n} alt="" loading="lazy" referrerpolicy="no-referrer">` : M}
         <div class="details-primary">
           <h2 id="details-title" class="details-inline-title">${i}</h2>
-          ${a ? M`<p class="details-subtitle">${a}</p>` : P}
-          ${this._config.popup_show_summary && t.summary ? M`<p class="details-summary">${t.summary}</p>` : P}
+          ${a ? A`<p class="details-subtitle">${a}</p>` : M}
+          ${this._config.popup_show_summary && t.summary ? A`<p class="details-summary ${this._config.popup_summary_lines === 0 ? "" : "compact"}" style=${`--summary-lines:${this._config.popup_summary_lines ?? 3}`}>${t.summary}</p>` : M}
         </div>
       </div></section>
-      <h3 class="details-section-title">Media details</h3>
-      <div class="details-grid">
-        ${(this._config.popup_detail_order ?? G).map((e) => this._config[Ve[e]] ? this._renderMediaDetailField(e, t) : P)}
-        ${this._config.mode === "popular" ? this._detailValue("Rank", e.rank ? `#${e.rank}` : void 0) : P}
-        ${this._config.mode === "popular" ? this._detailValue("Plays", e.total_plays) : P}
-        ${this._config.mode === "history" && this._config.popup_show_user ? this._detailValue("Plex user", e.user?.display_name) : P}
-        ${this._config.mode === "history" ? this._detailValue("Played", e.started_at ? this._date(e.started_at) : void 0) : P}
-      </div>`;
-		return this._renderDialogShell(i, o, r, !0);
+      ${o.length ? A`<h3 class="details-section-title">${this._config.mode === "popular" ? "Ranking details" : "Media details"}</h3><div class="details-grid">${o}</div>` : M}`;
+		return this._renderDialogShell(i, s, r, !0);
 	}
-	_renderMediaDetailField(e, t) {
+	_renderMediaDetailField(e, t, n) {
 		switch (e) {
-			case "media_type": return this._detailValue("Media type", t.type);
-			case "year": return this._detailValue("Year", t.year);
-			case "duration": return this._detailValue("Duration", t.duration_seconds ? this._duration(t.duration_seconds) : void 0);
-			case "library": return this._detailValue("Library", t.library?.name);
-			case "content_rating": return this._detailValue("Content rating", t.content_rating);
-			case "rating": return this._detailValue("Rating", t.rating);
-			case "audience_rating": return this._detailValue("Audience rating", t.audience_rating);
-			case "genres": return this._detailValue("Genres", t.genres?.join(" · "));
-			case "studio": return this._detailValue("Studio", t.studio);
-			default: return P;
+			case "user": return this._detailValue("Plex user", t.user?.display_name);
+			case "media_type": return this._detailValue("Media type", n.type);
+			case "year": return this._detailValue("Year", n.year);
+			case "duration": return this._detailValue("Duration", n.duration_seconds ? this._duration(n.duration_seconds) : void 0);
+			case "library": return this._detailValue("Library", n.library?.name);
+			case "content_rating": return this._detailValue("Content rating", n.content_rating);
+			case "rating": return this._detailValue("Rating", n.rating);
+			case "audience_rating": return this._detailValue("Audience rating", n.audience_rating);
+			case "genres": return this._detailValue("Genres", n.genres?.join(" · "));
+			case "studio": return this._detailValue("Studio", n.studio);
+			case "rank": return this._detailValue("Rank", t.rank ? `#${t.rank}` : void 0);
+			case "plays": return this._detailValue("Plays", t.total_plays);
+			case "played": return this._detailValue("Played", t.started_at ? this._date(t.started_at) : void 0);
+			default: return M;
 		}
 	}
 	_detailValue(e, t) {
-		return t == null || t === "" || t === 0 ? P : M`<div class="detail-value"><small>${e}</small><span>${String(t)}</span></div>`;
+		return t == null || t === "" ? M : A`<div class="detail-value"><small>${e}</small><span>${String(t)}</span></div>`;
 	}
 	_terminateFromDetails(e, t) {
 		this._openTerminationDialog(e, t);
@@ -2190,10 +2414,39 @@ var ze = o`
 		let t = e.hierarchy ?? {};
 		if (["track", "album"].includes(e.type ?? "")) return [t.artist, t.album].filter(Boolean).join(" — ");
 		if (["episode", "show"].includes(e.type ?? "")) {
-			let e = t.season_number && t.episode ? `S${t.season_number} · E${t.episode}` : "";
-			return [t.show, e].filter(Boolean).join(" — ");
+			let n = e.type === "episode" ? this._episodeNumber(e, "compact") : "";
+			return [t.show, n].filter(Boolean).join(" — ");
 		}
 		return "";
+	}
+	_popupMediaTitle(e, t) {
+		if (e.type === "season") return this._cardEpisodeTitle(e, t);
+		if (e.type !== "episode") return e.full_title || e.title || "";
+		let n = this._config.popup_episode_layout ?? "automatic";
+		if (n === "card") return this._cardEpisodeTitle(e, t);
+		if (n !== "custom") return e.full_title || e.title || "";
+		let r = e.hierarchy ?? {}, i = this._displayText(r.show), a = e.title || "", o = e.full_title || a || i;
+		switch (this._config.popup_episode_title ?? "full_title") {
+			case "show": return i || o || a;
+			case "episode_title": return a || o || i;
+			default: return o || a || i;
+		}
+	}
+	_popupMediaSubtitle(e, t) {
+		if (e.type === "season") return this._cardEpisodeSubtitle(e, t);
+		if (e.type !== "episode") return this._mediaSubtitle(e);
+		let n = this._config.popup_episode_layout ?? "automatic";
+		if (n === "card") return this._cardEpisodeSubtitle(e, t);
+		if (n !== "custom") return this._mediaSubtitle(e);
+		let r = e.hierarchy ?? {}, i = this._displayText(r.show), a = e.title || "", o = this._episodeNumber(e, this._config.popup_episode_number_style ?? "compact");
+		switch (this._config.popup_episode_subtitle ?? "show_and_number") {
+			case "number_and_title": return this._joinText(o, a);
+			case "show_number_and_title": return this._joinText(i, o, a);
+			case "number_only": return o;
+			case "episode_title": return a;
+			case "none": return "";
+			default: return this._joinText(i, o);
+		}
 	}
 	_movieSubtitle(e, t) {
 		let n = this._config.movie_subtitle ?? "automatic";
@@ -2242,9 +2495,9 @@ var ze = o`
 			default: return this._joinText(r, a);
 		}
 	}
-	_episodeNumber(e) {
-		let t = e.hierarchy ?? {}, n = t.season_number ?? t.season, r = t.episode_number ?? t.episode;
-		return n == null || r == null ? "" : this._config.episode_number_style === "padded" ? `S${this._paddedIndex(n)}E${this._paddedIndex(r)}` : `S${this._displayText(n)} · E${this._displayText(r)}`;
+	_episodeNumber(e, t = this._config.episode_number_style ?? "compact") {
+		let n = e.hierarchy ?? {}, r = n.season_number ?? n.season, i = n.episode_number ?? n.episode;
+		return r == null || i == null ? "" : t === "padded" ? `S${this._paddedIndex(r)}E${this._paddedIndex(i)}` : `S${this._displayText(r)} · E${this._displayText(i)}`;
 	}
 	_seasonShowTitle(e) {
 		let t = e.hierarchy ?? {}, n = this._displayText(t.show);
@@ -2340,19 +2593,19 @@ var ze = o`
 	}
 	_renderTerminationDialog() {
 		let e = this._pendingTermination;
-		if (!e) return P;
+		if (!e) return M;
 		let t = e.media.full_title || e.media.title || "Untitled stream", n = [
 			e.user?.display_name,
 			e.client?.product,
 			e.client?.player
 		].filter(Boolean).join(" · ");
-		return M`<div class="dialog-backdrop" tabindex="-1" @click=${this._backdropTerminationClose} @keydown=${this._dialogKeydown}>
+		return A`<div class="dialog-backdrop" tabindex="-1" @click=${this._backdropTerminationClose} @keydown=${this._dialogKeydown}>
       <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="terminate-title" aria-describedby="terminate-description">
         <div class="dialog-content">
           <div class="dialog-icon"><ha-icon icon="mdi:stop-circle-outline"></ha-icon></div>
           <h2 id="terminate-title">Terminate this stream?</h2>
           <p id="terminate-description">Playback will stop immediately on the selected Plex player.</p>
-          <div class="dialog-stream"><strong>${t}</strong>${n ? M`<span>${n}</span>` : P}</div>
+          <div class="dialog-stream"><strong>${t}</strong>${n ? A`<span>${n}</span>` : M}</div>
         </div>
         <div class="dialog-actions">
           <button class="dialog-cancel" ?disabled=${this._terminating} @click=${this._closeTerminationDialog}>Cancel</button>
@@ -2365,7 +2618,7 @@ var ze = o`
 		if (!(!this.hass || !this._config.entry_id || !e.session_id)) {
 			this._terminating = !0;
 			try {
-				let t = await Pe(this.hass, this._config.entry_id, e.session_id);
+				let t = await Re(this.hass, this._config.entry_id, e.session_id);
 				this._pendingTermination = void 0, this.dispatchEvent(new CustomEvent("hass-notification", {
 					bubbles: !0,
 					composed: !0,
@@ -2378,21 +2631,27 @@ var ze = o`
 			}
 		}
 	}
-}, Ue = [
-	"recently_added",
-	"popular",
-	"users",
-	"history"
-];
-function Y(e, t) {
+};
+//#endregion
+//#region src/editor-registry.ts
+function q(e, t) {
 	return !(e?.modes && !e.modes.includes(t.mode) || e?.when && !e.when(t));
 }
-var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (e) => ["backdrop", "both"].includes(e.config.artwork ?? "poster"), Z = (e) => e.config.click_action === "details", Ge = (e) => (e.config.popup_animation ?? "scale") !== "none", Ke = (e) => !!e.config.popup_show_summary, Q = (e) => !!e.data.capabilities?.stream_termination, qe = (e) => Q(e) && !!e.config.allow_termination, $ = (e) => qe(e) && Z(e) && ["popup", "both"].includes(e.config.termination_location ?? "popup"), Je = (e) => e.mode === "active" && e.config.media_type !== "music" || e.mode === "recently_added" && ["all", "show"].includes(e.config.media_type ?? "all") || e.mode === "history", Ye = (e) => e.config.episode_layout !== "custom" || [
+var Ye = [
+	"top_users",
+	"top_libraries",
+	"top_platforms"
+], J = (e) => e.mode !== "users" && !(e.mode === "popular" && Ye.includes(e.config.stat_id ?? "popular_movies")), Y = (e) => J(e) && ["poster", "both"].includes(e.config.artwork ?? "poster"), Xe = (e) => J(e) && ["backdrop", "both"].includes(e.config.artwork ?? "poster"), X = (e) => e.config.click_action === "details", Ze = (e) => e.config.animations !== !1 && (e.config.popup_animation ?? "scale") !== "none", Qe = (e) => !!e.config.popup_show_summary, Z = (e) => !!e.data.capabilities?.stream_termination, Q = (e) => Z(e) && !!e.config.allow_termination, $e = (e) => Q(e) && X(e) && ["popup", "both"].includes(e.config.termination_location ?? "popup"), $ = (e) => e.mode === "active" && e.config.media_type !== "music" || e.mode === "recently_added" && ["all", "show"].includes(e.config.media_type ?? "all") || e.mode === "history", et = (e) => e.config.episode_layout !== "custom" || [
 	"show_and_number",
 	"number_and_title",
 	"show_number_and_title",
 	"number_only"
-].includes(e.config.episode_subtitle ?? "show_and_number"), Xe = {
+].includes(e.config.episode_subtitle ?? "show_and_number"), tt = (e) => e.config.popup_episode_layout === "custom" && [
+	"show_and_number",
+	"number_and_title",
+	"show_number_and_title",
+	"number_only"
+].includes(e.config.popup_episode_subtitle ?? "show_and_number"), nt = {
 	summary: "Movie text",
 	className: "inline-advanced",
 	description: "Choose the subtitle shown directly below movie titles. It is hidden when the selected metadata is unavailable.",
@@ -2441,11 +2700,11 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 			}
 		]
 	}]
-}, Ze = {
+}, rt = {
 	summary: "TV episode text",
 	className: "inline-advanced",
-	description: "Choose how episode names and numbers are arranged on dashboard items. Popup text is configured separately.",
-	applies: { when: Je },
+	description: "Choose how episode names and numbers are arranged on dashboard items. Popup episode text is configured under Popup summary.",
+	applies: { when: $ },
 	fields: [
 		{
 			kind: "select",
@@ -2526,7 +2785,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 			kind: "select",
 			key: "episode_number_style",
 			label: "Episode numbering",
-			when: Ye,
+			when: et,
 			options: [{
 				value: "compact",
 				label: "Compact (S1 · E2)"
@@ -2540,7 +2799,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 			block: "episodeTextPreview"
 		}
 	]
-}, Qe = [
+}, it = [
 	{
 		id: "content-source",
 		summary: "Content and source",
@@ -2562,17 +2821,17 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				options: (e) => {
 					let t = e.data.capabilities;
 					return [
-						{
+						...t?.active_streams === !1 ? [] : [{
 							value: "active",
 							label: "Active streams"
-						},
+						}],
 						...t?.recently_added === !1 ? [] : [{
 							value: "recently_added",
 							label: "Recently added"
 						}],
 						...t?.home_stats === !1 ? [] : [{
 							value: "popular",
-							label: "Popular and top media"
+							label: "Statistics and rankings"
 						}],
 						...t?.user_stats === !1 ? [] : [{
 							value: "users",
@@ -2584,11 +2843,6 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 						}]
 					];
 				}
-			},
-			{
-				kind: "text",
-				key: "title",
-				label: "Title"
 			},
 			{
 				kind: "select",
@@ -2667,7 +2921,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				kind: "select",
 				key: "section_id",
 				label: "Library",
-				modes: Ue,
+				modes: ["recently_added", "popular"],
 				options: (e) => [{
 					value: "",
 					label: "All libraries"
@@ -2756,6 +3010,56 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				max: 3650,
 				suffix: "days",
 				modes: ["popular"]
+			},
+			{
+				kind: "select",
+				key: "sort_by",
+				label: "Sort active streams by",
+				modes: ["active"],
+				options: [
+					{
+						value: "server",
+						label: "Tautulli order"
+					},
+					{
+						value: "user",
+						label: "Plex user"
+					},
+					{
+						value: "title",
+						label: "Media title"
+					},
+					{
+						value: "state",
+						label: "Playback state"
+					},
+					{
+						value: "progress",
+						label: "Progress"
+					}
+				]
+			},
+			{
+				kind: "select",
+				key: "sort_direction",
+				label: "Sort direction",
+				modes: ["active"],
+				when: (e) => (e.config.sort_by ?? "server") !== "server",
+				options: [{
+					value: "ascending",
+					label: "Ascending"
+				}, {
+					value: "descending",
+					label: "Descending"
+				}]
+			},
+			{
+				kind: "number",
+				key: "max_items",
+				label: (e) => e.mode === "active" ? "Maximum active streams" : "Maximum items",
+				min: 1,
+				max: 50,
+				suffix: ""
 			}
 		]
 	},
@@ -2826,7 +3130,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 			{
 				kind: "number",
 				key: "scroll_gap",
-				label: "Item spacing",
+				label: "Scrolling layout spacing",
 				min: 0,
 				max: 48,
 				suffix: "px",
@@ -2844,23 +3148,19 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				min: 0,
 				max: 200,
 				suffix: "px",
-				when: (e) => [
-					"horizontal",
-					"carousel",
-					"marquee"
-				].includes(e.config.layout ?? "grid")
+				when: (e) => e.config.layout === "horizontal"
 			},
 			{
 				kind: "select",
 				key: "autoscroll_direction",
-				label: "Scroll direction",
+				label: "Movement direction",
 				when: (e) => e.config.layout === "marquee",
 				options: [{
 					value: "ltr",
-					label: "Left to right"
+					label: "Cards move left"
 				}, {
 					value: "rtl",
-					label: "Right to left"
+					label: "Cards move right"
 				}]
 			},
 			{
@@ -2878,7 +3178,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				label: "Show previous / next buttons",
 				when: (e) => [
 					"horizontal",
-					"marquee",
+					"carousel",
 					"showcase"
 				].includes(e.config.layout ?? "grid")
 			},
@@ -2982,50 +3282,9 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 			},
 			{
 				kind: "select",
-				key: "sort_by",
-				label: "Sort active streams by",
-				modes: ["active"],
-				options: [
-					{
-						value: "server",
-						label: "Tautulli order"
-					},
-					{
-						value: "user",
-						label: "Plex user"
-					},
-					{
-						value: "title",
-						label: "Media title"
-					},
-					{
-						value: "state",
-						label: "Playback state"
-					},
-					{
-						value: "progress",
-						label: "Progress"
-					}
-				]
-			},
-			{
-				kind: "select",
-				key: "sort_direction",
-				label: "Sort direction",
-				modes: ["active"],
-				when: (e) => (e.config.sort_by ?? "server") !== "server",
-				options: [{
-					value: "ascending",
-					label: "Ascending"
-				}, {
-					value: "descending",
-					label: "Descending"
-				}]
-			},
-			{
-				kind: "select",
 				key: "artwork",
 				label: "Artwork display",
+				when: J,
 				options: [
 					{
 						value: "poster",
@@ -3063,27 +3322,19 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 						label: "Transparent (items only)"
 					}
 				]
-			},
-			{
-				kind: "number",
-				key: "max_items",
-				label: (e) => e.mode === "active" ? "Maximum active streams" : "Maximum items",
-				min: 1,
-				max: 50,
-				suffix: ""
 			}
 		],
 		subsections: [{
 			summary: "Artwork adjustments",
 			className: "inline-advanced",
-			applies: { when: (e) => (e.config.artwork ?? "poster") !== "none" },
+			applies: { when: (e) => J(e) && (e.config.artwork ?? "poster") !== "none" },
 			description: "Recommended values come from the selected look. These controls only affect the artwork currently in use.",
 			fields: [
 				{
 					kind: "select",
 					key: "artwork_placement",
 					label: "Artwork position",
-					when: X,
+					when: Y,
 					options: [
 						{
 							value: "left",
@@ -3103,7 +3354,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 					kind: "select",
 					key: "artwork_aspect",
 					label: "Poster / cover shape",
-					when: X,
+					when: Y,
 					options: [
 						{
 							value: "auto",
@@ -3127,7 +3378,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 					kind: "select",
 					key: "artwork_fit",
 					label: "Poster / cover fit",
-					when: X,
+					when: Y,
 					options: [{
 						value: "cover",
 						label: "Crop to fill"
@@ -3170,7 +3421,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 					min: 0,
 					max: 100,
 					suffix: "%",
-					when: We
+					when: Xe
 				}
 			]
 		}, {
@@ -3215,7 +3466,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				{
 					kind: "appearanceNumber",
 					key: "item_gap",
-					label: "Item spacing",
+					label: "Base card spacing",
 					min: 0,
 					max: 32,
 					suffix: "px"
@@ -3227,7 +3478,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 					min: 48,
 					max: 240,
 					suffix: "px",
-					when: X,
+					when: (e) => e.mode !== "users" && Y(e),
 					fallback: (e) => e.config.style_preset === "classic" ? 85 : e.config.density === "comfortable" ? 112 : e.config.density === "detailed" ? 140 : 92
 				},
 				{
@@ -3237,7 +3488,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 					min: 0,
 					max: 24,
 					suffix: "px",
-					when: X
+					when: (e) => e.mode !== "users" && Y(e)
 				},
 				{
 					kind: "appearanceNumber",
@@ -3287,7 +3538,13 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 			{
 				kind: "toggle",
 				key: "show_header",
-				label: "Header"
+				label: "Show title"
+			},
+			{
+				kind: "text",
+				key: "title",
+				label: "Custom title",
+				when: (e) => e.config.show_header === !0
 			},
 			{
 				kind: "toggle",
@@ -3297,12 +3554,12 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 			{
 				kind: "toggle",
 				key: "show_empty",
-				label: "Show when empty"
+				label: "Show card when no items are available"
 			},
 			{
 				kind: "toggle",
 				key: "animations",
-				label: "State animations"
+				label: "Enable animations"
 			}
 		]
 	},
@@ -3338,8 +3595,8 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 					label: "Music audio quality"
 				}]
 			},
-			Xe,
-			Ze,
+			nt,
+			rt,
 			{
 				summary: "Playback and progress",
 				className: "inline-advanced",
@@ -3352,7 +3609,8 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 					{
 						kind: "toggle",
 						key: "show_progress_percent",
-						label: "Progress percentage"
+						label: "Progress percentage",
+						when: (e) => e.config.show_progress !== !1
 					},
 					{
 						kind: "toggle",
@@ -3362,12 +3620,14 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 					{
 						kind: "toggle",
 						key: "show_pause_duration",
-						label: "Paused duration"
+						label: "Paused duration",
+						when: (e) => e.config.show_state !== !1
 					},
 					{
 						kind: "toggle",
 						key: "show_track_number",
-						label: "Music track number"
+						label: "Music track number",
+						when: (e) => e.config.show_state !== !1 && e.config.media_type !== "video"
 					},
 					{
 						kind: "toggle",
@@ -3377,7 +3637,8 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 					{
 						kind: "toggle",
 						key: "show_remaining",
-						label: "Time remaining"
+						label: "Time remaining",
+						when: (e) => e.config.show_progress !== !1
 					}
 				]
 			},
@@ -3400,13 +3661,77 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 		id: "card-information",
 		summary: "Card information",
 		description: "Control what information appears on each item.",
-		applies: { modes: Ue },
+		applies: {
+			modes: [
+				"recently_added",
+				"popular",
+				"history"
+			],
+			when: J
+		},
 		fields: [{
 			kind: "toggle",
 			key: "show_summary",
 			label: "Summary"
 		}],
-		subsections: [Xe, Ze]
+		subsections: [nt, rt]
+	},
+	{
+		id: "user-card-information",
+		summary: "User card information",
+		description: "Choose the activity totals and insights displayed on each Plex user card.",
+		applies: { modes: ["users"] },
+		subsections: [{
+			summary: "Activity summary",
+			className: "inline-advanced",
+			fields: [
+				{
+					kind: "toggle",
+					key: "user_card_show_last_active",
+					label: "Last active"
+				},
+				{
+					kind: "toggle",
+					key: "user_card_show_plays",
+					label: "Play count"
+				},
+				{
+					kind: "toggle",
+					key: "user_card_show_watch_time",
+					label: "Watch time"
+				},
+				{
+					kind: "toggle",
+					key: "user_card_show_completion",
+					label: "Completion"
+				}
+			]
+		}, {
+			summary: "Detailed insights",
+			className: "inline-advanced",
+			fields: [
+				{
+					kind: "toggle",
+					key: "user_card_show_media_breakdown",
+					label: "Movie and TV breakdown"
+				},
+				{
+					kind: "toggle",
+					key: "user_card_show_playback_breakdown",
+					label: "Direct play and transcode breakdown"
+				},
+				{
+					kind: "toggle",
+					key: "user_card_show_favourites",
+					label: "Favourite media"
+				},
+				{
+					kind: "toggle",
+					key: "user_card_show_habits",
+					label: "Viewing habits and player"
+				}
+			]
+		}]
 	},
 	{
 		id: "tap-behaviour",
@@ -3426,31 +3751,31 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 		}, {
 			kind: "hint",
 			text: "The popup has its own settings below under “Popup settings”.",
-			when: Z
+			when: X
 		}]
 	},
 	{
 		id: "terminate",
 		summary: "Terminate stream",
-		description: (e) => Z(e) ? "Configure the administrator-only terminate button and where it appears." : "The terminate button will appear directly on stream cards in the main card.",
+		description: (e) => X(e) ? "Configure the administrator-only terminate button and where it appears." : "The terminate button will appear directly on stream cards in the main card.",
 		applies: { modes: ["active"] },
 		fields: [
 			{
 				kind: "block",
 				block: "terminationUnavailableHint",
-				when: (e) => !Q(e)
+				when: (e) => !Z(e)
 			},
 			{
 				kind: "toggle",
 				key: "allow_termination",
 				label: "Enable terminate-stream action",
-				when: Q
+				when: Z
 			},
 			{
 				kind: "select",
 				key: "termination_location",
 				label: "Show button in",
-				when: (e) => qe(e) && Z(e),
+				when: (e) => Q(e) && X(e),
 				options: [
 					{
 						value: "popup",
@@ -3470,7 +3795,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				kind: "select",
 				key: "termination_popup_placement",
 				label: "Button position in popup",
-				when: $,
+				when: $e,
 				options: [{
 					value: "footer",
 					label: "Bottom right"
@@ -3483,7 +3808,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				kind: "select",
 				key: "termination_button_style",
 				label: "Button style in popup",
-				when: $,
+				when: $e,
 				options: [{
 					value: "label",
 					label: "Icon and text"
@@ -3503,7 +3828,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 		groupTitle: "Popup settings",
 		summary: "Popup layout and appearance",
 		description: "Control the details window independently from the dashboard card.",
-		applies: { when: Z },
+		applies: { when: X },
 		fields: [
 			{
 				kind: "select",
@@ -3531,7 +3856,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				min: 5,
 				max: 100,
 				suffix: "%",
-				when: (e) => (e.config.popup_style ?? "clean") === "cinematic"
+				when: (e) => J(e) && e.config.popup_show_artwork !== !1 && (e.config.popup_style ?? "clean") === "cinematic"
 			},
 			{
 				kind: "select",
@@ -3576,22 +3901,22 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				]
 			},
 			{
-				kind: "number",
+				kind: "slider",
 				key: "popup_animation_duration",
 				label: "Open animation duration",
 				min: 0,
 				max: 1500,
 				suffix: "ms",
-				when: Ge
+				when: Ze
 			},
 			{
-				kind: "number",
+				kind: "slider",
 				key: "popup_close_animation_duration",
 				label: "Close animation duration",
 				min: 0,
 				max: 1e3,
 				suffix: "ms",
-				when: Ge
+				when: Ze
 			},
 			{
 				kind: "toggleNumber",
@@ -3622,25 +3947,31 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 		id: "popup-summary",
 		summary: "Popup summary",
 		description: "Choose the media context displayed above the progress bar.",
-		applies: { when: Z },
+		applies: {
+			modes: [
+				"active",
+				"recently_added",
+				"popular",
+				"history"
+			],
+			when: (e) => X(e) && J(e)
+		},
 		fields: [
 			{
 				kind: "toggle",
 				key: "popup_show_artwork",
-				label: "Artwork",
-				when: (e) => e.mode !== "users"
+				label: "Artwork"
 			},
 			{
 				kind: "toggle",
 				key: "popup_show_summary",
-				label: "Media description",
-				when: (e) => e.mode !== "users"
+				label: "Media description"
 			},
 			{
 				kind: "select",
 				key: "popup_summary_lines",
 				label: "Description length",
-				when: (e) => e.mode !== "users" && Ke(e),
+				when: (e) => e.mode !== "users" && Qe(e),
 				options: [
 					{
 						value: "2",
@@ -3668,15 +3999,94 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 			},
 			{
 				kind: "toggle",
-				key: "popup_show_user",
-				label: "Plex user",
-				modes: ["history"]
-			},
-			{
-				kind: "toggle",
 				key: "popup_show_progress",
 				label: "Progress",
 				modes: ["active"]
+			},
+			{
+				kind: "select",
+				key: "popup_episode_layout",
+				label: "TV episode text",
+				when: $,
+				options: [
+					{
+						value: "automatic",
+						label: "Automatic popup format"
+					},
+					{
+						value: "card",
+						label: "Match dashboard card"
+					},
+					{
+						value: "custom",
+						label: "Custom popup format"
+					}
+				]
+			},
+			{
+				kind: "select",
+				key: "popup_episode_title",
+				label: "Popup primary title",
+				when: (e) => $(e) && e.config.popup_episode_layout === "custom",
+				options: [
+					{
+						value: "full_title",
+						label: "Full title"
+					},
+					{
+						value: "show",
+						label: "Show name"
+					},
+					{
+						value: "episode_title",
+						label: "Episode title"
+					}
+				]
+			},
+			{
+				kind: "select",
+				key: "popup_episode_subtitle",
+				label: "Popup subtitle content",
+				when: (e) => $(e) && e.config.popup_episode_layout === "custom",
+				options: [
+					{
+						value: "show_and_number",
+						label: "Show and episode number"
+					},
+					{
+						value: "number_and_title",
+						label: "Episode number and title"
+					},
+					{
+						value: "show_number_and_title",
+						label: "Show, number and title"
+					},
+					{
+						value: "number_only",
+						label: "Episode number only"
+					},
+					{
+						value: "episode_title",
+						label: "Episode title only"
+					},
+					{
+						value: "none",
+						label: "Hidden"
+					}
+				]
+			},
+			{
+				kind: "select",
+				key: "popup_episode_number_style",
+				label: "Popup episode numbering",
+				when: (e) => $(e) && tt(e),
+				options: [{
+					value: "compact",
+					label: "Compact (S1 · E2)"
+				}, {
+					value: "padded",
+					label: "Zero-padded (S01E02)"
+				}]
 			}
 		]
 	},
@@ -3684,7 +4094,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 		id: "popup-details",
 		summary: (e) => e.mode === "users" ? "User details" : e.mode === "active" ? "Stream details" : "Media details",
 		description: "Choose the layout and every field shown in the details area below the popup summary.",
-		applies: { when: Z },
+		applies: { when: X },
 		fields: [
 			{
 				kind: "select",
@@ -3709,32 +4119,13 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				]
 			},
 			{
-				kind: "toggle",
-				key: "popup_show_playback_breakdown",
-				label: "Playback breakdown",
-				modes: ["users"]
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_favourites",
-				label: "Favourite media",
-				modes: ["users"]
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_habits",
-				label: "Viewing habits and player",
-				modes: ["users"]
-			},
-			{
-				kind: "toggle",
-				key: "popup_show_recent_activity",
-				label: "Recent activity",
+				kind: "block",
+				block: "userDetailOrder",
 				modes: ["users"]
 			}
 		]
 	}
-], $e = [
+], at = [
 	{
 		field: "user",
 		key: "popup_show_user",
@@ -3829,8 +4220,44 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 		field: "studio",
 		key: "popup_show_studio",
 		label: "Studio"
+	},
+	{
+		field: "rank",
+		key: "popup_show_rank",
+		label: "Rank"
+	},
+	{
+		field: "plays",
+		key: "popup_show_plays",
+		label: "Plays"
+	},
+	{
+		field: "played",
+		key: "popup_show_played",
+		label: "Played"
 	}
-], et = class extends U {
+], ot = [
+	{
+		group: "playback",
+		key: "popup_show_playback_breakdown",
+		label: "Playback breakdown"
+	},
+	{
+		group: "favourites",
+		key: "popup_show_favourites",
+		label: "Favourite media"
+	},
+	{
+		group: "habits",
+		key: "popup_show_habits",
+		label: "Viewing habits and player"
+	},
+	{
+		group: "recent_activity",
+		key: "popup_show_recent_activity",
+		label: "Recent activity"
+	}
+], st = class extends z {
 	static {
 		this.properties = {
 			hass: { attribute: !1 },
@@ -3838,20 +4265,26 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 			_entries: { state: !0 },
 			_libraries: { state: !0 },
 			_users: { state: !0 },
+			_entriesLoaded: { state: !0 },
 			_activeCount: { state: !0 },
+			_activeUnavailable: { state: !0 },
 			_draggedDetailField: { state: !0 },
 			_dragPreviewOrder: { state: !0 },
+			_draggedUserDetail: { state: !0 },
+			_dragUserPreviewOrder: { state: !0 },
 			_error: { state: !0 }
 		};
 	}
 	static {
-		this.styles = Be;
+		this.styles = Ke;
 	}
 	constructor() {
-		super(), this._subscriptionGeneration = 0, this._detailDragEnd = () => {
+		super(), this._subscriptionGeneration = 0, this._referenceGeneration = 0, this._toggleNumberValues = /* @__PURE__ */ new Map(), this._userDetailDragEnd = () => this._clearUserDetailDrag(), this._restoreUserDetailOrder = () => {
+			this._update("popup_user_detail_order", [...U]);
+		}, this._detailDragEnd = () => {
 			this._draggedDetailField = void 0, this._lastDragTarget = void 0, this._dragPreviewOrder = void 0, this._dragOriginalOrder = void 0;
 		}, this._restoreStreamDetailOrder = () => {
-			this._update("popup_detail_order", [...G]);
+			this._update("popup_detail_order", [...V]);
 		}, this._resetAppearance = () => {
 			let e = { ...this._config };
 			for (let t of [
@@ -3869,10 +4302,10 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				"paused_color",
 				"buffering_color"
 			]) delete e[t];
-			this._config = q(e), this._emitConfig();
+			this._config = G(e), this._emitConfig();
 		}, this._resetAllDefaults = () => {
 			let e = this._config.entry_id;
-			this._config = q({ ...e ? { entry_id: e } : {} }), this._emitConfig();
+			this._config = G({ ...e ? { entry_id: e } : {} }), this._emitConfig();
 		}, this._input = (e) => {
 			let t = e.currentTarget, n = t.dataset.key, r = t.value;
 			if (t instanceof HTMLInputElement && t.type === "checkbox" && (r = t.checked), [
@@ -3907,7 +4340,20 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				"paused_color",
 				"buffering_color",
 				"popup_background"
-			].includes(n) && t.value === "" && (r = void 0), n === "style_preset") {
+			].includes(n) && t.value === "" && (r = void 0), n === "entry_id") {
+				this._changeEntry(String(r)), this._loadReferences();
+				return;
+			}
+			if (n === "mode") {
+				let e = r;
+				this._config = G({
+					...this._config,
+					mode: e,
+					media_type: this._mediaTypeForMode(e, this._config.media_type)
+				}), this._emitConfig();
+				return;
+			}
+			if (n === "style_preset") {
 				let e = {
 					...this._config,
 					style_preset: r
@@ -3927,23 +4373,25 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 					"paused_color",
 					"buffering_color"
 				]) delete e[t];
-				this._config = q(e), this._emitConfig();
+				this._config = G(e), this._emitConfig();
 				return;
 			}
 			if (n === "artwork") {
 				let e = r;
-				this._config = q({
+				e === "backdrop" && this._config.artwork !== "backdrop" && (this._posterArtworkPlacement = this._config.artwork_placement);
+				let t = e === "backdrop" ? "background" : this._config.artwork === "backdrop" ? this._posterArtworkPlacement ?? "left" : this._config.artwork_placement ?? "left";
+				this._config = G({
 					...this._config,
 					artwork: e,
-					artwork_placement: e === "backdrop" ? "background" : "left"
+					artwork_placement: t
 				}), this._emitConfig();
 				return;
 			}
-			this._update(n, r), n === "entry_id" && this._loadReferences();
-		}, this._config = q({}), this._entries = [], this._libraries = [], this._users = [];
+			this._update(n, r);
+		}, this._config = G({}), this._entries = [], this._libraries = [], this._users = [], this._entriesLoaded = !1, this._activeUnavailable = !1;
 	}
 	setConfig(e) {
-		this._config = q(e);
+		this._config = G(e);
 	}
 	disconnectedCallback() {
 		this._stopActiveSubscription(), super.disconnectedCallback();
@@ -3952,48 +4400,59 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 		this.renderRoot.querySelectorAll("select[data-key]").forEach((e) => {
 			let t = e.dataset.key, n = this._config[t];
 			n !== void 0 && (e.value = String(n));
-		}), e.has("hass") && this.hass && !this._entries.length && this._loadEntries(), (e.has("hass") || e.has("_config")) && this._startActiveSubscription();
+		}), e.has("hass") && this.hass && !this._entries.length && this._loadEntries(), this.hass && this._config.entry_id && this._entries.length && this._referenceEntryId !== this._config.entry_id && this._loadReferences(), (e.has("hass") || e.has("_config")) && this._startActiveSubscription();
 	}
 	async _loadEntries() {
 		if (this.hass) try {
-			this._entries = await ke(this.hass), !this._config.entry_id && this._entries[0] && this._update("entry_id", this._entries[0].entry_id), await this._loadReferences(), await this._startActiveSubscription();
+			this._entries = await Ne(this.hass), this._entriesLoaded = !0;
+			let e = this._entries.find((e) => e.entry_id === this._config.entry_id) ?? this._entries[0];
+			e && e.entry_id !== this._config.entry_id ? this._changeEntry(e.entry_id) : e && this._ensureSupportedMode(e), await this._loadReferences(), await this._startActiveSubscription();
 		} catch (e) {
-			this._error = e instanceof Error ? e.message : String(e);
+			this._entriesLoaded = !0, this._error = this._friendlyError(e);
 		}
 	}
 	async _startActiveSubscription() {
 		let e = this._config.entry_id;
+		if (this._config.mode !== "active") {
+			this._stopActiveSubscription(), this._activeCount = void 0;
+			return;
+		}
 		if (!this.hass || !e || this._activeEntryId === e) return;
 		this._stopActiveSubscription();
 		let t = ++this._subscriptionGeneration;
-		this._activeEntryId = e, this._activeCount = void 0;
+		this._activeEntryId = e, this._activeCount = void 0, this._activeUnavailable = !1;
 		try {
-			let n = await Ae(this.hass, e, (e) => {
+			let n = await Pe(this.hass, e, (e) => {
 				let n = e.items?.length ?? 0;
 				queueMicrotask(() => {
-					t === this._subscriptionGeneration && (this._activeCount = n);
+					t === this._subscriptionGeneration && (this._activeCount = n, this._activeUnavailable = !1);
 				});
 			});
 			t === this._subscriptionGeneration ? this._unsubscribeActive = n : typeof n == "function" && n();
 		} catch {
-			t === this._subscriptionGeneration && (this._activeCount = void 0);
+			t === this._subscriptionGeneration && (this._activeCount = void 0, this._activeUnavailable = !0);
 		}
 	}
 	_stopActiveSubscription() {
 		this._subscriptionGeneration += 1, typeof this._unsubscribeActive == "function" && this._unsubscribeActive(), this._unsubscribeActive = void 0, this._activeEntryId = void 0;
 	}
 	async _loadReferences() {
-		if (!(!this.hass || !this._config.entry_id)) try {
-			let [e, t] = await Promise.all([Me(this.hass, this._config.entry_id), Ne(this.hass, this._config.entry_id)]);
-			this._libraries = e.items.map((e) => ({
+		let e = this._config.entry_id;
+		if (!this.hass || !e) return;
+		let t = ++this._referenceGeneration;
+		this._referenceEntryId = e;
+		let [n, r] = await Promise.allSettled([Ie(this.hass, e), Le(this.hass, e)]);
+		if (t === this._referenceGeneration && e === this._config.entry_id) {
+			if (this._libraries = n.status === "fulfilled" ? n.value.items.map((e) => ({
 				value: e.section_id,
 				label: `${e.name} (${e.type})`
-			})), this._users = t.items.map((e) => ({
+			})) : [], this._users = r.status === "fulfilled" ? r.value.items.map((e) => ({
 				value: e.user_id,
 				label: e.display_name
-			})), this._error = void 0;
-		} catch (e) {
-			this._error = e instanceof Error ? e.message : String(e);
+			})) : [], n.status === "rejected" && r.status === "rejected") {
+				let e = n.reason ?? r.reason;
+				this._error = this._friendlyError(e);
+			} else this._error = void 0;
 		}
 	}
 	get _fieldContext() {
@@ -4008,44 +4467,89 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 			}
 		};
 	}
+	_supportedModes(e) {
+		let t = e?.capabilities;
+		return [
+			...t?.active_streams === !1 ? [] : ["active"],
+			...t?.recently_added === !1 ? [] : ["recently_added"],
+			...t?.home_stats === !1 ? [] : ["popular"],
+			...t?.user_stats === !1 ? [] : ["users"],
+			...t?.history === !1 ? [] : ["history"]
+		];
+	}
+	_ensureSupportedMode(e) {
+		let t = this._supportedModes(e);
+		if (t.includes(this._config.mode) || !t[0]) return;
+		let n = t[0];
+		this._config = G({
+			...this._config,
+			mode: n,
+			media_type: this._mediaTypeForMode(n, this._config.media_type)
+		}), this._emitConfig();
+	}
+	_changeEntry(e) {
+		let t = this._entries.find((t) => t.entry_id === e), n = this._supportedModes(t), r = n.includes(this._config.mode) ? this._config.mode : n[0] ?? "active";
+		this._referenceGeneration += 1, this._referenceEntryId = void 0, this._libraries = [], this._users = [], this._error = void 0;
+		let i = {
+			...this._config,
+			entry_id: e,
+			mode: r,
+			media_type: this._mediaTypeForMode(r, this._config.media_type)
+		};
+		delete i.section_id, delete i.user_id, this._config = G(i), this._emitConfig();
+	}
+	_mediaTypeForMode(e, t) {
+		return e === "active" ? [
+			"all",
+			"video",
+			"music"
+		].includes(t ?? "") ? t : t === "artist" ? "music" : t === "movie" || t === "show" ? "video" : "all" : e === "recently_added" ? [
+			"all",
+			"movie",
+			"show",
+			"artist"
+		].includes(t ?? "") ? t : t === "music" ? "artist" : "all" : t;
+	}
 	render() {
+		this._lastGroupTitle = void 0;
 		let e = this._fieldContext, t = e.data.capabilities, n = e.data.entries.find((e) => e.entry_id === this._config.entry_id), r = e.data.entries.length > 1;
-		return M`<div class="editor">
-      ${this._error ? M`<div class="error" role="alert">${this._error}</div>` : P}
-      ${this._config.entry_id && t ? M`<div class="compatibility ${r ? "multiple-servers" : "single-server"}"><span></span><div>${r ? M`<strong>${n?.name ?? "Tautulli"}</strong>` : P}<small>${this._connectionMessage(e.mode)}</small></div></div>` : P}
-      ${Qe.map((t) => this._renderSection(t, e))}
+		return A`<div class="editor">
+      ${this._error ? A`<div class="error" role="alert">${this._error}</div>` : M}
+      ${this._entriesLoaded && !this._entries.length && !this._error ? A`<div class="error" role="status">No Tautulli Active Streams integration was found. Add or reconnect the integration, then reopen this editor.</div>` : M}
+      ${this._config.entry_id && t ? A`<div class="compatibility ${r ? "multiple-servers" : "single-server"}"><span></span><div>${r ? A`<strong>${n?.name ?? "Tautulli"}</strong>` : M}<small>${this._connectionMessage(e.mode)}</small></div></div>` : M}
+      ${it.map((t) => this._renderSection(t, e))}
       <p class="hint">Privacy and destructive permissions are enforced by the Tautulli Active Streams integration. Tokens and upstream image paths are never sent to this card.</p>
       <button class="reset-all" type="button" @click=${this._resetAllDefaults}>Reset all settings to defaults</button>
     </div>`;
 	}
 	_renderSection(e, t) {
-		if (!Y(e.applies, t)) return P;
-		let n = P;
-		e.groupTitle && this._lastGroupTitle !== e.groupTitle && (this._lastGroupTitle = e.groupTitle, n = M`<h3 class="editor-group-title">${e.groupTitle}</h3>`);
+		if (!q(e.applies, t)) return M;
+		let n = M;
+		e.groupTitle && this._lastGroupTitle !== e.groupTitle && (this._lastGroupTitle = e.groupTitle, n = A`<h3 class="editor-group-title">${e.groupTitle}</h3>`);
 		let r = (e.fields ?? []).map((e) => this._renderField(e, t)), i = (e.subsections ?? []).map((e) => this._renderSubSection(e, t)), a = typeof e.description == "function" ? e.description(t) : e.description;
-		return M`${n}<details class="section">
+		return A`${n}<details class="section">
       <summary>${typeof e.summary == "function" ? e.summary(t) : e.summary}</summary>
-      ${a ? M`<p class="section-description">${a}</p>` : P}
+      ${a ? A`<p class="section-description">${a}</p>` : M}
       ${r}
       ${i}
     </details>`;
 	}
 	_renderSubSection(e, t) {
-		if (!Y(e.applies, t)) return P;
+		if (!q(e.applies, t)) return M;
 		let n = (e.fields ?? []).map((e) => this._renderField(e, t));
-		return e.header === "fineTune" ? M`<details>
+		return e.header === "fineTune" ? A`<details>
         <summary>${e.summary}</summary>
         <div class="fine-tune-header"><span>The selected style's values are shown until you override them.</span><button type="button" @click=${this._resetAppearance}>Restore style defaults</button></div>
         <div class="advanced">${n}</div>
-      </details>` : M`<details class=${e.className ?? ""}>
+      </details>` : A`<details class=${e.className ?? ""}>
       <summary>${e.summary}</summary>
-      ${e.description ? M`<p class="section-description">${e.description}</p>` : P}
+      ${e.description ? A`<p class="section-description">${e.description}</p>` : M}
       ${n}
     </details>`;
 	}
 	_renderField(e, t) {
-		if (!Y(e, t)) return P;
-		if (e.kind === "hint") return M`<p class="hint">${typeof e.text == "function" ? e.text(t) : e.text}</p>`;
+		if (!q(e, t)) return M;
+		if (e.kind === "hint") return A`<p class="hint">${typeof e.text == "function" ? e.text(t) : e.text}</p>`;
 		if (e.kind === "block") return this._renderBlock(e.block);
 		let n = typeof e.label == "function" ? e.label(t) : e.label;
 		switch (e.kind) {
@@ -4067,23 +4571,28 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 	}
 	_renderBlock(e) {
 		switch (e) {
-			case "recipes": return M`<div class="recipe-grid" aria-label="Quick layouts">
+			case "recipes": return A`<div class="recipe-grid" aria-label="Quick layouts">
           ${this._recipe("classic", "Classic compact", "Original stream-panel look")}
           ${this._recipe("balanced", "Balanced", "Clean and adaptable")}
           ${this._recipe("cinematic", "Cinematic", "Backdrop and rich detail")}
           ${this._recipe("shelf", "Media shelf", "Horizontal poster carousel")}
         </div>`;
 			case "streamDetailOrder": return this._renderOrderedDetails();
-			case "terminationUnavailableHint": return M`<p class="hint">Stream termination is disabled in the integration's Dashboard card access settings.</p>`;
+			case "userDetailOrder": return this._renderUserOrderedDetails();
+			case "terminationUnavailableHint": return A`<p class="hint">Stream termination is disabled in the integration's Dashboard card access settings.</p>`;
 			case "episodeTextPreview": return this._episodeTextPreview();
 		}
 	}
 	_connectionMessage(e) {
-		return e === "active" ? this._activeCount === void 0 ? "Checking active streams…" : this._activeCount === 0 ? "No active streams — start playback in Plex to see the live card preview" : `${this._activeCount} active ${this._activeCount === 1 ? "stream" : "streams"} available in the preview` : "Connected and ready";
+		return e === "active" ? this._activeUnavailable ? "Live preview unavailable — card settings can still be edited" : this._activeCount === void 0 ? "Checking active streams…" : this._activeCount === 0 ? "No active streams — start playback in Plex to see the live card preview" : `${this._activeCount} active ${this._activeCount === 1 ? "stream" : "streams"} available in the preview` : "Connected and ready";
+	}
+	_friendlyError(e) {
+		let t = e instanceof Error ? e.message : String(e);
+		return t.includes("history_disabled") ? "Watch history is disabled in the integration’s Dashboard card access settings." : t.includes("unauthorized") ? "Administrator permission is required to load these card options." : t.includes("integration_unavailable") || t.includes("not_loaded") ? "Tautulli Active Streams is unavailable. Reconnect the integration and try again." : "Could not load Tautulli card options. Check the integration connection and try again.";
 	}
 	_renderOrderedDetails() {
-		let e = this._detailFieldsForMode(), t = new Set(e), n = (this._dragPreviewOrder ?? this._config.popup_detail_order ?? G).filter((e) => t.has(e));
-		return M`<div class="detail-order-toolbar">
+		let e = this._detailFieldsForMode(), t = new Set(e), n = (this._dragPreviewOrder ?? this._config.popup_detail_order ?? V).filter((e) => t.has(e));
+		return A`<div class="detail-order-toolbar">
       <span>Drag the handle to reorder fields.</span>
       <div>
         <button type="button" @click=${() => this._setAllDetails(!0)}>Show all</button>
@@ -4095,12 +4604,78 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
       ${n.map((e, t) => this._renderStreamDetailRow(e, t, n.length))}
     </div>`;
 	}
+	_renderUserOrderedDetails() {
+		let e = this._dragUserPreviewOrder ?? this._config.popup_user_detail_order ?? U;
+		return A`<div class="detail-order-toolbar">
+      <span>Drag the handle to reorder groups.</span>
+      <div>
+        <button type="button" @click=${() => this._setAllUserDetails(!0)}>Show all</button>
+        <button type="button" @click=${() => this._setAllUserDetails(!1)}>Hide all</button>
+        <button type="button" @click=${this._restoreUserDetailOrder}>Restore order</button>
+      </div>
+    </div>
+    <div class="detail-order-list">
+      ${e.map((t, n) => this._renderUserDetailRow(t, n, e.length))}
+    </div>`;
+	}
+	_renderUserDetailRow(e, t, n) {
+		let r = ot.find((t) => t.group === e);
+		return r ? A`<div class="detail-order-row ${this._draggedUserDetail === e ? "dragging" : ""}" data-detail-field=${e}
+      @dragover=${(t) => this._userDetailDragOver(t, e)}
+      @drop=${(t) => this._userDetailDrop(t, e)}>
+      <button class="drag-handle" type="button" draggable="true"
+        title="Drag to reorder ${r.label}"
+        aria-label="Drag to reorder ${r.label}"
+        @dragstart=${(t) => this._userDetailDragStart(t, e)}
+        @dragend=${this._userDetailDragEnd}>
+        <ha-icon icon="mdi:drag-vertical"></ha-icon>
+      </button>
+      <span>${r.label}</span>
+      <div class="detail-order-actions">
+        <button type="button" title="Move ${r.label} up" aria-label="Move ${r.label} up" ?disabled=${t === 0} @click=${() => this._moveUserDetail(e, -1)}><ha-icon icon="mdi:chevron-up"></ha-icon></button>
+        <button type="button" title="Move ${r.label} down" aria-label="Move ${r.label} down" ?disabled=${t === n - 1} @click=${() => this._moveUserDetail(e, 1)}><ha-icon icon="mdi:chevron-down"></ha-icon></button>
+        <input class="detail-order-toggle" type="checkbox" data-key=${r.key} aria-label=${`Show ${r.label}`} .checked=${!!this._config[r.key]} @change=${this._input}>
+      </div>
+    </div>` : M;
+	}
+	_userDetailDragStart(e, t) {
+		let n = [...this._config.popup_user_detail_order ?? U];
+		if (this._draggedUserDetail = t, this._lastUserDragTarget = void 0, this._dragUserOriginalOrder = n, this._dragUserPreviewOrder = n, e.dataTransfer) {
+			e.dataTransfer.effectAllowed = "move", e.dataTransfer.setData("text/plain", t);
+			let n = e.currentTarget.closest(".detail-order-row");
+			n && e.dataTransfer.setDragImage(n, 24, Math.min(22, n.clientHeight / 2));
+		}
+	}
+	_userDetailDragOver(e, t) {
+		if (e.preventDefault(), e.dataTransfer && (e.dataTransfer.dropEffect = "move"), t === this._draggedUserDetail || t === this._lastUserDragTarget) return;
+		let n = [...this._dragUserPreviewOrder ?? this._config.popup_user_detail_order ?? U], r = this._draggedUserDetail ? n.indexOf(this._draggedUserDetail) : -1, i = n.indexOf(t);
+		if (r < 0 || i < 0) return;
+		let a = new Map([...this.renderRoot.querySelectorAll(".detail-order-row")].map((e) => [e.dataset.detailField, e.getBoundingClientRect()])), [o] = n.splice(r, 1);
+		n.splice(i, 0, o), this._lastUserDragTarget = t, this._dragUserPreviewOrder = n, this.updateComplete.then(() => this._animateDetailReorder(a));
+	}
+	_userDetailDrop(e, t) {
+		e.preventDefault();
+		let n = this._draggedUserDetail ?? e.dataTransfer?.getData("text/plain"), r = [...this._dragUserPreviewOrder ?? this._config.popup_user_detail_order ?? U], i = this._dragUserOriginalOrder ?? this._config.popup_user_detail_order ?? U;
+		this._clearUserDetailDrag(), !(!n || n === t && r.every((e, t) => e === i[t])) && (r.every((e, t) => e === i[t]) || this._update("popup_user_detail_order", r));
+	}
+	_clearUserDetailDrag() {
+		this._draggedUserDetail = void 0, this._lastUserDragTarget = void 0, this._dragUserPreviewOrder = void 0, this._dragUserOriginalOrder = void 0;
+	}
+	_moveUserDetail(e, t) {
+		let n = [...this._config.popup_user_detail_order ?? U], r = n.indexOf(e), i = r + t;
+		r < 0 || i < 0 || i >= n.length || ([n[r], n[i]] = [n[i], n[r]], this._update("popup_user_detail_order", n));
+	}
+	_setAllUserDetails(e) {
+		let t = { ...this._config };
+		for (let { key: n } of ot) t[n] = e;
+		this._config = G(t), this._emitConfig();
+	}
 	_detailFieldsForMode() {
-		return this._config.mode === "active" ? G : Fe;
+		return this._config.mode === "active" ? ze : this._config.mode === "popular" ? Be : this._config.mode === "history" ? Ve : H;
 	}
 	_renderStreamDetailRow(e, t, n) {
-		let r = $e.find((t) => t.field === e);
-		return r ? M`<div class="detail-order-row ${this._draggedDetailField === e ? "dragging" : ""}" data-detail-field=${e}
+		let r = at.find((t) => t.field === e);
+		return r ? A`<div class="detail-order-row ${this._draggedDetailField === e ? "dragging" : ""}" data-detail-field=${e}
       @dragover=${(t) => this._detailDragOver(t, e)}
       @drop=${(t) => this._detailDrop(t, e)}>
       <button class="drag-handle" type="button" draggable="true"
@@ -4116,10 +4691,10 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
         <button type="button" title="Move ${r.label} down" aria-label="Move ${r.label} down" ?disabled=${t === n - 1} @click=${() => this._moveStreamDetail(e, 1)}><ha-icon icon="mdi:chevron-down"></ha-icon></button>
         <input class="detail-order-toggle" type="checkbox" data-key=${r.key} aria-label=${`Show ${r.label}`} .checked=${!!this._config[r.key]} @change=${this._input}>
       </div>
-    </div>` : P;
+    </div>` : M;
 	}
 	_detailDragStart(e, t) {
-		let n = [...this._config.popup_detail_order ?? G];
+		let n = [...this._config.popup_detail_order ?? V];
 		if (this._draggedDetailField = t, this._lastDragTarget = void 0, this._dragOriginalOrder = n, this._dragPreviewOrder = n, e.dataTransfer) {
 			e.dataTransfer.effectAllowed = "move", e.dataTransfer.setData("text/plain", t);
 			let n = e.currentTarget.closest(".detail-order-row");
@@ -4128,7 +4703,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 	}
 	_detailDragOver(e, t) {
 		if (e.preventDefault(), e.dataTransfer && (e.dataTransfer.dropEffect = "move"), t !== this._draggedDetailField && this._lastDragTarget !== t) {
-			let e = [...this._dragPreviewOrder ?? this._config.popup_detail_order ?? G], n = this._draggedDetailField ? e.indexOf(this._draggedDetailField) : -1, r = e.indexOf(t);
+			let e = [...this._dragPreviewOrder ?? this._config.popup_detail_order ?? V], n = this._draggedDetailField ? e.indexOf(this._draggedDetailField) : -1, r = e.indexOf(t);
 			if (n < 0 || r < 0) return;
 			let i = new Map([...this.renderRoot.querySelectorAll(".detail-order-row")].map((e) => [e.dataset.detailField, e.getBoundingClientRect()])), [a] = e.splice(n, 1);
 			e.splice(r, 0, a), this._lastDragTarget = t, this._dragPreviewOrder = e, this.updateComplete.then(() => this._animateDetailReorder(i));
@@ -4136,7 +4711,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 	}
 	_detailDrop(e, t) {
 		e.preventDefault();
-		let n = this._draggedDetailField ?? e.dataTransfer?.getData("text/plain"), r = [...this._dragPreviewOrder ?? this._config.popup_detail_order ?? G], i = this._dragOriginalOrder ?? this._config.popup_detail_order ?? G;
+		let n = this._draggedDetailField ?? e.dataTransfer?.getData("text/plain"), r = [...this._dragPreviewOrder ?? this._config.popup_detail_order ?? V], i = this._dragOriginalOrder ?? this._config.popup_detail_order ?? V;
 		this._draggedDetailField = void 0, this._lastDragTarget = void 0, this._dragPreviewOrder = void 0, this._dragOriginalOrder = void 0, !(!n || n === t && r.every((e, t) => e === i[t])) && (r.every((e, t) => e === i[t]) || this._update("popup_detail_order", r));
 	}
 	_animateDetailReorder(e) {
@@ -4149,54 +4724,63 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 		}
 	}
 	_moveStreamDetail(e, t) {
-		let n = [...this._config.popup_detail_order ?? G], r = new Set(this._detailFieldsForMode()), i = n.filter((e) => r.has(e)), a = i.indexOf(e), o = i[a + t];
+		let n = [...this._config.popup_detail_order ?? V], r = new Set(this._detailFieldsForMode()), i = n.filter((e) => r.has(e)), a = i.indexOf(e), o = i[a + t];
 		if (a < 0 || !o) return;
 		let s = n.indexOf(e), c = n.indexOf(o);
 		[n[s], n[c]] = [n[c], n[s]], this._update("popup_detail_order", n);
 	}
 	_setAllDetails(e) {
 		let t = { ...this._config }, n = new Set(this._detailFieldsForMode());
-		for (let { field: r, key: i } of $e) n.has(r) && (t[i] = e);
-		this._config = q(t), this._emitConfig();
+		for (let { field: r, key: i } of at) n.has(r) && (t[i] = e);
+		this._config = G(t), this._emitConfig();
 	}
 	_select(e, t, n, r) {
-		return M`<label>${t}<select data-key=${e} @change=${this._input}>
-      ${n.map((e) => M`<option value=${e.value} ?selected=${e.value === r}>${e.label}</option>`)}
+		return A`<label>${t}<select data-key=${e} @change=${this._input}>
+      ${n.map((e) => A`<option value=${e.value} ?selected=${e.value === r}>${e.label}</option>`)}
     </select></label>`;
 	}
 	_toggle(e, t) {
-		return M`<label class="toggle"><input type="checkbox" data-key=${e} .checked=${!!this._config[e]} @change=${this._input}>${t}</label>`;
+		return A`<label class="toggle"><input type="checkbox" data-key=${e} .checked=${!!this._config[e]} @change=${this._input}>${t}</label>`;
 	}
 	_text(e, t, n) {
-		return M`<label>${t}<input data-key=${e} .value=${String(this._config[e] ?? "")} placeholder=${n} @change=${this._input}></label>`;
+		return A`<label>${t}<input data-key=${e} .value=${String(this._config[e] ?? "")} placeholder=${n} @change=${this._input}></label>`;
 	}
 	_number(e, t, n, r, i) {
-		return M`<label>${t} (${i})<input type="number" min=${n} max=${r} data-key=${e} .value=${this._config[e] === void 0 ? "" : String(this._config[e])} @change=${this._input}></label>`;
+		return A`<label>${t}${i ? ` (${i})` : ""}<input type="number" min=${n} max=${r} data-key=${e} .value=${this._config[e] === void 0 ? "" : String(this._config[e])} @change=${this._input}></label>`;
 	}
 	_toggleNumber(e, t, n, r, i) {
 		let a = Number(this._config[e] ?? 0) > 0;
-		return M`<label class="toggle-number"><span class="toggle"><input type="checkbox" .checked=${a} @change=${(t) => this._update(e, t.currentTarget.checked ? Math.max(n, 1) : 0)}>${t}</span>${a ? M`<span class="toggle-number-value"><input type="range" min=${n} max=${r} data-key=${e} .value=${String(this._config[e] ?? n)} @change=${this._input} @input=${this._input}> <span>${this._config[e] ?? n}${i}</span></span>` : P}</label>`;
+		return A`<label class="toggle-number"><span class="toggle"><input type="checkbox" .checked=${a} @change=${(t) => this._toggleNumberChanged(e, n, t.currentTarget.checked)}>${t}</span>${a ? A`<span class="toggle-number-value"><input type="range" min=${n} max=${r} data-key=${e} .value=${String(this._config[e] ?? n)} @change=${this._input} @input=${this._input}> <span>${this._config[e] ?? n}${i}</span></span>` : M}</label>`;
+	}
+	_toggleNumberChanged(e, t, n) {
+		let r = Number(this._config[e] ?? 0);
+		if (!n) {
+			r > 0 && this._toggleNumberValues.set(e, r), this._update(e, 0);
+			return;
+		}
+		let i = Number(W[e] ?? 0);
+		this._update(e, this._toggleNumberValues.get(e) ?? (i > 0 ? i : Math.max(t, 1)));
 	}
 	_slider(e, t, n, r, i) {
-		return M`<label class="toggle-number"><span>${t}</span><span class="toggle-number-value"><input type="range" min=${n} max=${r} data-key=${e} .value=${String(this._config[e] ?? n)} @change=${this._input} @input=${this._input}> <span>${this._config[e] ?? n}${i}</span></span></label>`;
+		return A`<label class="toggle-number"><span>${t}</span><span class="toggle-number-value"><input type="range" min=${n} max=${r} data-key=${e} .value=${String(this._config[e] ?? n)} @change=${this._input} @input=${this._input}> <span>${this._config[e] ?? n}${i}</span></span></label>`;
 	}
 	_appearanceText(e, t, n, r = !1) {
 		let i = String(this._config[e] ?? this._presetValue(e) ?? ""), a = this._config[e] !== void 0, o = this._toHexColour(i);
-		return M`<label class="appearance-field"><span>${t}${a ? M`<em>Custom</em>` : M`<em>Preset</em>`}</span><div class="field-row">
-      ${r ? M`<input class="colour-picker" type="color" .value=${o} title="Choose ${t.toLowerCase()}" @input=${(t) => this._setAppearance(e, t.currentTarget.value)}>` : P}
+		return A`<label class="appearance-field"><span>${t}${a ? A`<em>Custom</em>` : A`<em>Preset</em>`}</span><div class="field-row">
+      ${r ? A`<input class="colour-picker" type="color" .value=${o} title="Choose ${t.toLowerCase()}" @input=${(t) => this._setAppearance(e, t.currentTarget.value)}>` : M}
       <input data-key=${e} .value=${i} placeholder=${n} @change=${this._input}>
-      ${a ? M`<button class="field-reset" type="button" title="Restore preset value" aria-label="Restore ${t.toLowerCase()} preset value" @click=${() => this._setAppearance(e, void 0)}><ha-icon icon="mdi:restore"></ha-icon></button>` : P}
+      ${a ? A`<button class="field-reset" type="button" title="Restore preset value" aria-label="Restore ${t.toLowerCase()} preset value" @click=${() => this._setAppearance(e, void 0)}><ha-icon icon="mdi:restore"></ha-icon></button>` : M}
     </div></label>`;
 	}
 	_appearanceNumber(e, t, n, r, i, a) {
 		let o = this._config[e] ?? this._presetValue(e) ?? a ?? "", s = this._config[e] !== void 0;
-		return M`<label class="appearance-field"><span>${t} (${i})${s ? M`<em>Custom</em>` : M`<em>Preset</em>`}</span><div class="field-row">
+		return A`<label class="appearance-field"><span>${t} (${i})${s ? A`<em>Custom</em>` : A`<em>Preset</em>`}</span><div class="field-row">
       <input type="number" min=${n} max=${r} data-key=${e} .value=${String(o)} @change=${this._input}>
-      ${s ? M`<button class="field-reset" type="button" title="Restore preset value" aria-label="Restore ${t.toLowerCase()} preset value" @click=${() => this._setAppearance(e, void 0)}><ha-icon icon="mdi:restore"></ha-icon></button>` : P}
+      ${s ? A`<button class="field-reset" type="button" title="Restore preset value" aria-label="Restore ${t.toLowerCase()} preset value" @click=${() => this._setAppearance(e, void 0)}><ha-icon icon="mdi:restore"></ha-icon></button>` : M}
     </div></label>`;
 	}
 	_presetValue(e) {
-		return J[this._config.style_preset ?? "classic"][e];
+		return K[this._config.style_preset ?? "classic"][e];
 	}
 	_episodeTextPreview() {
 		let e = this._config.episode_number_style === "padded" ? "S01E02" : "S1 · E2", t = "Example Show", n = "Episode Name", r = `${t} — ${n}`, i = r, a = `${t} — ${e}`;
@@ -4220,7 +4804,7 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				none: ""
 			}[this._config.episode_subtitle ?? "show_and_number"];
 		}
-		return M`<div class="episode-preview" aria-live="polite"><small>Example</small><strong>${i}</strong>${a ? M`<span>${a}</span>` : P}</div>`;
+		return A`<div class="episode-preview" aria-live="polite"><small>Example</small><strong>${i}</strong>${a ? A`<span>${a}</span>` : M}</div>`;
 	}
 	_toHexColour(e) {
 		let t = /^#([0-9a-f]{3})$/i.exec(e);
@@ -4234,10 +4818,10 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 		this._update(e, t);
 	}
 	_recipe(e, t, n) {
-		return M`<button class="recipe ${e}" type="button" @click=${() => this._applyRecipe(e)}><span class="recipe-preview"><i></i><i></i><i></i></span><strong>${t}</strong><small>${n}</small></button>`;
+		return A`<button class="recipe ${e}" type="button" @click=${() => this._applyRecipe(e)}><span class="recipe-preview"><i></i><i></i><i></i></span><strong>${t}</strong><small>${n}</small></button>`;
 	}
 	_applyRecipe(e) {
-		let t = {
+		let t = { ...{
 			classic: {
 				style_preset: "classic",
 				container_style: "transparent",
@@ -4298,9 +4882,22 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 				show_count: !1,
 				show_summary: !1
 			}
-		}, n = {
+		}[e] }, n = this._config.mode === "users" || this._config.mode === "popular" && [
+			"top_users",
+			"top_libraries",
+			"top_platforms"
+		].includes(this._config.stat_id ?? "popular_movies");
+		if ((["active", "users"].includes(this._config.mode) || n) && delete t.show_summary, n) for (let e of [
+			"artwork",
+			"artwork_placement",
+			"artwork_aspect",
+			"artwork_fit",
+			"artwork_inset",
+			"backdrop_opacity"
+		]) delete t[e];
+		let r = {
 			...this._config,
-			...t[e]
+			...t
 		};
 		for (let e of [
 			"card_background",
@@ -4315,25 +4912,25 @@ var X = (e) => ["poster", "both"].includes(e.config.artwork ?? "poster"), We = (
 			"playing_color",
 			"paused_color",
 			"buffering_color"
-		]) delete n[e];
-		this._config = q(n), this._emitConfig();
+		]) delete r[e];
+		this._config = G(r), this._emitConfig();
 	}
 	_update(e, t) {
 		let n = {
 			...this._config,
 			[e]: t
 		};
-		t === void 0 && delete n[e], this._config = q(n), this._emitConfig();
+		t === void 0 && delete n[e], this._config = G(n), this._emitConfig();
 	}
 	_emitConfig() {
 		this.dispatchEvent(new CustomEvent("config-changed", {
 			bubbles: !0,
 			composed: !0,
-			detail: { config: Le(this._config) }
+			detail: { config: Ue(this._config) }
 		}));
 	}
 };
-customElements.get("tautulli-media-card") || customElements.define("tautulli-media-card", He), customElements.get("tautulli-media-card-editor") || customElements.define("tautulli-media-card-editor", et), window.customCards = window.customCards || [], window.customCards.some((e) => e.type === "tautulli-media-card") || window.customCards.push({
+customElements.get("tautulli-media-card") || customElements.define("tautulli-media-card", Je), customElements.get("tautulli-media-card-editor") || customElements.define("tautulli-media-card-editor", st), window.customCards = window.customCards || [], window.customCards.some((e) => e.type === "tautulli-media-card") || window.customCards.push({
 	type: "tautulli-media-card",
 	name: "Tautulli Media Card",
 	description: "Active streams, recently added media, popular titles, and watch history from Tautulli.",

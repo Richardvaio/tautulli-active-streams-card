@@ -2,9 +2,9 @@ import { LitElement, html, nothing } from "lit";
 import type { PropertyValues, TemplateResult } from "lit";
 import { keyed } from "lit/directives/keyed.js";
 import { getCardData, getEntries, subscribeActive, SUPPORTED_SCHEMA, terminateSession } from "./api";
-import { DEFAULT_POPUP_DETAIL_ORDER, modeTitle, normalizeConfig, STYLE_PRESETS } from "./config";
+import { DEFAULT_POPUP_DETAIL_ORDER, DEFAULT_USER_POPUP_DETAIL_ORDER, modeTitle, normalizeConfig, STYLE_PRESETS } from "./config";
 import { cardStyles } from "./styles";
-import type { ActiveStream, CardConfig, CardEnvelope, HomeAssistant, MediaItem, PopupDetailField } from "./types";
+import type { ActiveStream, CardConfig, CardEnvelope, HomeAssistant, MediaItem, PopupDetailField, UserPopupDetailGroup } from "./types";
 
 type UnknownItem = Record<string, any>;
 
@@ -28,6 +28,9 @@ const STREAM_DETAIL_VISIBILITY: Record<PopupDetailField, keyof CardConfig> = {
   audience_rating: "popup_show_audience_rating",
   genres: "popup_show_genres",
   studio: "popup_show_studio",
+  rank: "popup_show_rank",
+  plays: "popup_show_plays",
+  played: "popup_show_played",
 };
 
 export class TautulliMediaCard extends LitElement {
@@ -376,7 +379,7 @@ export class TautulliMediaCard extends LitElement {
         ${this._data?.stale ? html`<p class="stale">Showing the last successful update</p>` : nothing}
         ${this._loading ? this._renderLoading()
           : !items.length ? html`<div class="empty">${this._config.mode === "active" ? "Nothing is playing" : "No matching media"}</div>`
-          : html`${(this._config.layout === "carousel" || (["horizontal", "marquee", "showcase"].includes(this._config.layout ?? "grid") && this._config.carousel_buttons !== false)) ? html`<div class="carousel-controls" aria-label="Carousel controls">
+          : html`${(["horizontal", "carousel", "showcase"].includes(this._config.layout ?? "grid") && this._config.carousel_buttons !== false) ? html`<div class="carousel-controls" aria-label="Carousel controls">
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(-1) : this._scrollCarousel(-1)} aria-label="Previous items"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(1) : this._scrollCarousel(1)} aria-label="Next items"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
             </div>` : nothing}
@@ -518,29 +521,36 @@ export class TautulliMediaCard extends LitElement {
     const total = Number(item.total_duration_seconds) || 0;
     const displayName = item.display_name || "Private user";
     const initial = String(displayName).trim().charAt(0).toUpperCase() || "?";
+    const showTotals = this._config.user_card_show_plays
+      || this._config.user_card_show_watch_time
+      || this._config.user_card_show_completion;
+    const showBreakdown = this._config.user_card_show_media_breakdown
+      || this._config.user_card_show_playback_breakdown;
     return html`<article data-item-id=${this._itemId(item)} class="item user-item ${this._config.click_action === "details" ? "interactive" : ""}">
       ${this._openDetailsButton(item, `${displayName} user details`)}
       <div class="user-avatar" aria-hidden="true">${initial}</div>
       <div class="body">
-        <div class="eyebrow"><span>${item.last_seen_at ? `Last active ${this._date(item.last_seen_at)}` : "Plex activity summary"}</span></div>
+        ${this._config.user_card_show_last_active ? html`<div class="eyebrow"><span>${item.last_seen_at ? `Last active ${this._date(item.last_seen_at)}` : "Plex activity summary"}</span></div>` : nothing}
         <h3 class="name">${displayName}</h3>
-        <div class="user-stats">
-          <span><strong>${item.total_plays ?? 0}</strong> plays</span>
-          <span><strong>${this._duration(total)}</strong> watched</span>
-          <span><strong>${item.completion_percent ?? 0}%</strong> completion</span>
-        </div>
-        <div class="user-breakdown">
-          ${item.movie_plays ? html`<span><ha-icon icon="mdi:movie-open"></ha-icon>${item.movie_plays} movies</span>` : nothing}
-          ${item.tv_plays ? html`<span><ha-icon icon="mdi:television-classic"></ha-icon>${item.tv_plays} episodes</span>` : nothing}
-          ${item.direct_play_count ? html`<span><ha-icon icon="mdi:play-circle-outline"></ha-icon>${item.direct_play_count} direct plays</span>` : nothing}
-          ${item.transcode_count ? html`<span><ha-icon icon="mdi:swap-horizontal"></ha-icon>${item.transcode_count} transcodes</span>` : nothing}
-        </div>
-        <div class="user-favourites optional">
+        ${showTotals ? html`<div class="user-stats">
+          ${this._config.user_card_show_plays ? html`<span><strong>${item.total_plays ?? 0}</strong> plays</span>` : nothing}
+          ${this._config.user_card_show_watch_time ? html`<span><strong>${this._duration(total)}</strong> watched</span>` : nothing}
+          ${this._config.user_card_show_completion ? html`<span><strong>${item.completion_percent ?? 0}%</strong> completion</span>` : nothing}
+        </div>` : nothing}
+        ${showBreakdown ? html`<div class="user-breakdown">
+          ${this._config.user_card_show_media_breakdown && item.movie_plays ? html`<span><ha-icon icon="mdi:movie-open"></ha-icon>${item.movie_plays} movies</span>` : nothing}
+          ${this._config.user_card_show_media_breakdown && item.tv_plays ? html`<span><ha-icon icon="mdi:television-classic"></ha-icon>${item.tv_plays} episodes</span>` : nothing}
+          ${this._config.user_card_show_playback_breakdown && item.direct_play_count ? html`<span><ha-icon icon="mdi:play-circle-outline"></ha-icon>${item.direct_play_count} direct plays</span>` : nothing}
+          ${this._config.user_card_show_playback_breakdown && item.transcode_count ? html`<span><ha-icon icon="mdi:swap-horizontal"></ha-icon>${item.transcode_count} transcodes</span>` : nothing}
+        </div>` : nothing}
+        ${this._config.user_card_show_favourites ? html`<div class="user-favourites optional">
           ${item.popular_movie ? html`<span><small>Favourite movie</small>${item.popular_movie}</span>` : nothing}
           ${item.popular_show ? html`<span><small>Favourite show</small>${item.popular_show}</span>` : nothing}
+        </div>` : nothing}
+        ${this._config.user_card_show_habits ? html`<div class="user-favourites optional">
           ${item.most_used_device ? html`<span><small>Most-used player</small>${item.most_used_device}</span>` : nothing}
           ${item.preferred_day ? html`<span><small>Usually watches</small>${item.preferred_day} ${item.preferred_time ?? ""}</span>` : nothing}
-        </div>
+        </div>` : nothing}
       </div>
     </article>`;
   }
@@ -584,12 +594,15 @@ export class TautulliMediaCard extends LitElement {
         ${image ? html`<img class="art" src=${image} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
         <div class="body">
           <div class="eyebrow">
-            <span class="state ${item.state}">${item.state}${item.state === "paused" && this._config.show_pause_duration ? ` · ${this._elapsedDuration(this._pausedSeconds(item))}` : ""}</span>
+            ${this._config.show_state ? html`<span class="state ${item.state}">${this._stateText(item, music)}</span>` : nothing}
             ${this._config.show_user && item.user?.display_name ? html`<span>${item.user.display_name}</span>` : nothing}
           </div>
           <h3 class="name">${title}</h3>
           ${mediaDetail && (music || this._config.show_media_details) ? html`<div class="subtitle">${mediaDetail}</div>` : nothing}
-          ${this._config.show_device && item.client ? html`<div class="meta"><span>${item.client.player || item.client.product || item.client.device}</span></div>` : nothing}
+          ${(this._config.show_device && item.client) || (this._config.show_eta && this._eta(item)) ? html`<div class="meta">
+            ${this._config.show_device && item.client ? html`<span>${item.client.player || item.client.product || item.client.device}</span>` : nothing}
+            ${this._config.show_eta && this._eta(item) ? html`<span class="modern-eta">ETA: ${this._eta(item)}</span>` : nothing}
+          </div>` : nothing}
           ${showVideoQuality || showAudioQuality || showBandwidth ? html`<div class="details optional">
             ${showVideoQuality && item.quality?.decision ? html`<span>${item.quality.decision}</span>` : nothing}
             ${showVideoQuality && item.quality?.video_resolution ? html`<span>${item.quality.video_resolution}</span>` : nothing}
@@ -599,6 +612,7 @@ export class TautulliMediaCard extends LitElement {
             ${showBandwidth && item.quality?.bandwidth_kbps ? html`<span>${this._bandwidth(item.quality.bandwidth_kbps)}</span>` : nothing}
           </div>` : nothing}
           ${this._config.show_progress ? html`<div class="modern-progress-row">
+            ${this._config.show_progress_percent ? html`<span class="modern-progress-percent">${Math.round(progress)}%</span>` : nothing}
             <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(progress)} style=${`--progress:${progress}%`}></div>
             ${this._config.show_remaining && item.playback?.remaining_ms ? html`<span class="modern-progress-remaining">${this._duration(Math.ceil(item.playback.remaining_ms / 1000))} remaining</span>` : nothing}
           </div>` : nothing}
@@ -1166,13 +1180,18 @@ export class TautulliMediaCard extends LitElement {
     const media = item.media ?? {};
     const progress = Math.max(0, Math.min(100, Number(item.playback?.progress_percent) || 0));
     const hierarchy = media.hierarchy ?? {};
-    const subtitle = this._mediaSubtitle(media);
+    const subtitle = this._popupMediaSubtitle(media, "active");
     const poster = this._config.popup_show_artwork ? item.images?.poster_url ?? undefined : undefined;
     const backdrop = this._config.popup_show_artwork ? item.images?.backdrop_url ?? undefined : undefined;
     const allowPopupTermination = this._canTerminate(item) && ["popup", "both"].includes(this._config.termination_location ?? "popup");
     const terminationAtTop = allowPopupTermination && (this._config.termination_popup_placement ?? "footer") === "top";
-    const title = media.full_title || media.title || "Stream details";
+    const title = this._popupMediaTitle(media, "active") || "Stream details";
     const stateColor = this._playbackStateColor(item, ["track", "album", "artist"].includes(media.type ?? ""));
+    const detailFields = (this._config.popup_detail_order ?? DEFAULT_POPUP_DETAIL_ORDER)
+      .map((field) => this._config[STREAM_DETAIL_VISIBILITY[field]]
+        ? this._renderActiveDetailField(field, item, media, hierarchy)
+        : nothing)
+      .filter((field) => field !== nothing);
     const body = html`
       <section class="popup-summary" style=${this._backgroundStyle(undefined, stateColor)}><div class="details-hero ${poster ? "with-poster" : ""}">
         ${poster ? html`<img src=${poster} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
@@ -1189,13 +1208,7 @@ export class TautulliMediaCard extends LitElement {
           <div class="details-progress-label"><span>${Math.round(progress)}% watched</span>${item.playback?.remaining_ms ? html`<span>${this._duration(Math.ceil(item.playback.remaining_ms / 1000))} remaining</span>` : nothing}</div>` : nothing}
         </div>
       </div></section>
-      <h3 class="details-section-title">Stream details</h3>
-      <div class="details-grid">
-        ${(this._config.popup_detail_order ?? DEFAULT_POPUP_DETAIL_ORDER).map((field) =>
-          this._config[STREAM_DETAIL_VISIBILITY[field]]
-            ? this._renderActiveDetailField(field, item, media, hierarchy)
-            : nothing)}
-      </div>
+      ${detailFields.length ? html`<h3 class="details-section-title">Stream details</h3><div class="details-grid">${detailFields}</div>` : nothing}
       ${allowPopupTermination && !terminationAtTop ? html`<div class="details-actions">${this._popupTerminationButton(item)}</div>` : nothing}`;
     return this._renderDialogShell(title, body, backdrop, true);
   }
@@ -1230,6 +1243,9 @@ export class TautulliMediaCard extends LitElement {
       case "audience_rating": return this._detailValue("Audience rating", media.audience_rating);
       case "genres": return this._detailValue("Genres", media.genres?.join(" · "));
       case "studio": return this._detailValue("Studio", media.studio);
+      case "rank":
+      case "plays":
+      case "played": return nothing;
     }
   }
 
@@ -1239,64 +1255,70 @@ export class TautulliMediaCard extends LitElement {
   }
 
   private _renderUserDetails(item: UnknownItem): TemplateResult {
+    const detailFields = (this._config.popup_user_detail_order ?? DEFAULT_USER_POPUP_DETAIL_ORDER)
+      .flatMap((group) => this._renderUserDetailGroup(group, item))
+      .filter((field) => field !== nothing);
     const body = html`
       <section class="popup-summary"><div class="user-popup-summary">
         <div class="user-avatar large" aria-hidden="true">${String(item.display_name || "?").charAt(0).toUpperCase()}</div>
         <div><strong>${item.total_plays ?? 0} plays</strong><span>${this._duration(Number(item.total_duration_seconds) || 0)} watched</span></div>
       </div></section>
-      <h3 class="details-section-title">User details</h3>
-      <div class="details-grid">
-        ${this._config.popup_show_playback_breakdown ? html`
-          ${this._detailValue("Movies", item.movie_plays)}
-          ${this._detailValue("TV episodes", item.tv_plays)}
-          ${this._detailValue("Completion", item.completion_percent !== undefined ? `${item.completion_percent}%` : undefined)}
-          ${this._detailValue("Transcoded", item.transcode_percent !== undefined ? `${item.transcode_percent}%` : undefined)}
-          ${this._detailValue("Direct plays", item.direct_play_count)}
-          ${this._detailValue("Direct streams", item.direct_stream_count)}
-          ${this._detailValue("Transcodes", item.transcode_count)}
-        ` : nothing}
-        ${this._config.popup_show_favourites ? html`${this._detailValue("Favourite movie", item.popular_movie)}${this._detailValue("Favourite show", item.popular_show)}` : nothing}
-        ${this._config.popup_show_habits ? html`${this._detailValue("Most-used player", item.most_used_device)}${this._detailValue("Usually watches", [item.preferred_day, item.preferred_time].filter(Boolean).join(" "))}` : nothing}
-        ${this._config.popup_show_recent_activity ? this._detailValue("Last active", item.last_seen_at ? this._date(item.last_seen_at) : undefined) : nothing}
-      </div>`;
+      ${detailFields.length ? html`<h3 class="details-section-title">User details</h3><div class="details-grid">${detailFields}</div>` : nothing}`;
     return this._renderDialogShell(item.display_name || "Private user", body);
+  }
+
+  private _renderUserDetailGroup(group: UserPopupDetailGroup, item: UnknownItem): Array<TemplateResult | typeof nothing> {
+    switch (group) {
+      case "playback": return this._config.popup_show_playback_breakdown ? [
+        this._detailValue("Movies", item.movie_plays),
+        this._detailValue("TV episodes", item.tv_plays),
+        this._detailValue("Completion", item.completion_percent !== undefined ? `${item.completion_percent}%` : undefined),
+        this._detailValue("Transcoded", item.transcode_percent !== undefined ? `${item.transcode_percent}%` : undefined),
+        this._detailValue("Direct plays", item.direct_play_count),
+        this._detailValue("Direct streams", item.direct_stream_count),
+        this._detailValue("Transcodes", item.transcode_count),
+      ] : [];
+      case "favourites": return this._config.popup_show_favourites ? [
+        this._detailValue("Favourite movie", item.popular_movie),
+        this._detailValue("Favourite show", item.popular_show),
+      ] : [];
+      case "habits": return this._config.popup_show_habits ? [
+        this._detailValue("Most-used player", item.most_used_device),
+        this._detailValue("Usually watches", [item.preferred_day, item.preferred_time].filter(Boolean).join(" ")),
+      ] : [];
+      case "recent_activity": return this._config.popup_show_recent_activity ? [
+        this._detailValue("Last active", item.last_seen_at ? this._date(item.last_seen_at) : undefined),
+      ] : [];
+    }
   }
 
   private _renderMediaDetails(item: UnknownItem): TemplateResult {
     const media: MediaItem = this._config.mode === "recently_added" ? item as MediaItem : item.media ?? {};
     const poster = this._config.popup_show_artwork ? media.images?.poster_url ?? undefined : undefined;
     const backdrop = this._config.popup_show_artwork ? media.images?.backdrop_url ?? undefined : undefined;
-    const title = media.type === "season"
-      ? this._cardEpisodeTitle(media, "media")
-      : media.full_title || media.title || "Media details";
-    const subtitle = media.type === "season"
-      ? this._cardEpisodeSubtitle(media, "media")
-      : this._mediaSubtitle(media);
+    const title = this._popupMediaTitle(media, "media") || "Media details";
+    const subtitle = this._popupMediaSubtitle(media, "media");
+    const detailFields = (this._config.popup_detail_order ?? DEFAULT_POPUP_DETAIL_ORDER)
+      .map((field) => this._config[STREAM_DETAIL_VISIBILITY[field]]
+        ? this._renderMediaDetailField(field, item, media)
+        : nothing)
+      .filter((field) => field !== nothing);
     const body = html`
       <section class="popup-summary media-summary"><div class="details-hero ${poster ? "with-poster" : ""}">
         ${poster ? html`<img class="details-media-poster" src=${poster} alt="" loading="lazy" referrerpolicy="no-referrer">` : nothing}
         <div class="details-primary">
           <h2 id="details-title" class="details-inline-title">${title}</h2>
           ${subtitle ? html`<p class="details-subtitle">${subtitle}</p>` : nothing}
-          ${this._config.popup_show_summary && media.summary ? html`<p class="details-summary">${media.summary}</p>` : nothing}
+          ${this._config.popup_show_summary && media.summary ? html`<p class="details-summary ${this._config.popup_summary_lines === 0 ? "" : "compact"}" style=${`--summary-lines:${this._config.popup_summary_lines ?? 3}`}>${media.summary}</p>` : nothing}
         </div>
       </div></section>
-      <h3 class="details-section-title">Media details</h3>
-      <div class="details-grid">
-        ${(this._config.popup_detail_order ?? DEFAULT_POPUP_DETAIL_ORDER).map((field) =>
-          this._config[STREAM_DETAIL_VISIBILITY[field]]
-            ? this._renderMediaDetailField(field, media)
-            : nothing)}
-        ${this._config.mode === "popular" ? this._detailValue("Rank", item.rank ? `#${item.rank}` : undefined) : nothing}
-        ${this._config.mode === "popular" ? this._detailValue("Plays", item.total_plays) : nothing}
-        ${this._config.mode === "history" && this._config.popup_show_user ? this._detailValue("Plex user", item.user?.display_name) : nothing}
-        ${this._config.mode === "history" ? this._detailValue("Played", item.started_at ? this._date(item.started_at) : undefined) : nothing}
-      </div>`;
+      ${detailFields.length ? html`<h3 class="details-section-title">${this._config.mode === "popular" ? "Ranking details" : "Media details"}</h3><div class="details-grid">${detailFields}</div>` : nothing}`;
     return this._renderDialogShell(title, body, backdrop, true);
   }
 
-  private _renderMediaDetailField(field: PopupDetailField, media: MediaItem): TemplateResult | typeof nothing {
+  private _renderMediaDetailField(field: PopupDetailField, item: UnknownItem, media: MediaItem): TemplateResult | typeof nothing {
     switch (field) {
+      case "user": return this._detailValue("Plex user", item.user?.display_name);
       case "media_type": return this._detailValue("Media type", media.type);
       case "year": return this._detailValue("Year", media.year);
       case "duration": return this._detailValue("Duration", media.duration_seconds ? this._duration(media.duration_seconds) : undefined);
@@ -1306,12 +1328,15 @@ export class TautulliMediaCard extends LitElement {
       case "audience_rating": return this._detailValue("Audience rating", media.audience_rating);
       case "genres": return this._detailValue("Genres", media.genres?.join(" · "));
       case "studio": return this._detailValue("Studio", media.studio);
+      case "rank": return this._detailValue("Rank", item.rank ? `#${item.rank}` : undefined);
+      case "plays": return this._detailValue("Plays", item.total_plays);
+      case "played": return this._detailValue("Played", item.started_at ? this._date(item.started_at) : undefined);
       default: return nothing;
     }
   }
 
   private _detailValue(label: string, value: unknown): TemplateResult | typeof nothing {
-    if (value === undefined || value === null || value === "" || value === 0) return nothing;
+    if (value === undefined || value === null || value === "") return nothing;
     return html`<div class="detail-value"><small>${label}</small><span>${String(value)}</span></div>`;
   }
 
@@ -1341,10 +1366,47 @@ export class TautulliMediaCard extends LitElement {
     const h = media.hierarchy ?? {};
     if (["track", "album"].includes(media.type ?? "")) return [h.artist, h.album].filter(Boolean).join(" — ");
     if (["episode", "show"].includes(media.type ?? "")) {
-      const episode = h.season_number && h.episode ? `S${h.season_number} · E${h.episode}` : "";
+      const episode = media.type === "episode" ? this._episodeNumber(media, "compact") : "";
       return [h.show, episode].filter(Boolean).join(" — ");
     }
     return "";
+  }
+
+  private _popupMediaTitle(media: MediaItem, context: "active" | "media"): string {
+    if (media.type === "season") return this._cardEpisodeTitle(media, context);
+    if (media.type !== "episode") return media.full_title || media.title || "";
+    const layout = this._config.popup_episode_layout ?? "automatic";
+    if (layout === "card") return this._cardEpisodeTitle(media, context);
+    if (layout !== "custom") return media.full_title || media.title || "";
+    const hierarchy = media.hierarchy ?? {};
+    const show = this._displayText(hierarchy.show);
+    const episodeTitle = media.title || "";
+    const fullTitle = media.full_title || episodeTitle || show;
+    switch (this._config.popup_episode_title ?? "full_title") {
+      case "show": return show || fullTitle || episodeTitle;
+      case "episode_title": return episodeTitle || fullTitle || show;
+      default: return fullTitle || episodeTitle || show;
+    }
+  }
+
+  private _popupMediaSubtitle(media: MediaItem, context: "active" | "media"): string {
+    if (media.type === "season") return this._cardEpisodeSubtitle(media, context);
+    if (media.type !== "episode") return this._mediaSubtitle(media);
+    const layout = this._config.popup_episode_layout ?? "automatic";
+    if (layout === "card") return this._cardEpisodeSubtitle(media, context);
+    if (layout !== "custom") return this._mediaSubtitle(media);
+    const hierarchy = media.hierarchy ?? {};
+    const show = this._displayText(hierarchy.show);
+    const episodeTitle = media.title || "";
+    const number = this._episodeNumber(media, this._config.popup_episode_number_style ?? "compact");
+    switch (this._config.popup_episode_subtitle ?? "show_and_number") {
+      case "number_and_title": return this._joinText(number, episodeTitle);
+      case "show_number_and_title": return this._joinText(show, number, episodeTitle);
+      case "number_only": return number;
+      case "episode_title": return episodeTitle;
+      case "none": return "";
+      default: return this._joinText(show, number);
+    }
   }
 
   private _movieSubtitle(media: MediaItem, context: "active" | "classic" | "media"): string {
@@ -1415,12 +1477,12 @@ export class TautulliMediaCard extends LitElement {
     }
   }
 
-  private _episodeNumber(media: MediaItem): string {
+  private _episodeNumber(media: MediaItem, style = this._config.episode_number_style ?? "compact"): string {
     const hierarchy = media.hierarchy ?? {};
     const season = hierarchy.season_number ?? hierarchy.season;
     const episode = hierarchy.episode_number ?? hierarchy.episode;
     if (season === undefined || season === null || episode === undefined || episode === null) return "";
-    if (this._config.episode_number_style === "padded") {
+    if (style === "padded") {
       return `S${this._paddedIndex(season)}E${this._paddedIndex(episode)}`;
     }
     return `S${this._displayText(season)} · E${this._displayText(episode)}`;
