@@ -67,6 +67,9 @@ const MUSIC_STREAM: ActiveStream = {
     audio_codec: "flac",
     audio_channel_layout: "stereo",
     audio_bitrate_kbps: 1411,
+    audio_atmos: true,
+    stream_audio_atmos: true,
+    atmos: true,
   },
 };
 
@@ -301,7 +304,19 @@ describe("stream termination confirmation", () => {
     card.hass = hass;
     document.body.append(card);
     const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
-    internal._data = ENVELOPE;
+    internal._data = {
+      ...ENVELOPE,
+      items: [{
+        ...STREAM,
+        quality: {
+          ...STREAM.quality,
+          video_resolution: "2160p",
+          audio_codec: "truehd",
+          audio_channel_layout: "7.1",
+          atmos: true,
+        },
+      }],
+    };
     internal._loading = false;
     internal.requestUpdate();
     await card.updateComplete;
@@ -312,6 +327,8 @@ describe("stream termination confirmation", () => {
     const dialog = card.renderRoot.querySelector('[role="dialog"]');
     expect(dialog?.textContent).toContain("Example Movie");
     expect(dialog?.textContent).toContain("Living room TV");
+    expect(dialog?.textContent).toContain("2160p");
+    expect(dialog?.textContent).toContain("truehd · 7.1 · Atmos");
     expect(dialog?.textContent).toContain("Estimated finish");
     expect(dialog?.textContent).toContain("Terminate stream");
     expect(dialog?.querySelector(".details-heading-line > #details-title")?.textContent).toContain("Example Movie");
@@ -489,9 +506,49 @@ describe("stream termination confirmation", () => {
     expect(music.renderRoot.querySelector(".details.optional")?.textContent).toContain("flac");
     expect(music.renderRoot.querySelector(".details.optional")?.textContent).toContain("stereo");
     expect(music.renderRoot.querySelector(".details.optional")?.textContent).toContain("1411 Kbps");
+    expect(music.renderRoot.querySelector(".details.optional")?.textContent).toContain("Atmos");
 
     const hiddenMusicQuality = await renderStream(MUSIC_STREAM, { show_quality: false, show_audio_quality: false });
     expect(hiddenMusicQuality.renderRoot.querySelector(".details.optional")).toBeNull();
+  });
+
+  it("shows Atmos with classic video quality", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: "classic",
+      show_quality: true,
+    });
+    document.body.append(card);
+    const internal = card as unknown as {
+      _data: CardEnvelope<ActiveStream>;
+      _loading: boolean;
+      requestUpdate(): void;
+    };
+    internal._data = {
+      ...ENVELOPE,
+      items: [{
+        ...STREAM,
+        quality: {
+          ...STREAM.quality,
+          video_resolution: "2160p",
+          atmos: true,
+        },
+      }],
+    };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    expect(card.renderRoot.querySelector(".classic-bottom")?.textContent).toContain(
+      "direct play — 2160p — Atmos",
+    );
   });
 
   it.each([

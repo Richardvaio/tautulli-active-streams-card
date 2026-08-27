@@ -606,6 +606,7 @@ export class TautulliMediaCard extends LitElement {
           ${showVideoQuality || showAudioQuality || showBandwidth ? html`<div class="details optional">
             ${showVideoQuality && item.quality?.decision ? html`<span>${item.quality.decision}</span>` : nothing}
             ${showVideoQuality && item.quality?.video_resolution ? html`<span>${item.quality.video_resolution}</span>` : nothing}
+            ${(showVideoQuality || showAudioQuality) && item.quality?.atmos ? html`<span>Atmos</span>` : nothing}
             ${showAudioQuality && item.quality?.audio_codec ? html`<span>${item.quality.audio_codec}</span>` : nothing}
             ${showAudioQuality && item.quality?.audio_channel_layout ? html`<span>${item.quality.audio_channel_layout}</span>` : nothing}
             ${showAudioQuality && item.quality?.audio_bitrate_kbps ? html`<span>${item.quality.audio_bitrate_kbps} Kbps</span>` : nothing}
@@ -639,11 +640,16 @@ export class TautulliMediaCard extends LitElement {
         ? this._cardEpisodeSubtitle(media, "classic")
         : media.year ? `(${media.year})` : "";
     const client = [item.client?.product, item.client?.player].filter(Boolean).join(" — ") || item.client?.device;
-    const videoQuality = [item.quality?.decision, item.quality?.video_resolution].filter(Boolean).join(" — ");
+    const videoQuality = [
+      item.quality?.decision,
+      item.quality?.video_resolution,
+      item.quality?.atmos ? "Atmos" : undefined,
+    ].filter(Boolean).join(" — ");
     const audioQuality = [
       item.quality?.audio_codec,
       item.quality?.audio_channel_layout,
       item.quality?.audio_bitrate_kbps ? `${item.quality.audio_bitrate_kbps} Kbps` : undefined,
+      item.quality?.atmos ? "Atmos" : undefined,
     ].filter(Boolean).join(" · ");
     const canTerminate = this._canTerminate(item) && (
       this._config.click_action !== "details"
@@ -1229,7 +1235,11 @@ export class TautulliMediaCard extends LitElement {
         : nothing;
       case "playback_decision": return this._detailValue("Playback", item.quality?.decision);
       case "video_quality": return this._detailValue("Video", item.quality?.video_resolution);
-      case "audio_quality": return this._detailValue("Audio", [item.quality?.audio_codec, item.quality?.audio_channel_layout].filter(Boolean).join(" · "));
+      case "audio_quality": return this._detailValue("Audio", [
+        item.quality?.audio_codec,
+        item.quality?.audio_channel_layout,
+        item.quality?.atmos ? "Atmos" : undefined,
+      ].filter(Boolean).join(" · "));
       case "bandwidth": return this._detailValue("Bandwidth", item.quality?.bandwidth_kbps ? this._bandwidth(item.quality.bandwidth_kbps) : undefined);
       case "episode": return this._detailValue("Season / episode", media.type === "episode" ? `S${hierarchy.season_number ?? "–"} · E${hierarchy.episode_number ?? hierarchy.episode ?? "–"}` : undefined);
       case "media_type": return this._detailValue("Media type", media.type);

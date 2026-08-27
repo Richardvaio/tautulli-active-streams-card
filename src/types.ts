@@ -270,6 +270,9 @@ export interface ActiveStream {
     audio_codec?: string | null;
     audio_channel_layout?: string | null;
     audio_bitrate_kbps?: number;
+    audio_atmos?: boolean;
+    stream_audio_atmos?: boolean;
+    atmos?: boolean;
   };
   images?: ImageSet;
 }

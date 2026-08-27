@@ -2003,6 +2003,7 @@ var Ge = o`
           ${o || s || c ? A`<div class="details optional">
             ${o && e.quality?.decision ? A`<span>${e.quality.decision}</span>` : M}
             ${o && e.quality?.video_resolution ? A`<span>${e.quality.video_resolution}</span>` : M}
+            ${(o || s) && e.quality?.atmos ? A`<span>Atmos</span>` : M}
             ${s && e.quality?.audio_codec ? A`<span>${e.quality.audio_codec}</span>` : M}
             ${s && e.quality?.audio_channel_layout ? A`<span>${e.quality.audio_channel_layout}</span>` : M}
             ${s && e.quality?.audio_bitrate_kbps ? A`<span>${e.quality.audio_bitrate_kbps} Kbps</span>` : M}
@@ -2022,10 +2023,15 @@ var Ge = o`
 			"track",
 			"album",
 			"artist"
-		].includes(t.type ?? ""), r = this._image(e.images), i = this._backgroundImage(e.images), a = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), o = this._playbackStateColor(e, n), s = t.hierarchy ?? {}, c = n ? [s.artist, s.album].filter(Boolean).join(" — ") : this._cardEpisodeTitle(t, "classic"), l = n ? t.title || t.full_title : "", u = n ? "" : t.type === "episode" ? this._cardEpisodeSubtitle(t, "classic") : t.year ? `(${t.year})` : "", d = [e.client?.product, e.client?.player].filter(Boolean).join(" — ") || e.client?.device, f = [e.quality?.decision, e.quality?.video_resolution].filter(Boolean).join(" — "), p = [
+		].includes(t.type ?? ""), r = this._image(e.images), i = this._backgroundImage(e.images), a = Math.max(0, Math.min(100, Number(e.playback?.progress_percent) || 0)), o = this._playbackStateColor(e, n), s = t.hierarchy ?? {}, c = n ? [s.artist, s.album].filter(Boolean).join(" — ") : this._cardEpisodeTitle(t, "classic"), l = n ? t.title || t.full_title : "", u = n ? "" : t.type === "episode" ? this._cardEpisodeSubtitle(t, "classic") : t.year ? `(${t.year})` : "", d = [e.client?.product, e.client?.player].filter(Boolean).join(" — ") || e.client?.device, f = [
+			e.quality?.decision,
+			e.quality?.video_resolution,
+			e.quality?.atmos ? "Atmos" : void 0
+		].filter(Boolean).join(" — "), p = [
 			e.quality?.audio_codec,
 			e.quality?.audio_channel_layout,
-			e.quality?.audio_bitrate_kbps ? `${e.quality.audio_bitrate_kbps} Kbps` : void 0
+			e.quality?.audio_bitrate_kbps ? `${e.quality.audio_bitrate_kbps} Kbps` : void 0,
+			e.quality?.atmos ? "Atmos" : void 0
 		].filter(Boolean).join(" · "), ee = this._canTerminate(e) && (this._config.click_action !== "details" || ["card", "both"].includes(this._config.termination_location ?? "popup"));
 		return A`
       <article data-item-id=${this._itemId(e)} class="classic-item ${n ? "music" : "video"} ${e.state} ${this._artClass(r, i)} ${this._config.click_action === "details" ? "interactive" : ""}" style=${this._backgroundStyle(i, o)}>
@@ -2318,7 +2324,11 @@ var Ge = o`
 			case "pause_duration": return t.state === "paused" ? this._detailValue("Paused for", this._elapsedDuration(this._pausedSeconds(t))) : M;
 			case "playback_decision": return this._detailValue("Playback", t.quality?.decision);
 			case "video_quality": return this._detailValue("Video", t.quality?.video_resolution);
-			case "audio_quality": return this._detailValue("Audio", [t.quality?.audio_codec, t.quality?.audio_channel_layout].filter(Boolean).join(" · "));
+			case "audio_quality": return this._detailValue("Audio", [
+				t.quality?.audio_codec,
+				t.quality?.audio_channel_layout,
+				t.quality?.atmos ? "Atmos" : void 0
+			].filter(Boolean).join(" · "));
 			case "bandwidth": return this._detailValue("Bandwidth", t.quality?.bandwidth_kbps ? this._bandwidth(t.quality.bandwidth_kbps) : void 0);
 			case "episode": return this._detailValue("Season / episode", n.type === "episode" ? `S${r.season_number ?? "–"} · E${r.episode_number ?? r.episode ?? "–"}` : void 0);
 			case "media_type": return this._detailValue("Media type", n.type);
