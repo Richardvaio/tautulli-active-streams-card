@@ -80,7 +80,20 @@ describe("editor settings registry", () => {
   });
 
   it("shows active-only card settings only for active streams", () => {
-    const activeOnly = ["show_progress", "show_state", "show_bandwidth", "show_eta", "show_remaining", "show_audio_quality", "show_quality", "sort_by", "show_media_details"];
+    const activeOnly = [
+      "playback_state_filter",
+      "stream_decision_filter",
+      "show_progress",
+      "show_state",
+      "show_bandwidth",
+      "show_eta",
+      "eta_time_format",
+      "show_remaining",
+      "show_audio_quality",
+      "show_quality",
+      "sort_by",
+      "show_media_details",
+    ];
     const active = fieldKeys(ctxFor({}, "active"));
     for (const key of activeOnly) expect(active.has(key)).toBe(true);
     for (const mode of ["recently_added", "popular", "users", "history"] as const) {
@@ -246,12 +259,28 @@ describe("editor settings registry", () => {
   it("hides playback settings when their parent display is disabled", () => {
     const noProgress = fieldKeys(ctxFor({ show_progress: false }));
     const noState = fieldKeys(ctxFor({ show_state: false }));
+    const noEta = fieldKeys(ctxFor({ show_eta: false }));
     const video = fieldKeys(ctxFor({ media_type: "video" }));
     expect(noProgress.has("show_progress_percent")).toBe(false);
     expect(noProgress.has("show_remaining")).toBe(false);
     expect(noState.has("show_pause_duration")).toBe(false);
     expect(noState.has("show_track_number")).toBe(false);
+    expect(noEta.has("eta_time_format")).toBe(false);
     expect(video.has("show_track_number")).toBe(false);
+  });
+
+  it("offers card-only stream filters, timing and sort choices", () => {
+    const content = EDITOR_SECTIONS.find((section) => section.id === "content-source");
+    const optionsFor = (key: keyof CardConfig) => {
+      const field = content?.fields?.find((candidate) => "key" in candidate && candidate.key === key);
+      return field && "options" in field && Array.isArray(field.options)
+        ? field.options.map((option) => option.value)
+        : [];
+    };
+
+    expect(optionsFor("playback_state_filter")).toEqual(["all", "playing", "paused", "buffering"]);
+    expect(optionsFor("stream_decision_filter")).toEqual(["all", "direct_play", "direct_stream", "transcode"]);
+    expect(optionsFor("sort_by")).toEqual(expect.arrayContaining(["remaining", "bandwidth"]));
   });
 
   it("cascades termination fields on capability, enablement, location and popup state", () => {

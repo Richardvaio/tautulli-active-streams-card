@@ -11,6 +11,12 @@ describe("card configuration", () => {
     expect(config.show_header).toBe(false);
     expect(config.show_count).toBe(false);
     expect(config.carousel_buttons).toBe(true);
+    expect(config.eta_time_format).toBe("automatic");
+    expect(config.playback_state_filter).toBe("all");
+    expect(config.stream_decision_filter).toBe("all");
+    expect(compactConfig(config)).not.toHaveProperty("eta_time_format");
+    expect(compactConfig(config)).not.toHaveProperty("playback_state_filter");
+    expect(compactConfig(config)).not.toHaveProperty("stream_decision_filter");
   });
 
   it("clamps values sent to bounded backend endpoints", () => {
@@ -89,6 +95,10 @@ describe("card configuration", () => {
       click_action: "launch",
       popup_width: "huge",
       popup_episode_layout: "separate",
+      eta_time_format: "military",
+      playback_state_filter: "stopped",
+      stream_decision_filter: "relay",
+      sort_by: "finish_time",
       metric: "hours",
       columns: "many",
     } as never);
@@ -100,6 +110,10 @@ describe("card configuration", () => {
       click_action: "none",
       popup_width: "standard",
       popup_episode_layout: "automatic",
+      eta_time_format: "automatic",
+      playback_state_filter: "all",
+      stream_decision_filter: "all",
+      sort_by: "server",
       metric: "plays",
       columns: "auto",
     });
@@ -129,6 +143,10 @@ describe("card configuration", () => {
       entry_id: "entry-1",
       mode: "active",
       media_type: "music",
+      playback_state_filter: "paused",
+      stream_decision_filter: "transcode",
+      sort_by: "remaining",
+      sort_direction: "descending",
       layout: "carousel",
       density: "detailed",
       artwork: "backdrop",
@@ -161,6 +179,7 @@ describe("card configuration", () => {
       show_header: true,
       show_count: true,
       show_remaining: false,
+      eta_time_format: "24",
       episode_layout: "custom",
       episode_title: "show",
       episode_subtitle: "number_and_title",

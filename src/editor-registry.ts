@@ -279,6 +279,24 @@ export const EDITOR_SECTIONS: Section[] = [
         ],
       },
       {
+        kind: "select", key: "playback_state_filter", label: "Playback status", modes: ["active"],
+        options: [
+          { value: "all", label: "All playback states" },
+          { value: "playing", label: "Playing" },
+          { value: "paused", label: "Paused" },
+          { value: "buffering", label: "Buffering" },
+        ],
+      },
+      {
+        kind: "select", key: "stream_decision_filter", label: "Stream delivery", modes: ["active"],
+        options: [
+          { value: "all", label: "All delivery methods" },
+          { value: "direct_play", label: "Direct play" },
+          { value: "direct_stream", label: "Direct stream" },
+          { value: "transcode", label: "Transcoding" },
+        ],
+      },
+      {
         kind: "select", key: "media_type", label: "Media", modes: ["recently_added"],
         options: [
           { value: "all", label: "All media" },
@@ -340,6 +358,8 @@ export const EDITOR_SECTIONS: Section[] = [
           { value: "title", label: "Media title" },
           { value: "state", label: "Playback state" },
           { value: "progress", label: "Progress" },
+          { value: "remaining", label: "Time remaining" },
+          { value: "bandwidth", label: "Bandwidth" },
         ],
       },
       {
@@ -565,6 +585,15 @@ export const EDITOR_SECTIONS: Section[] = [
           { kind: "toggle", key: "show_pause_duration", label: "Paused duration", when: (ctx) => ctx.config.show_state !== false },
           { kind: "toggle", key: "show_track_number", label: "Music track number", when: (ctx) => ctx.config.show_state !== false && ctx.config.media_type !== "video" },
           { kind: "toggle", key: "show_eta", label: "Estimated finish time" },
+          {
+            kind: "select", key: "eta_time_format", label: "ETA time format",
+            when: (ctx) => ctx.config.show_eta !== false,
+            options: [
+              { value: "automatic", label: "Home Assistant setting" },
+              { value: "12", label: "12-hour" },
+              { value: "24", label: "24-hour" },
+            ],
+          },
           { kind: "toggle", key: "show_remaining", label: "Time remaining", when: (ctx) => ctx.config.show_progress !== false },
         ],
       },

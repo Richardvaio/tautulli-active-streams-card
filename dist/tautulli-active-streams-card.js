@@ -671,6 +671,8 @@ var V = [
 	config_version: 1,
 	mode: "active",
 	media_type: "all",
+	playback_state_filter: "all",
+	stream_decision_filter: "all",
 	recent_grouping: "none",
 	max_items: 50,
 	columns: "auto",
@@ -697,6 +699,7 @@ var V = [
 	show_pause_duration: !0,
 	show_track_number: !0,
 	show_eta: !0,
+	eta_time_format: "automatic",
 	show_remaining: !0,
 	show_bandwidth: !0,
 	show_media_details: !0,
@@ -810,6 +813,18 @@ function G(e) {
 			"show",
 			"artist"
 		]],
+		["playback_state_filter", [
+			"all",
+			"playing",
+			"paused",
+			"buffering"
+		]],
+		["stream_decision_filter", [
+			"all",
+			"direct_play",
+			"direct_stream",
+			"transcode"
+		]],
 		["recent_grouping", [
 			"none",
 			"smart",
@@ -837,7 +852,9 @@ function G(e) {
 			"user",
 			"title",
 			"state",
-			"progress"
+			"progress",
+			"remaining",
+			"bandwidth"
 		]],
 		["sort_direction", ["ascending", "descending"]],
 		["density", [
@@ -909,6 +926,11 @@ function G(e) {
 			"genres",
 			"studio",
 			"none"
+		]],
+		["eta_time_format", [
+			"automatic",
+			"12",
+			"24"
 		]],
 		["termination_location", [
 			"popup",
@@ -1837,7 +1859,7 @@ var Ge = o`
               @keydown=${this._showcaseKeydown}
             >
               ${this._config.layout === "showcase" ? this._renderShowcase(e) : this._config.layout === "marquee" ? A`<div class="marquee-track">${this._renderMarqueeStrip(e)}</div>` : e.map((e) => this._renderItem(e))}
-            </div>` : A`<div class="empty">${this._config.mode === "active" ? "Nothing is playing" : "No matching media"}</div>`}
+            </div>` : A`<div class="empty">${this._emptyMessage()}</div>`}
       </ha-card>
       ${this._renderDetailsDialog()}
       ${this._renderTerminationDialog()}
@@ -1858,19 +1880,38 @@ var Ge = o`
 				"clip",
 				"live"
 			].includes(t) : t === this._config.media_type;
-		})), this._config.mode === "active" && this._config.sort_by !== "server") {
+		})), this._config.mode === "active" && this._config.playback_state_filter !== "all") {
+			let t = this._config.playback_state_filter;
+			e = e.filter((e) => String(e.state ?? "").toLowerCase() === t);
+		}
+		if (this._config.mode === "active" && this._config.stream_decision_filter !== "all") {
+			let t = this._config.stream_decision_filter;
+			e = e.filter((e) => this._streamDecision(e) === t);
+		}
+		if (this._config.mode === "active" && this._config.sort_by !== "server") {
 			let t = this._config.sort_by ?? "server", n = this._config.sort_direction === "descending" ? -1 : 1;
 			e.sort((e, r) => {
 				let [i, a] = {
 					user: [e.user?.display_name, r.user?.display_name],
 					title: [e.media?.full_title ?? e.media?.title, r.media?.full_title ?? r.media?.title],
 					state: [e.state, r.state],
-					progress: [e.playback?.progress_percent, r.playback?.progress_percent]
+					progress: [e.playback?.progress_percent, r.playback?.progress_percent],
+					remaining: [e.playback?.remaining_ms, r.playback?.remaining_ms],
+					bandwidth: [e.quality?.bandwidth_kbps, r.quality?.bandwidth_kbps]
 				}[t] ?? [0, 0];
 				return typeof i == "number" || typeof a == "number" ? ((Number(i) || 0) - (Number(a) || 0)) * n : String(i ?? "").localeCompare(String(a ?? ""), this.hass?.locale?.language) * n;
 			});
 		}
 		return e.slice(0, this._config.max_items);
+	}
+	_emptyMessage() {
+		return this._config.mode === "active" ? this._config.media_type !== "all" || this._config.playback_state_filter !== "all" || this._config.stream_decision_filter !== "all" ? "No streams match the selected filters" : "Nothing is playing" : "No matching media";
+	}
+	_streamDecision(e) {
+		let t = String(e.quality?.decision ?? "").trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
+		if (t.includes("transcod")) return "transcode";
+		if (t === "copy" || t.includes("direct stream")) return "direct_stream";
+		if (t.includes("direct play")) return "direct_play";
 	}
 	_groupRecent(e) {
 		let t = this._config.recent_grouping ?? "none", n = /* @__PURE__ */ new Map();
@@ -2563,14 +2604,13 @@ var Ge = o`
 		}, 1e3) : !t.length && this._pauseTimer && (window.clearInterval(this._pauseTimer), this._pauseTimer = void 0);
 	}
 	_eta(e) {
-		let t = e.playback?.eta?.trim();
-		if (t) return t;
-		let n = Number(e.playback?.remaining_ms) || 0;
-		if (n <= 0) return "";
-		let r = Date.parse(this._data?.generated_at ?? ""), i = Number.isNaN(r) ? Date.now() : r;
-		return new Intl.DateTimeFormat(this.hass?.locale?.language, {
+		let t = e.playback?.eta?.trim(), n = Number(e.playback?.remaining_ms) || 0;
+		if (n <= 0) return t ?? "";
+		let r = Date.parse(this._data?.generated_at ?? ""), i = Number.isNaN(r) ? Date.now() : r, a = this._config.eta_time_format ?? "automatic", o = this.hass?.locale?.time_format, s = a === "12" ? "h12" : a === "24" ? "h23" : o === "12" ? "h12" : o === "24" ? "h23" : void 0, c = a === "automatic" && o === "system" ? void 0 : this.hass?.locale?.language;
+		return new Intl.DateTimeFormat(c, {
 			hour: "numeric",
-			minute: "2-digit"
+			minute: "2-digit",
+			...s ? { hourCycle: s } : {}
 		}).format(new Date(i + n));
 	}
 	_bandwidth(e) {
@@ -2876,6 +2916,54 @@ var Ye = [
 			},
 			{
 				kind: "select",
+				key: "playback_state_filter",
+				label: "Playback status",
+				modes: ["active"],
+				options: [
+					{
+						value: "all",
+						label: "All playback states"
+					},
+					{
+						value: "playing",
+						label: "Playing"
+					},
+					{
+						value: "paused",
+						label: "Paused"
+					},
+					{
+						value: "buffering",
+						label: "Buffering"
+					}
+				]
+			},
+			{
+				kind: "select",
+				key: "stream_decision_filter",
+				label: "Stream delivery",
+				modes: ["active"],
+				options: [
+					{
+						value: "all",
+						label: "All delivery methods"
+					},
+					{
+						value: "direct_play",
+						label: "Direct play"
+					},
+					{
+						value: "direct_stream",
+						label: "Direct stream"
+					},
+					{
+						value: "transcode",
+						label: "Transcoding"
+					}
+				]
+			},
+			{
+				kind: "select",
 				key: "media_type",
 				label: "Media",
 				modes: ["recently_added"],
@@ -3046,6 +3134,14 @@ var Ye = [
 					{
 						value: "progress",
 						label: "Progress"
+					},
+					{
+						value: "remaining",
+						label: "Time remaining"
+					},
+					{
+						value: "bandwidth",
+						label: "Bandwidth"
 					}
 				]
 			},
@@ -3643,6 +3739,26 @@ var Ye = [
 						kind: "toggle",
 						key: "show_eta",
 						label: "Estimated finish time"
+					},
+					{
+						kind: "select",
+						key: "eta_time_format",
+						label: "ETA time format",
+						when: (e) => e.config.show_eta !== !1,
+						options: [
+							{
+								value: "automatic",
+								label: "Home Assistant setting"
+							},
+							{
+								value: "12",
+								label: "12-hour"
+							},
+							{
+								value: "24",
+								label: "24-hour"
+							}
+						]
 					},
 					{
 						kind: "toggle",

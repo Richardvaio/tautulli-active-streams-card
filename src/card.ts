@@ -378,7 +378,7 @@ export class TautulliMediaCard extends LitElement {
           </div>` : nothing}
         ${this._data?.stale ? html`<p class="stale">Showing the last successful update</p>` : nothing}
         ${this._loading ? this._renderLoading()
-          : !items.length ? html`<div class="empty">${this._config.mode === "active" ? "Nothing is playing" : "No matching media"}</div>`
+          : !items.length ? html`<div class="empty">${this._emptyMessage()}</div>`
           : html`${(["horizontal", "carousel", "showcase"].includes(this._config.layout ?? "grid") && this._config.carousel_buttons !== false) ? html`<div class="carousel-controls" aria-label="Carousel controls">
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(-1) : this._scrollCarousel(-1)} aria-label="Previous items"><ha-icon icon="mdi:chevron-left"></ha-icon></button>
               <button @click=${() => this._config.layout === "showcase" ? this._advanceShowcase(1) : this._scrollCarousel(1)} aria-label="Next items"><ha-icon icon="mdi:chevron-right"></ha-icon></button>
@@ -417,6 +417,14 @@ export class TautulliMediaCard extends LitElement {
         return type === this._config.media_type;
       });
     }
+    if (this._config.mode === "active" && this._config.playback_state_filter !== "all") {
+      const state = this._config.playback_state_filter;
+      items = items.filter((item) => String(item.state ?? "").toLowerCase() === state);
+    }
+    if (this._config.mode === "active" && this._config.stream_decision_filter !== "all") {
+      const decision = this._config.stream_decision_filter;
+      items = items.filter((item) => this._streamDecision(item) === decision);
+    }
     if (this._config.mode === "active" && this._config.sort_by !== "server") {
       const key = this._config.sort_by ?? "server";
       const direction = this._config.sort_direction === "descending" ? -1 : 1;
@@ -426,6 +434,8 @@ export class TautulliMediaCard extends LitElement {
           title: [left.media?.full_title ?? left.media?.title, right.media?.full_title ?? right.media?.title],
           state: [left.state, right.state],
           progress: [left.playback?.progress_percent, right.playback?.progress_percent],
+          remaining: [left.playback?.remaining_ms, right.playback?.remaining_ms],
+          bandwidth: [left.quality?.bandwidth_kbps, right.quality?.bandwidth_kbps],
         };
         const [a, b] = values[key] ?? [0, 0];
         if (typeof a === "number" || typeof b === "number") return ((Number(a) || 0) - (Number(b) || 0)) * direction;
@@ -433,6 +443,28 @@ export class TautulliMediaCard extends LitElement {
       });
     }
     return items.slice(0, this._config.max_items);
+  }
+
+  private _emptyMessage(): string {
+    if (this._config.mode !== "active") return "No matching media";
+    if (
+      this._config.media_type !== "all"
+      || this._config.playback_state_filter !== "all"
+      || this._config.stream_decision_filter !== "all"
+    ) return "No streams match the selected filters";
+    return "Nothing is playing";
+  }
+
+  private _streamDecision(item: UnknownItem): CardConfig["stream_decision_filter"] | undefined {
+    const decision = String(item.quality?.decision ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ");
+    if (decision.includes("transcod")) return "transcode";
+    if (decision === "copy" || decision.includes("direct stream")) return "direct_stream";
+    if (decision.includes("direct play")) return "direct_play";
+    return undefined;
   }
 
   private _groupRecent(items: UnknownItem[]): UnknownItem[] {
@@ -1585,14 +1617,28 @@ export class TautulliMediaCard extends LitElement {
 
   private _eta(item: ActiveStream): string {
     const upstream = item.playback?.eta?.trim();
-    if (upstream) return upstream;
     const remainingMs = Number(item.playback?.remaining_ms) || 0;
-    if (remainingMs <= 0) return "";
+    if (remainingMs <= 0) return upstream ?? "";
     const generatedAt = Date.parse(this._data?.generated_at ?? "");
     const baseTime = Number.isNaN(generatedAt) ? Date.now() : generatedAt;
-    return new Intl.DateTimeFormat(this.hass?.locale?.language, {
+    const selectedFormat = this._config.eta_time_format ?? "automatic";
+    const homeAssistantFormat = this.hass?.locale?.time_format;
+    const hourCycle: "h12" | "h23" | undefined = selectedFormat === "12"
+      ? "h12"
+      : selectedFormat === "24"
+        ? "h23"
+        : homeAssistantFormat === "12"
+          ? "h12"
+          : homeAssistantFormat === "24"
+            ? "h23"
+            : undefined;
+    const language = selectedFormat === "automatic" && homeAssistantFormat === "system"
+      ? undefined
+      : this.hass?.locale?.language;
+    return new Intl.DateTimeFormat(language, {
       hour: "numeric",
       minute: "2-digit",
+      ...(hourCycle ? { hourCycle } : {}),
     }).format(new Date(baseTime + remainingMs));
   }
 

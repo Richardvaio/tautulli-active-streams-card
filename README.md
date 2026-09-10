@@ -14,7 +14,7 @@ It requires **Tautulli Active Streams 2.7.0 or newer**.
 
 | Area | Choices |
 | --- | --- |
-| Content | Active streams, recently added media, statistics and rankings, Plex user activity, or watch history |
+| Content | Active streams with playback and delivery filters, recently added media, statistics and rankings, Plex user activity, or watch history |
 | Layout | Responsive grid, single-column list, vertical stack, horizontal row, poster shelf, auto-scrolling marquee, or single-item showcase |
 | Presentation | Classic Tautulli, Modern Home Assistant, Minimal, plus balanced and cinematic editor recipes |
 | Artwork | Poster or music cover, backdrop, poster with backdrop, or no artwork |
@@ -75,7 +75,19 @@ The editor normally selects the only compatible Tautulli entry automatically.
 
 ### Active streams
 
-Displays current movie, television, live-video and music sessions. Choose all media, video only or music only, then configure sorting, visible information, progress styling and popup details.
+Displays current movie, television, live-video and music sessions. Choose all media, video only or music only, filter by playback status or delivery method, then configure sorting, visible information, progress styling and popup details.
+
+Estimated finish times can follow the Home Assistant profile setting or be forced to 12-hour or 24-hour display. Active streams can also be sorted by time remaining or bandwidth.
+
+The same controls are available in YAML:
+
+```yaml
+eta_time_format: "24"
+playback_state_filter: paused
+stream_decision_filter: transcode
+sort_by: remaining
+sort_direction: ascending
+```
 
 ### Recently added
 

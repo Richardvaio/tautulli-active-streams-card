@@ -102,6 +102,58 @@ describe("visual editor", () => {
     }
   });
 
+  it("saves and restores ETA format and active-stream controls", async () => {
+    const editor = document.createElement("tautulli-media-card-editor") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    editor.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+    });
+    document.body.append(editor);
+    await editor.updateComplete;
+
+    const changes: Array<Record<string, unknown>> = [];
+    editor.addEventListener("config-changed", (event) => changes.push((event as CustomEvent).detail.config));
+    for (const [key, value] of [
+      ["eta_time_format", "24"],
+      ["playback_state_filter", "paused"],
+      ["stream_decision_filter", "transcode"],
+      ["sort_by", "bandwidth"],
+      ["sort_direction", "descending"],
+    ] as const) {
+      const select = editor.renderRoot.querySelector<HTMLSelectElement>(`select[data-key="${key}"]`);
+      expect(select).not.toBeNull();
+      if (select) {
+        select.value = value;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      await editor.updateComplete;
+    }
+
+    expect(changes.at(-1)).toMatchObject({
+      eta_time_format: "24",
+      playback_state_filter: "paused",
+      stream_decision_filter: "transcode",
+      sort_by: "bandwidth",
+      sort_direction: "descending",
+    });
+    editor.setConfig(changes.at(-1) ?? {});
+    await editor.updateComplete;
+    for (const [key, value] of [
+      ["eta_time_format", "24"],
+      ["playback_state_filter", "paused"],
+      ["stream_decision_filter", "transcode"],
+      ["sort_by", "bandwidth"],
+      ["sort_direction", "descending"],
+    ] as const) {
+      expect(editor.renderRoot.querySelector<HTMLSelectElement>(`select[data-key="${key}"]`)?.value).toBe(value);
+    }
+  });
+
   it("hides every popup setting when the detailed popup is disabled", async () => {
     const callWS = vi.fn().mockResolvedValue({
       entries: [{

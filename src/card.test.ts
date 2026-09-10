@@ -1094,6 +1094,141 @@ describe("stream termination confirmation", () => {
     expect(card.renderRoot.querySelector(".modern-progress-remaining")?.textContent).toContain("remaining");
   });
 
+  it("formats ETA from playback timing using Home Assistant or card preferences", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      hass: HomeAssistant;
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    const target = new Date(2026, 0, 1, 15, 30);
+    const generatedAt = new Date(target.getTime() - 30 * 60_000).toISOString();
+    const timedStream: ActiveStream = {
+      ...STREAM,
+      playback: { ...STREAM.playback, remaining_ms: 30 * 60_000, eta: "9:99 pm" },
+    };
+    card.hass = {
+      callWS: vi.fn(),
+      connection: { subscribeMessage: vi.fn().mockResolvedValue(() => undefined) },
+      locale: { language: "en-US", time_format: "24" },
+    };
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: "modern",
+      show_eta: true,
+      eta_time_format: "automatic",
+      click_action: "details",
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, generated_at: generatedAt, items: [timedStream] };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    expect(card.renderRoot.querySelector(".modern-eta")?.textContent).toBe("ETA: 15:30");
+
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      style_preset: "modern",
+      show_eta: true,
+      eta_time_format: "12",
+      click_action: "details",
+    });
+    await card.updateComplete;
+    expect(card.renderRoot.querySelector(".modern-eta")?.textContent).toBe("ETA: 3:30 PM");
+
+    card.renderRoot.querySelector<HTMLElement>(".open-details")?.click();
+    await card.updateComplete;
+    const etaDetail = [...card.renderRoot.querySelectorAll(".detail-value")].find(
+      (detail) => detail.querySelector("small")?.textContent === "Estimated finish",
+    );
+    expect(etaDetail?.querySelector("span")?.textContent).toBe("3:30 PM");
+  });
+
+  it("filters active streams by playback status and delivery method", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    const streams: ActiveStream[] = [
+      { ...STREAM, id: "playing-direct", state: "playing", quality: { ...STREAM.quality, decision: "direct play" } },
+      { ...STREAM, id: "paused-transcode", state: "paused", quality: { ...STREAM.quality, decision: "transcode" } },
+      { ...STREAM, id: "paused-copy", state: "paused", quality: { ...STREAM.quality, decision: "copy" } },
+    ];
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      playback_state_filter: "paused",
+      stream_decision_filter: "transcode",
+      show_empty: true,
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: streams };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+
+    expect([...card.renderRoot.querySelectorAll("article[data-item-id]")].map((item) => item.getAttribute("data-item-id"))).toEqual(["paused-transcode"]);
+
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      playback_state_filter: "buffering",
+      show_empty: true,
+    });
+    await card.updateComplete;
+    expect(card.renderRoot.textContent).toContain("No streams match the selected filters");
+  });
+
+  it("sorts active streams by remaining time and bandwidth", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    const streams: ActiveStream[] = [
+      { ...STREAM, id: "middle", playback: { ...STREAM.playback, remaining_ms: 20_000 }, quality: { ...STREAM.quality, bandwidth_kbps: 4_000 } },
+      { ...STREAM, id: "long", playback: { ...STREAM.playback, remaining_ms: 30_000 }, quality: { ...STREAM.quality, bandwidth_kbps: 8_000 } },
+      { ...STREAM, id: "short", playback: { ...STREAM.playback, remaining_ms: 10_000 }, quality: { ...STREAM.quality, bandwidth_kbps: 2_000 } },
+    ];
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      sort_by: "remaining",
+      sort_direction: "ascending",
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<ActiveStream>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: streams };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+    const itemOrder = () => [...card.renderRoot.querySelectorAll("article[data-item-id]")]
+      .map((item) => item.getAttribute("data-item-id"));
+
+    expect(itemOrder()).toEqual(["short", "middle", "long"]);
+
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "active",
+      sort_by: "bandwidth",
+      sort_direction: "descending",
+    });
+    await card.updateComplete;
+    expect(itemOrder()).toEqual(["long", "middle", "short"]);
+  });
+
   it("supports automatic, card-matched and custom TV episode text in popups", async () => {
     const card = document.createElement("tautulli-media-card") as HTMLElement & {
       setConfig(config: Record<string, unknown>): void;

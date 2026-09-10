@@ -6,6 +6,9 @@ export type ArtworkFit = "cover" | "contain";
 export type ArtworkAspect = "auto" | "poster" | "square" | "backdrop";
 export type ArtworkPlacement = "left" | "right" | "background";
 export type StylePreset = "classic" | "modern" | "minimal";
+export type EtaTimeFormat = "automatic" | "12" | "24";
+export type PlaybackStateFilter = "all" | "playing" | "paused" | "buffering";
+export type StreamDecisionFilter = "all" | "direct_play" | "direct_stream" | "transcode";
 export type EpisodeLayout = "current" | "show_first" | "episode_first" | "custom";
 export type EpisodeTitleSource = "full_title" | "show" | "episode_title";
 export type EpisodeSubtitleSource =
@@ -58,7 +61,10 @@ export interface HomeAssistant {
       message: Record<string, unknown>,
     ): Promise<() => void>;
   };
-  locale?: { language?: string };
+  locale?: {
+    language?: string;
+    time_format?: "language" | "system" | "12" | "24";
+  };
   themes?: { darkMode?: boolean };
 }
 
@@ -84,7 +90,9 @@ export interface CardConfig {
   showcase_transition?: "fade" | "slide" | "horizontal";
   showcase_direction?: "left" | "right";
   showcase_transition_duration?: number;
-  sort_by?: "server" | "user" | "title" | "state" | "progress";
+  playback_state_filter?: PlaybackStateFilter;
+  stream_decision_filter?: StreamDecisionFilter;
+  sort_by?: "server" | "user" | "title" | "state" | "progress" | "remaining" | "bandwidth";
   sort_direction?: "ascending" | "descending";
   density?: Density;
   artwork?: ArtworkMode;
@@ -119,6 +127,7 @@ export interface CardConfig {
   show_pause_duration?: boolean;
   show_track_number?: boolean;
   show_eta?: boolean;
+  eta_time_format?: EtaTimeFormat;
   show_remaining?: boolean;
   show_bandwidth?: boolean;
   show_media_details?: boolean;
