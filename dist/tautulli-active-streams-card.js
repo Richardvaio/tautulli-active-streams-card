@@ -718,6 +718,7 @@ var V = [
 	user_card_show_playback_breakdown: !0,
 	user_card_show_favourites: !0,
 	user_card_show_habits: !0,
+	user_sort_by: "watch_time",
 	show_empty: !1,
 	scroll_gap: 8,
 	scroll_peek: 36,
@@ -857,6 +858,7 @@ function G(e) {
 			"bandwidth"
 		]],
 		["sort_direction", ["ascending", "descending"]],
+		["user_sort_by", ["watch_time", "play_count"]],
 		["density", [
 			"compact",
 			"comfortable",
@@ -1702,7 +1704,8 @@ var Ge = o`
 			"user_id",
 			"stat_id",
 			"time_range",
-			"metric"
+			"metric",
+			"user_sort_by"
 		];
 		n.mode !== "active" && r.push("media_type");
 		let i = r.some((e) => t[e] !== n[e]), a = t.entry_id !== n.entry_id || t.mode !== n.mode, o = t.layout !== n.layout || t.showcase_transition !== n.showcase_transition;
@@ -1901,6 +1904,10 @@ var Ge = o`
 				}[t] ?? [0, 0];
 				return typeof i == "number" || typeof a == "number" ? ((Number(i) || 0) - (Number(a) || 0)) * n : String(i ?? "").localeCompare(String(a ?? ""), this.hass?.locale?.language) * n;
 			});
+		}
+		if (this._config.mode === "users") {
+			let t = this._config.user_sort_by === "play_count" ? "total_plays" : "total_duration_seconds";
+			e.sort((e, n) => (Number(n[t]) || 0) - (Number(e[t]) || 0) || String(e.display_name ?? "").localeCompare(String(n.display_name ?? ""), this.hass?.locale?.language));
 		}
 		return e.slice(0, this._config.max_items);
 	}
@@ -3157,6 +3164,19 @@ var Ye = [
 				}, {
 					value: "descending",
 					label: "Descending"
+				}]
+			},
+			{
+				kind: "select",
+				key: "user_sort_by",
+				label: "Sort users by",
+				modes: ["users"],
+				options: [{
+					value: "watch_time",
+					label: "Watch time"
+				}, {
+					value: "play_count",
+					label: "Play count"
 				}]
 			},
 			{
@@ -5061,7 +5081,7 @@ customElements.get("tautulli-media-card") || customElements.define("tautulli-med
 	name: "Tautulli Media Card",
 	description: "Active streams, recently added media, popular titles, and watch history from Tautulli.",
 	preview: !0
-}), console.info("%c TAUTULLI MEDIA CARD %c 0.5.0 ", "color:white;background:#e5a00d;font-weight:700", "color:#e5a00d;background:#1f2329");
+}), console.info("%c TAUTULLI MEDIA CARD %c 0.6.0 ", "color:white;background:#e5a00d;font-weight:700", "color:#e5a00d;background:#1f2329");
 //#endregion
 
 //# sourceMappingURL=tautulli-active-streams-card.js.map

@@ -1229,6 +1229,46 @@ describe("stream termination confirmation", () => {
     expect(itemOrder()).toEqual(["long", "middle", "short"]);
   });
 
+  it("sorts users by watch time or play count before applying the item limit", async () => {
+    const card = document.createElement("tautulli-media-card") as HTMLElement & {
+      setConfig(config: Record<string, unknown>): void;
+      updateComplete: Promise<boolean>;
+      renderRoot: ShadowRoot;
+    };
+    const users = [
+      { id: "server:alice", display_name: "Alice", total_plays: 5, total_duration_seconds: 7200 },
+      { id: "server:bob", display_name: "Bob", total_plays: 20, total_duration_seconds: 3600 },
+      { id: "server:charlie", display_name: "Charlie", total_plays: 10, total_duration_seconds: 1800 },
+    ];
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "users",
+      max_items: 2,
+      user_sort_by: "watch_time",
+    });
+    document.body.append(card);
+    const internal = card as unknown as { _data: CardEnvelope<Record<string, unknown>>; _loading: boolean; requestUpdate(): void };
+    internal._data = { ...ENVELOPE, items: users };
+    internal._loading = false;
+    internal.requestUpdate();
+    await card.updateComplete;
+    const itemOrder = () => [...card.renderRoot.querySelectorAll("article[data-item-id]")]
+      .map((item) => item.getAttribute("data-item-id"));
+
+    expect(itemOrder()).toEqual(["server:alice", "server:bob"]);
+
+    card.setConfig({
+      type: "custom:tautulli-media-card",
+      entry_id: "entry-1",
+      mode: "users",
+      max_items: 2,
+      user_sort_by: "play_count",
+    });
+    await card.updateComplete;
+    expect(itemOrder()).toEqual(["server:bob", "server:charlie"]);
+  });
+
   it("supports automatic, card-matched and custom TV episode text in popups", async () => {
     const card = document.createElement("tautulli-media-card") as HTMLElement & {
       setConfig(config: Record<string, unknown>): void;

@@ -14,9 +14,11 @@ describe("card configuration", () => {
     expect(config.eta_time_format).toBe("automatic");
     expect(config.playback_state_filter).toBe("all");
     expect(config.stream_decision_filter).toBe("all");
+    expect(config.user_sort_by).toBe("watch_time");
     expect(compactConfig(config)).not.toHaveProperty("eta_time_format");
     expect(compactConfig(config)).not.toHaveProperty("playback_state_filter");
     expect(compactConfig(config)).not.toHaveProperty("stream_decision_filter");
+    expect(compactConfig(config)).not.toHaveProperty("user_sort_by");
   });
 
   it("clamps values sent to bounded backend endpoints", () => {
@@ -99,6 +101,7 @@ describe("card configuration", () => {
       playback_state_filter: "stopped",
       stream_decision_filter: "relay",
       sort_by: "finish_time",
+      user_sort_by: "hours",
       metric: "hours",
       columns: "many",
     } as never);
@@ -114,6 +117,7 @@ describe("card configuration", () => {
       playback_state_filter: "all",
       stream_decision_filter: "all",
       sort_by: "server",
+      user_sort_by: "watch_time",
       metric: "plays",
       columns: "auto",
     });
