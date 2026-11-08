@@ -1,7 +1,7 @@
 import { TautulliMediaCard } from "./card";
 import { TautulliMediaCardEditor } from "./editor";
 
-const CARD_VERSION = "0.5.0";
+const CARD_VERSION = "0.6.0";
 
 if (!customElements.get("tautulli-media-card")) {
   customElements.define("tautulli-media-card", TautulliMediaCard);
