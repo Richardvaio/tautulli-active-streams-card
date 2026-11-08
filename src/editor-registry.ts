@@ -371,6 +371,13 @@ export const EDITOR_SECTIONS: Section[] = [
         ],
       },
       {
+        kind: "select", key: "user_sort_by", label: "Sort users by", modes: ["users"],
+        options: [
+          { value: "watch_time", label: "Watch time" },
+          { value: "play_count", label: "Play count" },
+        ],
+      },
+      {
         kind: "number", key: "max_items",
         label: (ctx) => (ctx.mode === "active" ? "Maximum active streams" : "Maximum items"),
         min: 1, max: 50, suffix: "",

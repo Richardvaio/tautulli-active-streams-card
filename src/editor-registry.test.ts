@@ -319,6 +319,13 @@ describe("editor settings registry", () => {
     expect(popupDetails?.fields?.some((field) => field.kind === "block" && field.block === "userDetailOrder" && appliesTo(field, ctxFor({}, "recently_added")))).toBe(false);
   });
 
+  it("shows user ranking choices only for user mode", () => {
+    const users = fieldKeys(ctxFor({}, "users"));
+    const active = fieldKeys(ctxFor({}, "active"));
+    expect(users.has("user_sort_by")).toBe(true);
+    expect(active.has("user_sort_by")).toBe(false);
+  });
+
   it("uses the ordered detail list as the only active-stream popup field controls", () => {
     const popupDetails = EDITOR_SECTIONS.find((section) => section.id === "popup-details");
     const activeFields = popupDetails?.fields?.filter((field) => appliesTo(field, ctxFor({}, "active"))) ?? [];

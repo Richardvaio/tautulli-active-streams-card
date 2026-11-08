@@ -111,7 +111,7 @@ export class TautulliMediaCard extends LitElement {
   setConfig(config: Partial<CardConfig>): void {
     const previous = this._config;
     const next = normalizeConfig(config);
-    const sourceKeys: Array<keyof CardConfig> = ["entry_id", "mode", "max_items", "section_id", "user_id", "stat_id", "time_range", "metric"];
+    const sourceKeys: Array<keyof CardConfig> = ["entry_id", "mode", "max_items", "section_id", "user_id", "stat_id", "time_range", "metric", "user_sort_by"];
     if (next.mode !== "active") sourceKeys.push("media_type");
     const sourceChanged = sourceKeys.some((key) => previous[key] !== next[key]);
     const datasetChanged = previous.entry_id !== next.entry_id || previous.mode !== next.mode;
@@ -440,6 +440,19 @@ export class TautulliMediaCard extends LitElement {
         const [a, b] = values[key] ?? [0, 0];
         if (typeof a === "number" || typeof b === "number") return ((Number(a) || 0) - (Number(b) || 0)) * direction;
         return String(a ?? "").localeCompare(String(b ?? ""), this.hass?.locale?.language) * direction;
+      });
+    }
+    if (this._config.mode === "users") {
+      const field = this._config.user_sort_by === "play_count"
+        ? "total_plays"
+        : "total_duration_seconds";
+      items.sort((left, right) => {
+        const difference = (Number(right[field]) || 0) - (Number(left[field]) || 0);
+        if (difference) return difference;
+        return String(left.display_name ?? "").localeCompare(
+          String(right.display_name ?? ""),
+          this.hass?.locale?.language,
+        );
       });
     }
     return items.slice(0, this._config.max_items);

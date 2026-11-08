@@ -146,6 +146,7 @@ export interface CardConfig {
   user_card_show_playback_breakdown?: boolean;
   user_card_show_favourites?: boolean;
   user_card_show_habits?: boolean;
+  user_sort_by?: "watch_time" | "play_count";
   show_empty?: boolean;
   animations?: boolean;
   allow_termination?: boolean;
